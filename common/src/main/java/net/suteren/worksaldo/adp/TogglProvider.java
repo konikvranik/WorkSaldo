@@ -74,24 +74,24 @@ public class TogglProvider {
         conn.setRequestProperty("Authorization", "Basic " + encoding);
         conn.connect();
 
-        Type fooType =  new ParameterizedType() {
-            @Override
-            public Type[] getActualTypeArguments() {
-                return new Type[]{type};
-            }
+        TogglDataWrapper<T> r = new Gson().fromJson(new InputStreamReader((InputStream) conn.getContent()),
+                new ParameterizedType() {
+                    @Override
+                    public Type[] getActualTypeArguments() {
+                        return new Type[]{type};
+                    }
 
-            @Override
-            public Type getRawType() {
-                return TogglDataWrapper.class;
-            }
+                    @Override
+                    public Type getRawType() {
+                        return TogglDataWrapper.class;
+                    }
 
-            @Override
-            public Type getOwnerType() {
-                return null;
-            }
+                    @Override
+                    public Type getOwnerType() {
+                        return null;
+                    }
 
-        };
-        TogglDataWrapper<T> r = new Gson().fromJson(new InputStreamReader((InputStream) conn.getContent()), fooType);
+                });
         return r.data;
     }
 
