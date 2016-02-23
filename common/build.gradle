@@ -12,6 +12,7 @@ repositories {
 dependencies {
     compile 'com.google.code.gson:gson:2.6.1'
     compile 'org.json:json:20160212'
+    testCompile "org.testng:testng:6.3.1"
     testCompile 'org.apache.httpcomponents:httpclient:4.5.1'
 }
 
@@ -22,4 +23,9 @@ jar {
                     'Implementation-Vendor': 'Petr Vraník',
                     'Implementation-Version': 1.0
             )
+}
+
+test {
+    useTestNG {
+    }
 }

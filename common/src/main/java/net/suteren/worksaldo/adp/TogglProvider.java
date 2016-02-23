@@ -1,7 +1,6 @@
 package net.suteren.worksaldo.adp;
 
 import com.google.gson.Gson;
-import com.google.gson.TypeAdapter;
 import net.suteren.worksaldo.model.Client;
 import net.suteren.worksaldo.model.TogglDataWrapper;
 import net.suteren.worksaldo.model.UserDetail;
@@ -11,6 +10,8 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
@@ -42,7 +43,7 @@ public class TogglProvider {
     public List<Client> getClients() throws IOException, JSONException {
 
         Map<String, String> params = new HashMap<>();
-        UserDetail ud = download(RequestMethod.GET, "/api/v8/me", params, USERNAME, PASSWORD);
+        UserDetail ud = download(UserDetail.class, RequestMethod.GET, "/api/v8/me", params, USERNAME, PASSWORD);
         return ud.clients;
      /*   Uri uri = new Uri.Builder()
                 .scheme("https")
@@ -57,7 +58,7 @@ public class TogglProvider {
     }
 
 
-    public static <T> T download(RequestMethod method, String path, Map<String, String> params, String username,
+    public static <T> T download(final Class<T> type, RequestMethod method, String path, Map<String, String> params, String username,
                                  String password) throws IOException, JSONException {
         JSONObject param = new JSONObject();
         UriBuilder ub = getUriBuilder()
@@ -72,9 +73,25 @@ public class TogglProvider {
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestProperty("Authorization", "Basic " + encoding);
         conn.connect();
-        Gson gson = new Gson();
-        TypeAdapter<TogglDataWrapper> cad = gson.getAdapter(TogglDataWrapper.class);
-        TogglDataWrapper<T> r = cad.fromJson(new InputStreamReader((InputStream) conn.getContent()));
+
+        Type fooType =  new ParameterizedType() {
+            @Override
+            public Type[] getActualTypeArguments() {
+                return new Type[]{type};
+            }
+
+            @Override
+            public Type getRawType() {
+                return TogglDataWrapper.class;
+            }
+
+            @Override
+            public Type getOwnerType() {
+                return null;
+            }
+
+        };
+        TogglDataWrapper<T> r = new Gson().fromJson(new InputStreamReader((InputStream) conn.getContent()), fooType);
         return r.data;
     }
 
@@ -92,7 +109,7 @@ public class TogglProvider {
     }
 
     public static void setEncoder(Base64 e) {
-        encoder=e;
+        encoder = e;
     }
 
     public enum RequestMethod {

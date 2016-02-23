@@ -14,6 +14,7 @@ import java.util.List;
  * Created by petr on 23.02.2016.
  */
 public class Tester {
+
     static public void main(String... args) throws IOException {
 
         TogglProvider.setEncoder(
