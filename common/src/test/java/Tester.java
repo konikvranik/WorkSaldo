@@ -1,3 +1,4 @@
+import net.suteren.worksaldo.adp.Base64;
 import net.suteren.worksaldo.adp.TogglProvider;
 import net.suteren.worksaldo.adp.UriBuilder;
 import net.suteren.worksaldo.model.Client;
@@ -13,9 +14,16 @@ import java.util.List;
  * Created by petr on 23.02.2016.
  */
 public class Tester {
-    public static void main(String... args) throws IOException {
+    static public void main(String... args) throws IOException {
 
-        TogglProvider.setEncoder(bytes -> java.util.Base64.getEncoder().encode(bytes));
+        TogglProvider.setEncoder(
+                new Base64() {
+                    @Override
+                    public byte[] encode(byte[] bytes) {
+                        return java.util.Base64.getEncoder().encode(bytes);
+                    }
+                }
+        );
         TogglProvider.setUriBuilder(new UriBuilder() {
             URIBuilder builder;
 
