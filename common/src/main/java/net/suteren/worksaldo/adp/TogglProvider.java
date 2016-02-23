@@ -1,10 +1,9 @@
 package net.suteren.worksaldo.adp;
 
-import android.net.Uri;
-import android.util.Base64;
 import com.google.gson.Gson;
 import com.google.gson.TypeAdapter;
 import net.suteren.worksaldo.model.Client;
+import net.suteren.worksaldo.model.TogglDataWrapper;
 import net.suteren.worksaldo.model.UserDetail;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -15,6 +14,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -24,12 +24,26 @@ public class TogglProvider {
 
     public static final String USERNAME = "a1b6c4c9842b505be686d421a3082964";
     public static final String PASSWORD = "api_token";
+    protected static UriBuilder uriBuilder;
+    private static Base64 encoder;
 
-    public Client getClients() throws IOException, JSONException {
+    public static UriBuilder getUriBuilder() {
+        return uriBuilder;
+    }
 
-        Map<String, String> params=new HashMap<>();
+    public static Base64 getEncoder() {
+        return encoder;
+    }
+
+    public static void setUriBuilder(UriBuilder uriBuilder) {
+        TogglProvider.uriBuilder = uriBuilder;
+    }
+
+    public List<Client> getClients() throws IOException, JSONException {
+
+        Map<String, String> params = new HashMap<>();
         UserDetail ud = download(RequestMethod.GET, "/api/v8/me", params, USERNAME, PASSWORD);
-
+        return ud.clients;
      /*   Uri uri = new Uri.Builder()
                 .scheme("https")
                 .authority("toggl.com")
@@ -46,16 +60,15 @@ public class TogglProvider {
     public static <T> T download(RequestMethod method, String path, Map<String, String> params, String username,
                                  String password) throws IOException, JSONException {
         JSONObject param = new JSONObject();
-        Uri.Builder ub = new Uri.Builder()
+        UriBuilder ub = getUriBuilder()
                 .scheme("https")
                 .authority("toggl.com")
                 .path(path);
         makeParams(method, ub, param, params);
-        Uri uri = ub.build();
+        URL url = ub.build();
 
         String userPassword = username + ":" + password;
-        String encoding = new String(Base64.encode(userPassword.getBytes(), Base64.DEFAULT));
-        URL url = new URL(uri.toString());
+        String encoding = new String(getEncoder().encode(userPassword.getBytes()));
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestProperty("Authorization", "Basic " + encoding);
         conn.connect();
@@ -65,7 +78,7 @@ public class TogglProvider {
         return r.data;
     }
 
-    private static void makeParams(RequestMethod method, Uri.Builder ub, JSONObject param, Map<String, String> params) throws JSONException {
+    private static void makeParams(RequestMethod method, UriBuilder ub, JSONObject param, Map<String, String> params) throws JSONException {
         for (Map.Entry<String, String> e : params.entrySet()) {
             switch (method) {
                 case GET:
@@ -76,6 +89,10 @@ public class TogglProvider {
                     break;
             }
         }
+    }
+
+    public static void setEncoder(Base64 e) {
+        encoder=e;
     }
 
     public enum RequestMethod {
