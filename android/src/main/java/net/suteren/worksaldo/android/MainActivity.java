@@ -11,6 +11,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -76,78 +78,40 @@ public class MainActivity extends Activity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            try {
-                URL url = new URL("https://toggl.com/reports/api/v2/weekly");
-                ProxySelector defaultProxySelector = ProxySelector.getDefault();
-                List<Proxy> proxyList = defaultProxySelector.select(url.toURI());
-                URLConnection conn;
-                if (proxyList == null || proxyList.isEmpty()) {
-                    conn = url.openConnection();
-                } else {
-                    conn = url.openConnection(proxyList.get(0));
-                }
-                conn.connect();
-                Object cnt = conn.getContent();
-
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (URISyntaxException e) {
-                e.printStackTrace();
-            }
+            ListView lv = (ListView) rootView.findViewById(R.id.listing);
+            lv.setAdapter(new ArrayAdapter<JSONObject>(inflater.getContext(), R.layout.row));
+            new DownloadASyncTask().execute(new JSONObject());
             return rootView;
         }
-    }
 
-    private class DownloadASyncTask extends AsyncTask<JSONObject, Void, JSONObject> {
+        private class DownloadASyncTask extends AsyncTask<JSONObject, Void, JSONObject> {
 
-        public static final String USERNAME = "a1b6c4c9842b505be686d421a3082964";
-        public static final String PASSWORD = "api_token";
+            public static final String USERNAME = "a1b6c4c9842b505be686d421a3082964";
+            public static final String PASSWORD = "api_token";
 
-        {
-            URLConnection.setContentHandlerFactory(new ContentHandlerFactory() {
-                public ContentHandler createContentHandler(String mimetype) {
-                    if ("application/json".equals(mimetype)) {
-                        return new ContentHandler() {
-                            @Override
-                            public Object getContent(URLConnection urlc) throws IOException {
-                                try {
-                                    return new JSONObject(new Scanner(urlc.getInputStream(), "UTF-8")
-                                            .useDelimiter("\\A").next());
-                                } catch (JSONException e) {
-                                    return null;
-                                }
-                            }
-                        };
-                    }
+            @Override
+            protected JSONObject doInBackground(JSONObject... auth) {
+                try {
+
+                    Uri uri = new Uri.Builder()
+                            .scheme("https")
+                            .authority("toggl.com")
+                            .path("/reports/api/v2/weekly")
+                            .appendQueryParameter("user_agent", "petr@vranik.name")
+                            .appendQueryParameter("workspace_id", "1111388")
+                            .appendQueryParameter("since", "2016-02-22")
+                            .build();
+
+                    String userPassword = USERNAME + ":" + PASSWORD;
+                    String encoding = new String(Base64.encode(userPassword.getBytes(), Base64.DEFAULT));
+                    URL url = new URL(uri.toString());
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestProperty("Authorization", "Basic " + encoding);
+                    conn.connect();
+                    return (JSONObject) conn.getContent();
+                } catch (IOException e) {
                     return null;
                 }
-            });
-        }
-
-        @Override
-        protected JSONObject doInBackground(JSONObject... auth) {
-            try {
-
-                Uri uri = new Uri.Builder()
-                        .scheme("https")
-                        .authority("toggl.com")
-                        .path("/reports/api/v2/weekly")
-                        .appendQueryParameter("user_agent", "petr@vranik.name")
-                        .appendQueryParameter("workspace_id", "1111388")
-                        .appendQueryParameter("since", "2016-02-22")
-                        .build();
-
-                String userPassword = USERNAME + ":" + PASSWORD;
-                String encoding = new String(Base64.encode(userPassword.getBytes(), Base64.DEFAULT));
-                URL url = new URL(uri.toString());
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestProperty("Authorization", "Basic " + encoding);
-                conn.connect();
-                return (JSONObject) conn.getContent();
-            } catch (IOException e) {
-                return null;
             }
         }
     }
