@@ -105,6 +105,27 @@ public class MainActivity extends Activity {
         public static final String USERNAME = "a1b6c4c9842b505be686d421a3082964";
         public static final String PASSWORD = "api_token";
 
+        {
+            URLConnection.setContentHandlerFactory(new ContentHandlerFactory() {
+                public ContentHandler createContentHandler(String mimetype) {
+                    if ("application/json".equals(mimetype)) {
+                        return new ContentHandler() {
+                            @Override
+                            public Object getContent(URLConnection urlc) throws IOException {
+                                try {
+                                    return new JSONObject(new Scanner(urlc.getInputStream(), "UTF-8")
+                                            .useDelimiter("\\A").next());
+                                } catch (JSONException e) {
+                                    return null;
+                                }
+                            }
+                        };
+                    }
+                    return null;
+                }
+            });
+        }
+
         @Override
         protected JSONObject doInBackground(JSONObject... auth) {
             try {
@@ -118,30 +139,10 @@ public class MainActivity extends Activity {
                         .appendQueryParameter("since", "2016-02-22")
                         .build();
 
-
-
                 String userPassword = USERNAME + ":" + PASSWORD;
                 String encoding = new String(Base64.encode(userPassword.getBytes(), Base64.DEFAULT));
-                URL url=new URL(uri.toString());
+                URL url = new URL(uri.toString());
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setContentHandlerFactory(new ContentHandlerFactory() {
-                    public ContentHandler createContentHandler(String mimetype) {
-                        if ("application/json".equals(mimetype)) {
-                            return new ContentHandler() {
-                                @Override
-                                public Object getContent(URLConnection urlc) throws IOException {
-                                    try {
-                                        return new JSONObject(new Scanner(urlc.getInputStream(), "UTF-8")
-                                                .useDelimiter("\\A").next());
-                                    } catch (JSONException e) {
-                                        return null;
-                                    }
-                                }
-                            };
-                        }
-                        return null;
-                    }
-                });
                 conn.setRequestProperty("Authorization", "Basic " + encoding);
                 conn.connect();
                 return (JSONObject) conn.getContent();
