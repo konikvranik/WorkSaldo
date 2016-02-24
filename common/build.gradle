@@ -8,10 +8,14 @@ sourceCompatibility = 1.8
 
 repositories {
     jcenter()
+    maven {
+        url "http://pandora.comerge.net:8081/nexus/content/repositories/public_snapshots/"
+    }
 }
 dependencies {
     compile 'com.google.code.gson:gson:2.6.1'
     compile 'org.json:json:20160212'
+    compile 'ch.simas.jtoggl:jtoggl-api:1.0.2-SNAPSHOT'
     testCompile "org.testng:testng:6.3.1"
     testCompile 'org.apache.httpcomponents:httpclient:4.5.1'
 }
