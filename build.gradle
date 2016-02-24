@@ -18,5 +18,8 @@ allprojects {
         maven {
             url "http://pandora.comerge.net:8081/nexus/content/repositories/public_snapshots/"
         }
+        maven {
+            url "https://github.com/konikvranik/repository"
+        }
     }
 }

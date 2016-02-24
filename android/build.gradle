@@ -1,15 +1,24 @@
 buildscript {
     repositories {
         jcenter()
+	maven {
+	    url "https://raw.githubusercontent.com/konikvranik/repository/master/"
+        }
+
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:1.1.1'
+        classpath 'net.suteren.gradle.plugin:AndroidEclipse:1.2-SNAPSHOT'
     }
 }
-apply plugin: 'com.android.application'
+
+apply plugin: 'net.suteren.android-eclipse'
 
 repositories {
     jcenter()
+	maven {
+            url "http://pandora.comerge.net:8081/nexus/content/repositories/public_snapshots/"
+        }
+
 }
 
 android {
@@ -34,8 +43,13 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+ packagingOptions {
+	    exclude 'META-INF/jersey-module-version'
+	  }
+
 }
 
 dependencies {
-    compile 'ch.simas.jtoggl:jtoggl-api:1.0.2-SNAPSHOT'
+    compile ('ch.simas.jtoggl:jtoggl-api:1.0.2-SNAPSHOT'){ exclude module: 'json-simple'}
 }
