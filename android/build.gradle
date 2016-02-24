@@ -10,6 +10,7 @@ apply plugin: 'com.android.application'
 
 repositories {
     jcenter()
+
 }
 
 android {
@@ -37,4 +38,5 @@ android {
 }
 
 dependencies {
+    compile 'ch.simas.jtoggl:jtoggl-api:1.0.2-SNAPSHOT'
 }
