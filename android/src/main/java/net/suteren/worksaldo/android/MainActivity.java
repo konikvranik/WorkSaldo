@@ -2,32 +2,24 @@ package net.suteren.worksaldo.android;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.net.Uri;
+import android.app.LoaderManager;
+import android.content.Context;
+import android.content.CursorLoader;
+import android.content.Loader;
+import android.database.Cursor;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
-import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import org.json.JSONException;
+import android.widget.SimpleCursorAdapter;
+import ch.simas.jtoggl.JToggl;
+import ch.simas.jtoggl.User;
 import org.json.JSONObject;
-
-import java.io.IOException;
-import java.net.ContentHandler;
-import java.net.ContentHandlerFactory;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.Proxy;
-import java.net.ProxySelector;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.List;
-import java.util.Scanner;
 
 
 public class MainActivity extends Activity {
@@ -69,49 +61,64 @@ public class MainActivity extends Activity {
     /**
      * A placeholder fragment containing a simple view.
      */
-    public static class PlaceholderFragment extends Fragment {
+    public static class PlaceholderFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+
+        private SimpleCursorAdapter mAdapter;
 
         public PlaceholderFragment() {
         }
 
+        private Context getCtx() {
+            return getContext();
+        }
+
         @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
+        public Context getContext() {
+            if (Build.VERSION.SDK_INT < 23) {
+                return getActivity();
+            } else {
+                return super.getContext();
+            }
+        }
+
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
             ListView lv = (ListView) rootView.findViewById(R.id.listing);
-            lv.setAdapter(new ArrayAdapter<JSONObject>(inflater.getContext(), R.layout.row));
+            LoaderManager lm = getLoaderManager();
+            lm.initLoader(1, null, this);
+            lv.setAdapter(mAdapter = new SimpleCursorAdapter(getCtx(), R.layout.row, null, new String[]{"date",
+                    "from", "to"},
+                    new int[]{R.id.date, R.id.from, R.id.to}, 0));
             new DownloadASyncTask().execute(new JSONObject());
             return rootView;
         }
 
-        private class DownloadASyncTask extends AsyncTask<JSONObject, Void, JSONObject> {
+        @Override
+        public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+            return new CursorLoader(getCtx(), null, null, null, null, null);
+        }
+
+        @Override
+        public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+            mAdapter.swapCursor(data);
+        }
+
+        @Override
+        public void onLoaderReset(Loader<Cursor> loader) {
+            mAdapter.swapCursor(null);
+        }
+
+        private class DownloadASyncTask extends AsyncTask<JSONObject, Void, Void> {
 
             public static final String USERNAME = "a1b6c4c9842b505be686d421a3082964";
             public static final String PASSWORD = "api_token";
 
             @Override
-            protected JSONObject doInBackground(JSONObject... auth) {
-                try {
-
-                    Uri uri = new Uri.Builder()
-                            .scheme("https")
-                            .authority("toggl.com")
-                            .path("/reports/api/v2/weekly")
-                            .appendQueryParameter("user_agent", "petr@vranik.name")
-                            .appendQueryParameter("workspace_id", "1111388")
-                            .appendQueryParameter("since", "2016-02-22")
-                            .build();
-
-                    String userPassword = USERNAME + ":" + PASSWORD;
-                    String encoding = new String(Base64.encode(userPassword.getBytes(), Base64.DEFAULT));
-                    URL url = new URL(uri.toString());
-                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                    conn.setRequestProperty("Authorization", "Basic " + encoding);
-                    conn.connect();
-                    return (JSONObject) conn.getContent();
-                } catch (IOException e) {
-                    return null;
-                }
+            protected Void doInBackground(JSONObject... auth) {
+                JToggl jtgl = new JToggl("", "");
+                User u = jtgl.getCurrentUser();
+                return null;
             }
         }
     }
