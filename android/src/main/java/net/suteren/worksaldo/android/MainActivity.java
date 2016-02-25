@@ -6,6 +6,7 @@ import android.app.LoaderManager;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Loader;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -21,8 +22,18 @@ import ch.simas.jtoggl.JToggl;
 import ch.simas.jtoggl.User;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 
 public class MainActivity extends Activity {
+
+    public static final String ORDER_BY = "datetime(" + DbHelper.START_COL + ")";
+    public static final String GROUP_BY = "date(" + DbHelper.START_COL + ")";
+    public static final String WHERE = "date(" + DbHelper.START_COL + ") = ?";
+    public static final String DAY_START = "min(time(" + DbHelper.START_COL + ")) start";
+    public static final String DAY_END = "max(time(" + DbHelper.STOP_COL + ")) stop";
+    public static final String DAY_TOTAL = "sum(" + DbHelper.DURATION_COL + ") total";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,13 +95,27 @@ public class MainActivity extends Activity {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            ListView lv = (ListView) rootView.findViewById(R.id.listing);
-            LoaderManager lm = getLoaderManager();
-            lm.initLoader(1, null, this);
-            lv.setAdapter(mAdapter = new SimpleCursorAdapter(getCtx(), R.layout.row, null, new String[]{"date",
-                    "from", "to"},
-                    new int[]{R.id.date, R.id.from, R.id.to}, 0));
-            new DownloadASyncTask().execute(new JSONObject());
+            try {
+                DbHelper dbh = new DbHelper(getContext());
+                String table = DbHelper.TIME_ENTRY;
+                String[] columns = new String[]{DAY_START, DAY_END, DAY_TOTAL};
+                String selection = WHERE;
+                String[] selectionArgs = new String[]{String.format("date(%s)",
+                        new SimpleDateFormat("YYYY-MM-DD").format(new Date()))
+                };
+                String groupBy = GROUP_BY;
+                String orderBy = ORDER_BY;
+                ListView lv = (ListView) rootView.findViewById(R.id.listing);
+                LoaderManager lm = getLoaderManager();
+                lm.initLoader(1, null, this);
+                lv.setAdapter(mAdapter = new SimpleCursorAdapter(getCtx(), R.layout.row, dbh.getReadableDatabase()
+                        .query(table, columns, selection, selectionArgs, groupBy, null, orderBy),
+                        new String[]{"start", "stop", "total"},
+                        new int[]{R.id.date, R.id.from, R.id.to}, 0));
+                new DownloadASyncTask().execute(new JSONObject());
+            } catch (PackageManager.NameNotFoundException e) {
+                e.printStackTrace();
+            }
             return rootView;
         }
 
