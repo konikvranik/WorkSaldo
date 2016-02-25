@@ -30,7 +30,7 @@ public class DbHelper extends SQLiteOpenHelper {
             "tags TEXT," +
             "duronly INTEGER," +
             "at TEXT" +
-            ")";
+            ");";
 
     public static final String CLIENT_TABLE = "CLIENT";
     private static final String CLIENTS_TABLE_CREATE = "CREATE TABLE " + CLIENT_TABLE + " (" +
@@ -40,7 +40,7 @@ public class DbHelper extends SQLiteOpenHelper {
             "currency TEXT," +
             "wid INTEGER," +
             "notes TEXT" +
-            ")";
+            ");";
     private static final String INSERT_FAKE_DATA = "insert into TIME_ENTRY (id, description, wid, pid, tid, billable," +
             " start, stop, duration, created_with, tags, duronly) values (%d, 'Desc', 1, 1, 1, 1, '%s', '%s', %d, " +
             "'me', '', 0);";
@@ -53,7 +53,6 @@ public class DbHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
 
-        db.beginTransaction();
         db.compileStatement(TIME_ENTRIES_TABLE_CREATE).execute();
         db.compileStatement(CLIENTS_TABLE_CREATE).execute();
         db.compileStatement(String.format(INSERT_FAKE_DATA, 1, "2016-02-25 19:23:00", "2016-02-25 19:50:00", 27 * 60))
@@ -61,12 +60,11 @@ public class DbHelper extends SQLiteOpenHelper {
         db.compileStatement(String.format(INSERT_FAKE_DATA, 2, "2016-02-25 09:23:00", "2016-02-25 11:50:00", 2 * 3600
                 + 27 * 60))
                 .execute();
-        db.endTransaction();
 
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
+        onCreate(db);
     }
 }

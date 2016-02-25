@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 
 import static net.suteren.worksaldo.android.DbHelper.TIME_ENTRY;
@@ -29,13 +30,15 @@ public class TogglCachedProvider extends ContentProvider {
     public static final String USER_PATH = "user";
     public static final String TIMEENTRY_PATH = "timeentry";
 
-    public static final String TIMESHEET_URI = URI_BASE+"/"+TIMEENTRY_PATH;
+    public static final String TIMESHEET_URI = URI_BASE + "/" + TIMEENTRY_PATH;
 
 
     {
         sUriMatcher.addURI(URI_BASE, USER_PATH, 1);
         sUriMatcher.addURI(URI_BASE, TIMEENTRY_PATH, 2);
     }
+
+    SQLiteDatabase readableDatabase;
 
     @Override
     public boolean onCreate() {
@@ -54,7 +57,7 @@ public class TogglCachedProvider extends ContentProvider {
 
                 // If the incoming URI was for time sheet entries
                 case 2:
-                    return new DbHelper(getContext()).getReadableDatabase()
+                    return getDatabase()
                             .query(TIME_ENTRY, projection, selection, selectionArgs, GROUP_BY, null, sortOrder);
 
                 default:
@@ -64,6 +67,12 @@ public class TogglCachedProvider extends ContentProvider {
             e.printStackTrace();
         }
         return null;
+    }
+
+    private SQLiteDatabase getDatabase() throws PackageManager.NameNotFoundException {
+        if (readableDatabase == null)
+            readableDatabase = new DbHelper(getContext()).getReadableDatabase();
+        return readableDatabase;
     }
 
     @Override
