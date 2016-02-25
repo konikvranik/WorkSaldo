@@ -6,9 +6,8 @@ import android.app.LoaderManager;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Loader;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.os.AsyncTask;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -18,22 +17,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
-import ch.simas.jtoggl.JToggl;
-import ch.simas.jtoggl.User;
-import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import static net.suteren.worksaldo.android.TogglCachedProvider.*;
+
 
 public class MainActivity extends Activity {
-
-    public static final String ORDER_BY = "datetime(" + DbHelper.START_COL + ")";
-    public static final String GROUP_BY = "date(" + DbHelper.START_COL + ")";
-    public static final String WHERE = "date(" + DbHelper.START_COL + ") = ?";
-    public static final String DAY_START = "min(time(" + DbHelper.START_COL + ")) start";
-    public static final String DAY_END = "max(time(" + DbHelper.STOP_COL + ")) stop";
-    public static final String DAY_TOTAL = "sum(" + DbHelper.DURATION_COL + ") total";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,7 +63,7 @@ public class MainActivity extends Activity {
     /**
      * A placeholder fragment containing a simple view.
      */
-    public static class PlaceholderFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+    public static class PlaceholderFragment extends Fragment {
 
         private SimpleCursorAdapter mAdapter;
 
@@ -95,56 +86,33 @@ public class MainActivity extends Activity {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            try {
-                DbHelper dbh = new DbHelper(getContext());
-                String table = DbHelper.TIME_ENTRY;
-                String[] columns = new String[]{DAY_START, DAY_END, DAY_TOTAL};
-                String selection = WHERE;
-                String[] selectionArgs = new String[]{String.format("date(%s)",
-                        new SimpleDateFormat("YYYY-MM-DD").format(new Date()))
-                };
-                String groupBy = GROUP_BY;
-                String orderBy = ORDER_BY;
-                ListView lv = (ListView) rootView.findViewById(R.id.listing);
-                LoaderManager lm = getLoaderManager();
-                lm.initLoader(1, null, this);
-                lv.setAdapter(mAdapter = new SimpleCursorAdapter(getCtx(), R.layout.row, dbh.getReadableDatabase()
-                        .query(table, columns, selection, selectionArgs, groupBy, null, orderBy),
-                        new String[]{"start", "stop", "total"},
-                        new int[]{R.id.date, R.id.from, R.id.to}, 0));
-                new DownloadASyncTask().execute(new JSONObject());
-            } catch (PackageManager.NameNotFoundException e) {
-                e.printStackTrace();
-            }
+            ListView lv = (ListView) rootView.findViewById(R.id.listing);
+            LoaderManager lm = getLoaderManager();
+            final String[] perspective = {DAY_START, DAY_END, DAY_TOTAL};
+            lv.setAdapter(mAdapter = new SimpleCursorAdapter(getCtx(), R.layout.row, null, perspective,
+                    new int[]{R.id.date, R.id.from, R.id.to}, 0));
+            lm.initLoader(1, null, new LoaderManager.LoaderCallbacks<Cursor>() {
+                @Override
+                public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+                    return new CursorLoader(getCtx(), new Uri.Builder().scheme("content")
+                            .authority(TogglCachedProvider.URI_BASE)
+                            .appendPath(TogglCachedProvider.TIMEENTRY_PATH).build(),
+                            perspective, WHERE,
+                            new String[]{String.format("date(%s)",
+                                    new SimpleDateFormat("yyyy-MM-dd").format(new Date()))}, ORDER_BY);
+                }
+
+                @Override
+                public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+                    mAdapter.swapCursor(data);
+                }
+
+                @Override
+                public void onLoaderReset(Loader<Cursor> loader) {
+                    mAdapter.swapCursor(null);
+                }
+            });
             return rootView;
-        }
-
-        @Override
-        public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-            return new CursorLoader(getCtx(), null, null, null, null, null);
-        }
-
-        @Override
-        public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-            mAdapter.swapCursor(data);
-        }
-
-        @Override
-        public void onLoaderReset(Loader<Cursor> loader) {
-            mAdapter.swapCursor(null);
-        }
-
-        private class DownloadASyncTask extends AsyncTask<JSONObject, Void, Void> {
-
-            public static final String USERNAME = "a1b6c4c9842b505be686d421a3082964";
-            public static final String PASSWORD = "api_token";
-
-            @Override
-            protected Void doInBackground(JSONObject... auth) {
-                JToggl jtgl = new JToggl("", "");
-                User u = jtgl.getCurrentUser();
-                return null;
-            }
         }
     }
 }

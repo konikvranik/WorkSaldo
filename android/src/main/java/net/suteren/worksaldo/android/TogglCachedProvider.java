@@ -3,9 +3,11 @@ package net.suteren.worksaldo.android;
 import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.UriMatcher;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
-import android.text.TextUtils;
+
+import static net.suteren.worksaldo.android.DbHelper.TIME_ENTRY;
 
 /**
  * Created by vranikp on 24.2.16.
@@ -14,12 +16,25 @@ import android.text.TextUtils;
  */
 public class TogglCachedProvider extends ContentProvider {
 
+    public static final String DAY_TOTAL = "sum(" + DbHelper.DURATION_COL + ") total";
+    public static final String ORDER_BY = "datetime(" + DbHelper.START_COL + ")";
+    public static final String GROUP_BY = "date(" + DbHelper.START_COL + ")";
+    public static final String WHERE = "date(" + DbHelper.START_COL + ") = ?";
+    public static final String DAY_START = "min(time(" + DbHelper.START_COL + ")) start";
+    public static final String DAY_END = "max(time(" + DbHelper.STOP_COL + ")) stop";
     // Creates a UriMatcher object.
     private static final UriMatcher sUriMatcher = new UriMatcher(0);
 
+    public static final String URI_BASE = "net.suteren.toggl.provider";
+    public static final String USER_PATH = "user";
+    public static final String TIMEENTRY_PATH = "timeentry";
+
+    public static final String TIMESHEET_URI = URI_BASE+"/"+TIMEENTRY_PATH;
+
+
     {
-        sUriMatcher.addURI("net.suteren.toggl.provider", "user", 1);
-        sUriMatcher.addURI("net.suteren.toggl.provider", "timeentry", 2);
+        sUriMatcher.addURI(URI_BASE, USER_PATH, 1);
+        sUriMatcher.addURI(URI_BASE, TIMEENTRY_PATH, 2);
     }
 
     @Override
@@ -29,28 +44,24 @@ public class TogglCachedProvider extends ContentProvider {
 
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
-        switch (sUriMatcher.match(uri)) {
+        try {
+            switch (sUriMatcher.match(uri)) {
 
+                // If the incoming URI was for user
+                case 1:
 
-            // If the incoming URI was for all of table3
-            case 1:
+                    break;
 
-                if (TextUtils.isEmpty(sortOrder)) sortOrder = "_ID ASC";
-                break;
+                // If the incoming URI was for time sheet entries
+                case 2:
+                    return new DbHelper(getContext()).getReadableDatabase()
+                            .query(TIME_ENTRY, projection, selection, selectionArgs, GROUP_BY, null, sortOrder);
 
-            // If the incoming URI was for a single row
-            case 2:
-
-                /*
-                 * Because this URI was for a single row, the _ID value part is
-                 * present. Get the last path segment from the URI; this is the _ID value.
-                 * Then, append the value to the WHERE clause for the query
-                 */
-                selection = selection + "_ID = " + uri.getLastPathSegment();
-                break;
-
-            default:
-                // If the URI is not recognized, you should do some error handling here.
+                default:
+                    // If the URI is not recognized, you should do some error handling here.
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
         }
         return null;
     }
