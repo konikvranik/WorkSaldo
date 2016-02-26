@@ -6,6 +6,7 @@ import android.app.LoaderManager;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Loader;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
@@ -23,12 +24,13 @@ import android.widget.TextView;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 
 import static net.suteren.worksaldo.android.TogglCachedProvider.*;
 
 
 public class MainActivity extends Activity {
+
+    public static final String MAIN = "main";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,10 +69,11 @@ public class MainActivity extends Activity {
     /**
      * A placeholder fragment containing a simple view.
      */
-    public static class DashboardFragment extends Fragment {
+    public static class DashboardFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
-        public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
-        public static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm:ss");
+        public static final int INSTANT_DATABASE_LOADER = 1;
+        public static final int REMOTE_SERVICE_LOADER = 2;
+        public static final String INSTANT = "instant";
         private SimpleCursorAdapter mAdapter;
 
         private Context getCtx() {
@@ -94,82 +97,103 @@ public class MainActivity extends Activity {
             mAdapter = new SimpleCursorAdapter(getCtx(), R.layout.row, null,
                     new String[]{DATE_NAME, DAY_START_NAME, DAY_END_NAME, DAY_TOTAL_NAME},
                     new int[]{R.id.date, R.id.from, R.id.to, R.id.total}, 0);
-            mAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
-                @Override
-                public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
-                    String value = null;
-                    switch (columnIndex) {
-                        case 1:
-                            try {
-                                value = SimpleDateFormat.getDateInstance(SimpleDateFormat.SHORT).format(DATE_FORMAT
-                                        .parse(cursor.getString(columnIndex)));
-                            } catch (ParseException e) {
-                                e.printStackTrace();
-                            }
-                            break;
-
-                        case 2:
-                        case 3:
-                            try {
-                                value = SimpleDateFormat.getDateInstance(SimpleDateFormat.SHORT).format(TIME_FORMAT
-                                        .parse(cursor.getString(columnIndex)));
-                            } catch (ParseException e) {
-                                e.printStackTrace();
-                            }
-                            break;
-
-                        case 4:
-                            int count = cursor.getInt(columnIndex) / 3600;
-                            value = DecimalFormat.getNumberInstance()
-                                    .format(count) + " " + getResources().getQuantityString(count, R.plurals.hour);
-                            break;
-                    }
-                    if (value != null) {
-                        TextView tv = (TextView) view;
-                        tv.setText(value);
-                        return true;
-                    } else {
-                        return false;
-                    }
-                }
-            });
+            mAdapter.setViewBinder(new Binder());
             lv.setAdapter(mAdapter);
-            lm.initLoader(1, null, new LoaderManager.LoaderCallbacks<Cursor>() {
-                @Override
-                public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-                    return new CursorLoader(getCtx(), new Uri.Builder().scheme("content")
-                            .authority(TogglCachedProvider.URI_BASE)
-                            .appendPath(TogglCachedProvider.TIMEENTRY_PATH).build(),
-                            new String[]{DAY_START_COMPOSITE, DAY_END_COMPOSITE, DAY_TOTAL_COMPOSITE}, WHERE,
-                            new String[]{startDate(), endDate()}, ORDER_BY);
-                }
 
-                @Override
-                public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-                    mAdapter.swapCursor(data);
-                    Log.d("LoaderCallbacks", "loader finished");
-                    Log.d("LoaderCallbacks", "loaded " + data.getCount() + " items.");
-                }
+            Bundle instantBundle = new Bundle();
+            instantBundle.putBoolean("instant", true);
+            lm.initLoader(INSTANT_DATABASE_LOADER, instantBundle, this);
 
-                @Override
-                public void onLoaderReset(Loader<Cursor> loader) {
-                    mAdapter.swapCursor(null);
-                    Log.d("LoaderCallbacks", "loader reset");
-                }
-            });
+            Bundle delayedBundle = new Bundle();
+            delayedBundle.putBoolean("instant", false);
+            // lm.initLoader(REMOTE_SERVICE_LOADER, delayedBundle, this);
+
             return rootView;
         }
 
-        private String startDate() {
-            Calendar c = Calendar.getInstance();
-            c.add(Calendar.DAY_OF_MONTH, -c.get(Calendar.DAY_OF_WEEK));
-            return DATE_FORMAT.format(c);
+
+        @Override
+        public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+            boolean instant = args.getBoolean(INSTANT, false);
+            return new CursorLoader(getCtx(), new Uri.Builder().scheme("content")
+                    .authority(TogglCachedProvider.URI_BASE)
+                    .appendPath(TogglCachedProvider.TIMEENTRY_PATH)
+                    .appendQueryParameter(INSTANT, String.valueOf(instant))
+                    .build(),
+                    new String[]{DATE_COMPOSITE, DAY_START_COMPOSITE, DAY_END_COMPOSITE, DAY_TOTAL_COMPOSITE},
+                    WHERE,
+                    new String[]{DATE_FORMAT.format(startDate()), DATE_FORMAT.format(endDate())},
+                    ORDER_BY);
         }
 
-        private String endDate() {
-            Calendar c = Calendar.getInstance();
-            c.add(Calendar.DAY_OF_MONTH, 7 - c.get(Calendar.DAY_OF_WEEK));
-            return DATE_FORMAT.format(c);
+        @Override
+        public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+            Cursor c = mAdapter.swapCursor(data);
+            if (c != null) {
+                c.close();
+            }
+            Log.d("LoaderCallbacks", "loader finished");
+            Log.d("LoaderCallbacks", "loaded " + data.getCount() + " items.");
+        }
+
+        @Override
+        public void onLoaderReset(Loader<Cursor> loader) {
+            Cursor c = mAdapter.swapCursor(null);
+            if (c != null) {
+                c.close();
+            }
+            Log.d("LoaderCallbacks", "loader reset");
+        }
+
+
+        private class Binder implements SimpleCursorAdapter.ViewBinder {
+
+            @Override
+            public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
+                String value = null;
+                switch (columnIndex) {
+                    case 1:
+                        try {
+                            value = SimpleDateFormat.getDateInstance(SimpleDateFormat.SHORT).format(DATE_FORMAT
+                                    .parse(cursor.getString(columnIndex)));
+                        } catch (ParseException e) {
+                            throw new RuntimeException(e);
+                        }
+                        break;
+
+                    case 2:
+                    case 3:
+                        try {
+                            value = SimpleDateFormat.getTimeInstance(SimpleDateFormat.SHORT).format(TIME_FORMAT
+                                    .parse(cursor.getString(columnIndex)));
+                        } catch (ParseException e) {
+                            throw new RuntimeException(e);
+                        }
+                        break;
+
+                    case 4:
+                        int count = cursor.getInt(columnIndex) / 3600;
+                        try {
+                            value = getResources().getQuantityString(count, R.plurals.hour);
+                        } catch (Resources.NotFoundException e) {
+                            value = DecimalFormat.getNumberInstance().format(count);
+                        }
+                        break;
+                }
+
+                if (value != null)
+
+                {
+                    TextView tv = (TextView) view;
+                    tv.setText(value);
+                    return true;
+                } else
+
+                {
+                    return false;
+                }
+            }
+
         }
     }
 }

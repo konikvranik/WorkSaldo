@@ -2,4 +2,8 @@
     <string name="app_name">WorkSaldo</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <plurals name="hour">
+        <item quantity="one">%d hour</item>
+        <item quantity="other">%d hours</item>
+    </plurals>
 </resources>

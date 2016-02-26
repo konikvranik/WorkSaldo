@@ -18,33 +18,48 @@ public class DbHelper extends SQLiteOpenHelper {
     public static final String TIME_ENTRY = "TIME_ENTRY";
     public static final String START_COL = "start";
     public static final String STOP_COL = "stop";
+    public static final String AT_COL = "at";
     public static final String DURATION_COL = "duration";
     public static final String ID_COLUMN_NAME = "ROWID _id";
+    public static final String DESCRIPTION_COL = "description";
+    public static final String WID_COL = "wid";
+    public static final String PID_COL = "pid";
+    public static final String TID_COL = "tid";
+    public static final String BILLABLE_COL = "billable";
+    public static final String CREATED_WITH_COL = "created_with";
+    public static final String TAGS_COL = "tags";
+    public static final String DURONLY_COL = "duronly";
+    public static final String INTEGER_TYPE = "INTEGER";
+    public static final String TEXT_TYPE = "TEXT";
     private static final String TIME_ENTRIES_TABLE_CREATE = "CREATE TABLE " + TIME_ENTRY + " (" +
-            "description TEXT," +
-            "wid INTEGER," +
-            "pid INTEGER," +
-            "tid INTEGER," +
-            "billable INTEGER," +
-            START_COL + " TEXT," +
-            STOP_COL + " TEXT," +
-            DURATION_COL + " INTEGER," +
-            "created_with TEXT, " +
-            "tags TEXT," +
-            "duronly INTEGER," +
-            "at TEXT" +
+            DESCRIPTION_COL + " " + TEXT_TYPE + "," +
+            WID_COL + " " + INTEGER_TYPE + "," +
+            PID_COL + " " + INTEGER_TYPE + "," +
+            TID_COL + " " + INTEGER_TYPE + "," +
+            BILLABLE_COL + " " + INTEGER_TYPE + "," +
+            START_COL + " " + TEXT_TYPE + "," +
+            STOP_COL + " " + TEXT_TYPE + "," +
+            DURATION_COL + " " + INTEGER_TYPE + "," +
+            CREATED_WITH_COL + " " + TEXT_TYPE + ", " +
+            TAGS_COL + " " + TEXT_TYPE + "," +
+            DURONLY_COL + " " + INTEGER_TYPE + "," +
+            AT_COL + " " + TEXT_TYPE +
             ");";
 
     public static final String CLIENT_TABLE = "CLIENT";
     private static final String CLIENTS_TABLE_CREATE = "CREATE TABLE " + CLIENT_TABLE + " (" +
-            "name TEXT," +
-            "default_hourly INTEGER," +
-            "currency TEXT," +
-            "wid INTEGER," +
-            "notes TEXT" +
+            "name " + TEXT_TYPE + "," +
+            "default_hourly " + INTEGER_TYPE + "," +
+            "currency " + TEXT_TYPE + "," +
+            WID_COL + " " + INTEGER_TYPE + "," +
+            "notes " + TEXT_TYPE +
             ");";
-    private static final String INSERT_FAKE_DATA = "insert into TIME_ENTRY ( description, wid, pid, tid, billable," +
-            " start, stop, duration, created_with, tags, duronly) values ( 'Desc', 1, 1, 1, 1, '%s', '%s', %d, " +
+    private static final String INSERT_FAKE_DATA = "insert into TIME_ENTRY ( " + DESCRIPTION_COL + ", " + WID_COL +
+            ", " + PID_COL + ", " + TID_COL + ", " +
+            BILLABLE_COL + "," +
+            " start, stop, duration, " + CREATED_WITH_COL + ", " + TAGS_COL + ", " + DURONLY_COL + ") values ( " +
+            "'Desc', 1, 1, 1, " +
+            "1, '%s', '%s', %d, " +
             "'me', '', 0);";
     private static DbHelper dbHelper;
 
@@ -86,4 +101,5 @@ public class DbHelper extends SQLiteOpenHelper {
         db.compileStatement(String.format(INSERT_FAKE_DATA,
                 today + " 09:23:00", today + " 11:50:00", 2 * 3600 + 27 * 60)).execute();
     }
+
 }
