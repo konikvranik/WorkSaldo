@@ -6,7 +6,6 @@ import android.app.LoaderManager;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Loader;
-import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.Uri;
@@ -36,8 +35,6 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        SharedPreferences sharedPreferences = getSharedPreferences(MAIN, MODE_PRIVATE);
-        sharedPreferences.edit().putString(API_KEY, "a1b6c4c9842b505be686d421a3082964").apply();
         setContentView(R.layout.activity_main);
         if (savedInstanceState == null) {
             getFragmentManager().beginTransaction()
@@ -109,7 +106,7 @@ public class MainActivity extends Activity {
 
             Bundle delayedBundle = new Bundle();
             delayedBundle.putBoolean("instant", false);
-            // lm.initLoader(REMOTE_SERVICE_LOADER, delayedBundle, this);
+            lm.initLoader(REMOTE_SERVICE_LOADER, delayedBundle, this);
 
             return rootView;
         }
