@@ -5,10 +5,13 @@ import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 
-import static net.suteren.worksaldo.android.DbHelper.TIME_ENTRY;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import static net.suteren.worksaldo.android.DbHelper.*;
 
 /**
  * Created by vranikp on 24.2.16.
@@ -17,12 +20,17 @@ import static net.suteren.worksaldo.android.DbHelper.TIME_ENTRY;
  */
 public class TogglCachedProvider extends ContentProvider {
 
-    public static final String DAY_TOTAL = "sum(" + DbHelper.DURATION_COL + ") total";
-    public static final String ORDER_BY = "datetime(" + DbHelper.START_COL + ")";
-    public static final String GROUP_BY = "date(" + DbHelper.START_COL + ")";
-    public static final String WHERE = "date(" + DbHelper.START_COL + ") = ?";
-    public static final String DAY_START = "min(time(" + DbHelper.START_COL + ")) start";
-    public static final String DAY_END = "max(time(" + DbHelper.STOP_COL + ")) stop";
+    public static final String ORDER_BY = "datetime(" + START_COL + ")";
+    public static final String GROUP_BY = "date(" + START_COL + ")";
+    public static final String WHERE = "date(" + START_COL + ") = date(?)";
+
+    public static final String DAY_START_NAME = "start";
+    public static final String DAY_END_NAME = "stop";
+    public static final String DAY_TOTAL_NAME = "total";
+
+    public static final String DAY_START_COMPOSITE = "min(time(" + START_COL + ")) " + DAY_START_NAME;
+    public static final String DAY_END_COMPOSITE = "max(time(" + STOP_COL + ")) " + DAY_END_NAME;
+    public static final String DAY_TOTAL_COMPOSITE = "sum(" + DURATION_COL + ") " + DAY_TOTAL_NAME;
     // Creates a UriMatcher object.
     private static final UriMatcher sUriMatcher = new UriMatcher(0);
 
@@ -38,8 +46,6 @@ public class TogglCachedProvider extends ContentProvider {
         sUriMatcher.addURI(URI_BASE, TIMEENTRY_PATH, 2);
     }
 
-    SQLiteDatabase readableDatabase;
-
     @Override
     public boolean onCreate() {
         return false;
@@ -47,6 +53,12 @@ public class TogglCachedProvider extends ContentProvider {
 
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+        List<String> proj = Arrays.asList(projection);
+        if (!proj.contains(ID_COLUMN_NAME)) {
+            proj = new ArrayList<>(Arrays.asList(projection));
+            proj.add(0, ID_COLUMN_NAME);
+            projection = proj.toArray(new String[proj.size()]);
+        }
         try {
             switch (sUriMatcher.match(uri)) {
 
@@ -57,7 +69,7 @@ public class TogglCachedProvider extends ContentProvider {
 
                 // If the incoming URI was for time sheet entries
                 case 2:
-                    return getDatabase()
+                    return getDbHelper(getContext()).getReadableDatabase()
                             .query(TIME_ENTRY, projection, selection, selectionArgs, GROUP_BY, null, sortOrder);
 
                 default:
@@ -67,12 +79,6 @@ public class TogglCachedProvider extends ContentProvider {
             e.printStackTrace();
         }
         return null;
-    }
-
-    private SQLiteDatabase getDatabase() throws PackageManager.NameNotFoundException {
-        if (readableDatabase == null)
-            readableDatabase = new DbHelper(getContext()).getReadableDatabase();
-        return readableDatabase;
     }
 
     @Override
@@ -94,4 +100,5 @@ public class TogglCachedProvider extends ContentProvider {
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
         return 0;
     }
+
 }

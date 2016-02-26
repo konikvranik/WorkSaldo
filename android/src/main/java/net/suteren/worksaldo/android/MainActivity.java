@@ -10,6 +10,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -88,8 +89,8 @@ public class MainActivity extends Activity {
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
             ListView lv = (ListView) rootView.findViewById(R.id.listing);
             LoaderManager lm = getLoaderManager();
-            final String[] perspective = {DAY_START, DAY_END, DAY_TOTAL};
-            lv.setAdapter(mAdapter = new SimpleCursorAdapter(getCtx(), R.layout.row, null, perspective,
+            lv.setAdapter(mAdapter = new SimpleCursorAdapter(getCtx(), R.layout.row, null,
+                    new String[]{DAY_START_NAME, DAY_END_NAME, DAY_TOTAL_NAME},
                     new int[]{R.id.date, R.id.from, R.id.to}, 0));
             lm.initLoader(1, null, new LoaderManager.LoaderCallbacks<Cursor>() {
                 @Override
@@ -97,19 +98,21 @@ public class MainActivity extends Activity {
                     return new CursorLoader(getCtx(), new Uri.Builder().scheme("content")
                             .authority(TogglCachedProvider.URI_BASE)
                             .appendPath(TogglCachedProvider.TIMEENTRY_PATH).build(),
-                            perspective, WHERE,
-                            new String[]{String.format("date(%s)",
-                                    new SimpleDateFormat("yyyy-MM-dd").format(new Date()))}, ORDER_BY);
+                            new String[]{DAY_START_COMPOSITE, DAY_END_COMPOSITE, DAY_TOTAL_COMPOSITE}, WHERE,
+                            new String[]{new SimpleDateFormat("yyyy-MM-dd").format(new Date())}, ORDER_BY);
                 }
 
                 @Override
                 public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
                     mAdapter.swapCursor(data);
+                    Log.d("LoaderCallbacks", "loader finished");
+                    Log.d("LoaderCallbacks", "loaded " + data.getCount() + " items.");
                 }
 
                 @Override
                 public void onLoaderReset(Loader<Cursor> loader) {
                     mAdapter.swapCursor(null);
+                    Log.d("LoaderCallbacks", "loader reset");
                 }
             });
             return rootView;
