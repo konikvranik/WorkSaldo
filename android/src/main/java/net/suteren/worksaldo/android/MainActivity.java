@@ -18,9 +18,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+import android.widget.TextView;
 
+import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.Calendar;
 
 import static net.suteren.worksaldo.android.TogglCachedProvider.*;
 
@@ -33,7 +36,7 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         if (savedInstanceState == null) {
             getFragmentManager().beginTransaction()
-                    .add(R.id.container, new PlaceholderFragment())
+                    .add(R.id.container, new DashboardFragment())
                     .commit();
         }
     }
@@ -64,12 +67,11 @@ public class MainActivity extends Activity {
     /**
      * A placeholder fragment containing a simple view.
      */
-    public static class PlaceholderFragment extends Fragment {
+    public static class DashboardFragment extends Fragment {
 
+        public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+        public static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm:ss");
         private SimpleCursorAdapter mAdapter;
-
-        public PlaceholderFragment() {
-        }
 
         private Context getCtx() {
             return getContext();
@@ -89,9 +91,49 @@ public class MainActivity extends Activity {
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
             ListView lv = (ListView) rootView.findViewById(R.id.listing);
             LoaderManager lm = getLoaderManager();
-            lv.setAdapter(mAdapter = new SimpleCursorAdapter(getCtx(), R.layout.row, null,
-                    new String[]{DAY_START_NAME, DAY_END_NAME, DAY_TOTAL_NAME},
-                    new int[]{R.id.date, R.id.from, R.id.to}, 0));
+            mAdapter = new SimpleCursorAdapter(getCtx(), R.layout.row, null,
+                    new String[]{DATE_NAME, DAY_START_NAME, DAY_END_NAME, DAY_TOTAL_NAME},
+                    new int[]{R.id.date, R.id.from, R.id.to, R.id.total}, 0);
+            mAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
+                @Override
+                public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
+                    String value = null;
+                    switch (columnIndex) {
+                        case 1:
+                            try {
+                                value = SimpleDateFormat.getDateInstance(SimpleDateFormat.SHORT).format(DATE_FORMAT
+                                        .parse(cursor.getString(columnIndex)));
+                            } catch (ParseException e) {
+                                e.printStackTrace();
+                            }
+                            break;
+
+                        case 2:
+                        case 3:
+                            try {
+                                value = SimpleDateFormat.getDateInstance(SimpleDateFormat.SHORT).format(TIME_FORMAT
+                                        .parse(cursor.getString(columnIndex)));
+                            } catch (ParseException e) {
+                                e.printStackTrace();
+                            }
+                            break;
+
+                        case 4:
+                            int count = cursor.getInt(columnIndex) / 3600;
+                            value = DecimalFormat.getNumberInstance()
+                                    .format(count) + " " + getResources().getQuantityString(count, R.plurals.hour);
+                            break;
+                    }
+                    if (value != null) {
+                        TextView tv = (TextView) view;
+                        tv.setText(value);
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+            });
+            lv.setAdapter(mAdapter);
             lm.initLoader(1, null, new LoaderManager.LoaderCallbacks<Cursor>() {
                 @Override
                 public Loader<Cursor> onCreateLoader(int id, Bundle args) {
@@ -99,7 +141,7 @@ public class MainActivity extends Activity {
                             .authority(TogglCachedProvider.URI_BASE)
                             .appendPath(TogglCachedProvider.TIMEENTRY_PATH).build(),
                             new String[]{DAY_START_COMPOSITE, DAY_END_COMPOSITE, DAY_TOTAL_COMPOSITE}, WHERE,
-                            new String[]{new SimpleDateFormat("yyyy-MM-dd").format(new Date())}, ORDER_BY);
+                            new String[]{startDate(), endDate()}, ORDER_BY);
                 }
 
                 @Override
@@ -116,6 +158,18 @@ public class MainActivity extends Activity {
                 }
             });
             return rootView;
+        }
+
+        private String startDate() {
+            Calendar c = Calendar.getInstance();
+            c.add(Calendar.DAY_OF_MONTH, -c.get(Calendar.DAY_OF_WEEK));
+            return DATE_FORMAT.format(c);
+        }
+
+        private String endDate() {
+            Calendar c = Calendar.getInstance();
+            c.add(Calendar.DAY_OF_MONTH, 7 - c.get(Calendar.DAY_OF_WEEK));
+            return DATE_FORMAT.format(c);
         }
     }
 }
