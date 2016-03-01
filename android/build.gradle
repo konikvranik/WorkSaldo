@@ -15,6 +15,7 @@ apply plugin: 'net.suteren.android-eclipse'
 
 repositories {
     jcenter()
+    mavenLocal()
     maven {
         url "http://pandora.comerge.net:8081/nexus/content/repositories/public_snapshots/"
     }
@@ -71,10 +72,10 @@ android {
 }
 
 dependencies {
-    compile('ch.simas.jtoggl:jtoggl-api:1.0.2-SNAPSHOT') { exclude module: 'json-simple' }
-    compile('org.simpleframework:simple-xml:2.7.1') {
+    compile('ch.simas.jtoggl:jtoggl-api:1.0.3-SNAPSHOT') { exclude module: 'junit' }
+    /* compile('org.simpleframework:simple-xml:2.7.1') {
         exclude module: 'stax'
         exclude module: 'stax-api'
         exclude module: 'xpp3'
-    }
+    }*/
 }
