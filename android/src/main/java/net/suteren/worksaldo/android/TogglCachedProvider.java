@@ -53,7 +53,7 @@ public class TogglCachedProvider extends ContentProvider {
     public static final String TIMEENTRY_PATH = "timeentry";
 
     public static final String TIMESHEET_URI = URI_BASE + "/" + TIMEENTRY_PATH;
-    public static final String API_KEY = "api_key";
+    public static final String API_KEY = "api_token";
 
     public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
     public static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm:ss");
