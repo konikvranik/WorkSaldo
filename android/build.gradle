@@ -72,7 +72,10 @@ android {
 }
 
 dependencies {
-    compile('ch.simas.jtoggl:jtoggl-api:1.0.3-SNAPSHOT') { exclude module: 'junit' }
+    compile('ch.simas.jtoggl:jtoggl-api:2.0.0-SNAPSHOT') {
+	exclude module: 'junit'
+	exclude module: 'javax.inject'
+    }
     /* compile('org.simpleframework:simple-xml:2.7.1') {
         exclude module: 'stax'
         exclude module: 'stax-api'
