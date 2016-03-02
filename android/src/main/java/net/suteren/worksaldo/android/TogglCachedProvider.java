@@ -75,11 +75,16 @@ public class TogglCachedProvider extends ContentProvider {
         if (!instant) {
             SharedPreferences sharedPreferences = getContext().getSharedPreferences(MAIN, MODE_PRIVATE);
             String key = sharedPreferences.getString(API_KEY, null);
+            if(key==null){
+                key="";
+                sharedPreferences.edit().putString(API_KEY,key).apply();
+            }
+            Log.d("TogglCachedProvider", String.format("KEY: %s", key));
             try {
-                Log.d(this.getClass().getName(), "Loading from toggl for api key: " + key);
+                Log.d("TogglCachedProvider", "Loading from toggl for api key: " + key);
                 JToggl jt = new JToggl(key, API_KEY);
                 List<TimeEntry> te = jt.getTimeEntries(startDate(), endDate());
-                Log.d(this.getClass().getName(), "Loaded from toggl: " + te.size());
+                Log.d("TogglCachedProvider", "Loaded from toggl: " + te.size());
                 SQLiteDatabase db = getDbHelper(getContext()).getWritableDatabase();
                 for (TimeEntry e : te) {
                     ContentValues values = new ContentValues(12);
