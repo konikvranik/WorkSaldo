@@ -1,7 +1,6 @@
 package net.suteren.worksaldo.android;
 
 import android.app.Activity;
-import android.app.Dialog;
 import android.app.Fragment;
 import android.app.LoaderManager;
 import android.content.Context;
@@ -12,23 +11,17 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
-import ch.simas.jtoggl.JToggl;
 
 import java.text.DecimalFormat;
 import java.text.ParseException;
@@ -98,85 +91,7 @@ public class MainActivity extends Activity {
 
     }
 
-    public class LoginDialog extends Dialog {
-
-        public LoginDialog(Context context) {
-            super(context);
-        }
-
-        @Override
-        protected void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            setContentView(R.layout.login_dialog);
-            Button okButton = (Button) findViewById(R.id.okButton);
-            Button cancelButton = (Button) findViewById(R.id.cancelButton);
-            final EditText usernameField = (EditText) findViewById(R.id.username);
-            final EditText passwordField = (EditText) findViewById(R.id.password);
-            final TextView errorMessage = (TextView) findViewById(R.id.error);
-
-            TextWatcher watcher = new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-                }
-
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    errorMessage.setVisibility(View.GONE);
-                }
-
-                @Override
-                public void afterTextChanged(Editable s) {
-
-                }
-            };
-            usernameField.addTextChangedListener(watcher);
-            passwordField.addTextChangedListener(watcher);
-
-            okButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    final String username = usernameField.getText().toString();
-                    final String password = passwordField.getText().toString();
-                    new AsyncTask<Void, Void, String>() {
-
-                        @Override
-                        protected String doInBackground(Void... params) {
-                            String apiToken = null;
-                            try {
-                                apiToken = new JToggl(username, password).getCurrentUser().getApi_token();
-                            } catch (Exception e) {
-                                Log.e("MAinActivity", "login failed", e);
-                            }
-                            return apiToken;
-                        }
-
-                        @Override
-                        protected void onPostExecute(String apiToken) {
-                            super.onPostExecute(apiToken);
-                            if (apiToken == null) {
-                                errorMessage.setVisibility(View.VISIBLE);
-                            } else {
-                                errorMessage.setVisibility(View.GONE);
-                                getSharedPreferences().edit().putString(API_KEY, apiToken).apply();
-                                LoginDialog.this.dismiss();
-                            }
-                        }
-                    }.execute();
-
-                }
-            });
-
-            cancelButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    LoginDialog.this.dismiss();
-                }
-            });
-        }
-    }
-
-    private SharedPreferences getSharedPreferences() {
+    public SharedPreferences getSharedPreferences() {
         return getSharedPreferences(MAIN, MODE_PRIVATE);
     }
 
