@@ -12,6 +12,7 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
@@ -37,6 +38,10 @@ import static net.suteren.worksaldo.android.TogglCachedProvider.*;
 
 
 public class MainActivity extends Activity {
+
+    public static final int INSTANT_DATABASE_LOADER = 1;
+    public static final int REMOTE_SERVICE_LOADER = 2;
+    public static final String INSTANT = "instant";
 
     public static final String MAIN = "main";
 
@@ -71,6 +76,14 @@ public class MainActivity extends Activity {
         if (id == R.id.action_settings) {
             startActivity(new Intent(this, SettingsActivity.class));
             return true;
+        } else if (id == R.id.action_login) {
+            new LoginDialog(this).show();
+        } else if (id == R.id.action_refresh) {
+            Fragment f = getFragmentManager().findFragmentById(android.R.id.content);
+            if (f instanceof LoaderManager.LoaderCallbacks) {
+                getLoaderManager().restartLoader(REMOTE_SERVICE_LOADER, loaderBundle(false),
+                        (LoaderManager.LoaderCallbacks<Cursor>) f);
+            }
         }
 
         return super.onOptionsItemSelected(item);
@@ -123,16 +136,33 @@ public class MainActivity extends Activity {
             okButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    String username = usernameField.getText().toString();
-                    String password = passwordField.getText().toString();
-                    String apiToken = new JToggl(username, password).getCurrentUser().getApi_token();
-                    if (apiToken == null) {
-                        errorMessage.setVisibility(View.VISIBLE);
-                    } else {
-                        errorMessage.setVisibility(View.GONE);
-                        getSharedPreferences().edit().putString(API_KEY, apiToken).apply();
-                        LoginDialog.this.dismiss();
-                    }
+                    final String username = usernameField.getText().toString();
+                    final String password = passwordField.getText().toString();
+                    new AsyncTask<Void, Void, String>() {
+
+                        @Override
+                        protected String doInBackground(Void... params) {
+                            String apiToken = null;
+                            try {
+                                apiToken = new JToggl(username, password).getCurrentUser().getApi_token();
+                            } catch (Exception e) {
+                                Log.e("MAinActivity", "login failed", e);
+                            }
+                            return apiToken;
+                        }
+
+                        @Override
+                        protected void onPostExecute(String apiToken) {
+                            super.onPostExecute(apiToken);
+                            if (apiToken == null) {
+                                errorMessage.setVisibility(View.VISIBLE);
+                            } else {
+                                errorMessage.setVisibility(View.GONE);
+                                getSharedPreferences().edit().putString(API_KEY, apiToken).apply();
+                                LoginDialog.this.dismiss();
+                            }
+                        }
+                    }.execute();
 
                 }
             });
@@ -156,9 +186,6 @@ public class MainActivity extends Activity {
      */
     public static class DashboardFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
-        public static final int INSTANT_DATABASE_LOADER = 1;
-        public static final int REMOTE_SERVICE_LOADER = 2;
-        public static final String INSTANT = "instant";
         private SimpleCursorAdapter mAdapter;
 
         private Context getCtx() {
@@ -193,12 +220,6 @@ public class MainActivity extends Activity {
             lm.initLoader(REMOTE_SERVICE_LOADER, loaderBundle(false), this);
 
             return rootView;
-        }
-
-        private Bundle loaderBundle(boolean value) {
-            Bundle instantBundle = new Bundle();
-            instantBundle.putBoolean("instant", value);
-            return instantBundle;
         }
 
 
@@ -299,4 +320,11 @@ public class MainActivity extends Activity {
 
         }
     }
+
+    private static Bundle loaderBundle(boolean value) {
+        Bundle instantBundle = new Bundle();
+        instantBundle.putBoolean("instant", value);
+        return instantBundle;
+    }
+
 }

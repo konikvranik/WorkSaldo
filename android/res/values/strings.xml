@@ -13,6 +13,8 @@
     <string name="period_default">week</string>
     <string name="total_hours">Hours per period</string>
     <string name="total_hours_sum">Total sum of hours which should be worked in selected period</string>
+    <string name="action_login">Login</string>
+    <string name="action_refresh">Refresh</string>
     <plurals name="hour">
         <item quantity="one">%d hour</item>
         <item quantity="other">%d hours</item>

@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import ch.simas.jtoggl.JToggl;
@@ -22,7 +23,7 @@ import java.util.List;
 
 import static android.content.Context.MODE_PRIVATE;
 import static net.suteren.worksaldo.android.DbHelper.*;
-import static net.suteren.worksaldo.android.MainActivity.DashboardFragment.INSTANT;
+import static net.suteren.worksaldo.android.MainActivity.INSTANT;
 import static net.suteren.worksaldo.android.MainActivity.MAIN;
 
 /**
@@ -58,6 +59,8 @@ public class TogglCachedProvider extends ContentProvider {
     public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
     public static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm:ss");
     public static final SimpleDateFormat DATE_TIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    public static final int UNAUTHORIZED = 401;
+    public static final String RESULT_CODE = "resultCode";
 
     {
         sUriMatcher.addURI(URI_BASE, USER_PATH, 1);
@@ -72,37 +75,39 @@ public class TogglCachedProvider extends ContentProvider {
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
         boolean instant = Boolean.parseBoolean(uri.getQueryParameter(INSTANT));
+        Bundle report = null;
         if (!instant) {
             SharedPreferences sharedPreferences = getContext().getSharedPreferences(MAIN, MODE_PRIVATE);
             String key = sharedPreferences.getString(API_KEY, null);
-            if(key==null){
-                key="";
-                sharedPreferences.edit().putString(API_KEY,key).apply();
-            }
-            Log.d("TogglCachedProvider", String.format("KEY: %s", key));
-            try {
-                Log.d("TogglCachedProvider", "Loading from toggl for api key: " + key);
-                JToggl jt = new JToggl(key, API_KEY);
-                List<TimeEntry> te = jt.getTimeEntries(startDate(), endDate());
-                Log.d("TogglCachedProvider", "Loaded from toggl: " + te.size());
-                SQLiteDatabase db = getDbHelper(getContext()).getWritableDatabase();
-                for (TimeEntry e : te) {
-                    ContentValues values = new ContentValues(12);
-                    values.put(DbHelper.DESCRIPTION_COL, e.getDescription());
-                    values.put(DbHelper.WID_COL, e.getWid());
-                    values.put(DbHelper.PID_COL, e.getPid());
-                    values.put(DbHelper.TID_COL, e.getTid());
-                    values.put(DbHelper.START_COL, DATE_TIME_FORMAT.format(e.getStart()));
-                    values.put(DbHelper.STOP_COL, DATE_TIME_FORMAT.format(e.getStop()));
-                    values.put(DbHelper.DURATION_COL, e.getDuration());
-                    //values.put(DbHelper.BILLABLE_COL, null);
-                    values.put(DbHelper.CREATED_WITH_COL, e.getCreated_with());
-                    values.put(DbHelper.TAGS_COL, TextUtils.join(";", e.getTag_names()));
-                    values.put(DbHelper.DURONLY_COL, e.getDuronly());
-                    db.insertWithOnConflict(TIME_ENTRY, null, values, SQLiteDatabase.CONFLICT_IGNORE);
+            if (key == null || "".equals(key.trim())) {
+                report = new Bundle();
+                report.putInt(RESULT_CODE, UNAUTHORIZED);
+            } else {
+                Log.d("TogglCachedProvider", String.format("KEY: %s", key));
+                try {
+                    Log.d("TogglCachedProvider", "Loading from toggl for api key: " + key);
+                    JToggl jt = new JToggl(key, API_KEY);
+                    List<TimeEntry> te = jt.getTimeEntries(startDate(), endDate());
+                    Log.d("TogglCachedProvider", "Loaded from toggl: " + te.size());
+                    SQLiteDatabase db = getDbHelper(getContext()).getWritableDatabase();
+                    for (TimeEntry e : te) {
+                        ContentValues values = new ContentValues(12);
+                        values.put(DbHelper.DESCRIPTION_COL, e.getDescription());
+                        values.put(DbHelper.WID_COL, e.getWid());
+                        values.put(DbHelper.PID_COL, e.getPid());
+                        values.put(DbHelper.TID_COL, e.getTid());
+                        values.put(DbHelper.START_COL, DATE_TIME_FORMAT.format(e.getStart()));
+                        values.put(DbHelper.STOP_COL, DATE_TIME_FORMAT.format(e.getStop()));
+                        values.put(DbHelper.DURATION_COL, e.getDuration());
+                        //values.put(DbHelper.BILLABLE_COL, null);
+                        values.put(DbHelper.CREATED_WITH_COL, e.getCreated_with());
+                        values.put(DbHelper.TAGS_COL, TextUtils.join(";", e.getTag_names()));
+                        values.put(DbHelper.DURONLY_COL, e.getDuronly());
+                        db.insertWithOnConflict(TIME_ENTRY, null, values, SQLiteDatabase.CONFLICT_IGNORE);
+                    }
+                } catch (Exception e) {
+                    Log.e("TogglCachedProvider", "unable to get time entries", e);
                 }
-            } catch (Exception e) {
-                throw new RuntimeException(e);
             }
 
         }

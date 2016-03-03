@@ -12,7 +12,6 @@
             android:summary="@string/total_hours_sum"
             android:defaultValue="40"/>
     <ListPreference
-            android:dependency="pref_sync"
             android:key="period"
             android:title="@string/period"
             android:dialogTitle="@string/period"
