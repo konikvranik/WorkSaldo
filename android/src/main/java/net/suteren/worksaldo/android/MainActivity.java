@@ -1,25 +1,33 @@
 package net.suteren.worksaldo.android;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.app.Fragment;
 import android.app.LoaderManager;
 import android.content.Context;
 import android.content.CursorLoader;
+import android.content.Intent;
 import android.content.Loader;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
+import ch.simas.jtoggl.JToggl;
 
 import java.text.DecimalFormat;
 import java.text.ParseException;
@@ -41,6 +49,7 @@ public class MainActivity extends Activity {
                     .add(R.id.container, new DashboardFragment())
                     .commit();
         }
+        checkLogin();
     }
 
 
@@ -60,11 +69,87 @@ public class MainActivity extends Activity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            startActivity(new Intent(this, SettingsActivity.class));
             return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
+
+    private void checkLogin() {
+
+        if (getSharedPreferences().getString(API_KEY, null) == null) {
+            new LoginDialog(this).show();
+        }
+
+
+    }
+
+    public class LoginDialog extends Dialog {
+
+        public LoginDialog(Context context) {
+            super(context);
+        }
+
+        @Override
+        protected void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            setContentView(R.layout.login_dialog);
+            Button okButton = (Button) findViewById(R.id.okButton);
+            Button cancelButton = (Button) findViewById(R.id.cancelButton);
+            final EditText usernameField = (EditText) findViewById(R.id.username);
+            final EditText passwordField = (EditText) findViewById(R.id.password);
+            final TextView errorMessage = (TextView) findViewById(R.id.error);
+
+            TextWatcher watcher = new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    errorMessage.setVisibility(View.GONE);
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+
+                }
+            };
+            usernameField.addTextChangedListener(watcher);
+            passwordField.addTextChangedListener(watcher);
+
+            okButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    String username = usernameField.getText().toString();
+                    String password = passwordField.getText().toString();
+                    String apiToken = new JToggl(username, password).getCurrentUser().getApi_token();
+                    if (apiToken == null) {
+                        errorMessage.setVisibility(View.VISIBLE);
+                    } else {
+                        errorMessage.setVisibility(View.GONE);
+                        getSharedPreferences().edit().putString(API_KEY, apiToken).apply();
+                        LoginDialog.this.dismiss();
+                    }
+
+                }
+            });
+
+            cancelButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    LoginDialog.this.dismiss();
+                }
+            });
+        }
+    }
+
+    private SharedPreferences getSharedPreferences() {
+        return getSharedPreferences(MAIN, MODE_PRIVATE);
+    }
+
 
     /**
      * A placeholder fragment containing a simple view.
@@ -91,24 +176,29 @@ public class MainActivity extends Activity {
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
+
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
             ListView lv = (ListView) rootView.findViewById(R.id.listing);
             LoaderManager lm = getLoaderManager();
             mAdapter = new SimpleCursorAdapter(getCtx(), R.layout.row, null,
                     new String[]{DATE_NAME, DAY_START_NAME, DAY_END_NAME, DAY_TOTAL_NAME},
                     new int[]{R.id.date, R.id.from, R.id.to, R.id.total}, 0);
-            mAdapter.setViewBinder(new Binder());
+            mAdapter.setViewBinder(new Binder(((MainActivity) getActivity()).getSharedPreferences()
+                    .getBoolean("real_worked_time", true)));
             lv.setAdapter(mAdapter);
 
-            Bundle instantBundle = new Bundle();
-            instantBundle.putBoolean("instant", true);
-            lm.initLoader(INSTANT_DATABASE_LOADER, instantBundle, this);
+            lm.initLoader(INSTANT_DATABASE_LOADER, loaderBundle(true), this);
 
-            Bundle delayedBundle = new Bundle();
-            delayedBundle.putBoolean("instant", false);
-            lm.initLoader(REMOTE_SERVICE_LOADER, delayedBundle, this);
+            lm.initLoader(REMOTE_SERVICE_LOADER, loaderBundle(false), this);
 
             return rootView;
+        }
+
+        private Bundle loaderBundle(boolean value) {
+            Bundle instantBundle = new Bundle();
+            instantBundle.putBoolean("instant", value);
+            return instantBundle;
         }
 
 
@@ -148,6 +238,12 @@ public class MainActivity extends Activity {
 
         private class Binder implements SimpleCursorAdapter.ViewBinder {
 
+            private final boolean realHours;
+
+            private Binder(boolean realHours) {
+                this.realHours = realHours;
+            }
+
             @Override
             public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
                 String value = null;
@@ -172,7 +268,14 @@ public class MainActivity extends Activity {
                         break;
 
                     case 4:
-                        int count = cursor.getInt(columnIndex) / 3600;
+                        int count = 0;
+                        try {
+                            count = (realHours ? cursor.getInt(columnIndex) :
+                                    (int) (TIME_FORMAT.parse(cursor.getString(3)).getTime() - TIME_FORMAT.parse(cursor
+                                            .getString(2)).getTime()) / 1000) / 3600;
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
                         try {
                             value = getResources().getQuantityString(count, R.plurals.hour);
                         } catch (Resources.NotFoundException e) {

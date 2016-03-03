@@ -2,6 +2,17 @@
     <string name="app_name">WorkSaldo</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="username">Toggl username</string>
+    <string name="password">Toggl password</string>
+    <string name="login">login</string>
+    <string name="dissmiss">dissmiss</string>
+    <string name="invalid_password">Invalid username or password</string>
+    <string name="real_worked_time">Count real working time</string>
+    <string name="real_worked_time_summ">When checked, real worked time from Toggl is used. Otherwise difference between earliest time and latest itme in particular day is counted.</string>
+    <string name="period">Period</string>
+    <string name="period_default">week</string>
+    <string name="total_hours">Hours per period</string>
+    <string name="total_hours_sum">Total sum of hours which should be worked in selected period</string>
     <plurals name="hour">
         <item quantity="one">%d hour</item>
         <item quantity="other">%d hours</item>
