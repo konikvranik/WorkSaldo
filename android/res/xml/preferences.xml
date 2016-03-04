@@ -18,4 +18,10 @@
             android:entries="@array/period_entries"
             android:entryValues="@array/period_values"
             android:defaultValue="@string/period_default"/>
+
+        <EditTextPreference
+                android:key="api_token"
+                android:title="@string/api_token"
+                android:summary="@string/api_token_sum"
+                android:defaultValue="40"/>
 </PreferenceScreen>
