@@ -66,6 +66,8 @@ android {
 
     packagingOptions {
         exclude 'META-INF/jersey-module-version'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/NOTICE'
     }
 
 
