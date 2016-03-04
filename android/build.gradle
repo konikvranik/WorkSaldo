@@ -72,9 +72,11 @@ android {
 }
 
 dependencies {
-    compile('ch.simas.jtoggl:jtoggl-api:2.0.0-SNAPSHOT') {
+    compile('ch.simas.jtoggl:jtoggl-api:2.0.1-SNAPSHOT') {
 	exclude module: 'junit'
 	exclude module: 'javax.inject'
+        exclude module: 'jaxb-api'
+        exclude module: 'org.eclipse.persistence.core'
     }
     compile ('com.google.inject:guice:3.0') {
         exclude module: 'aopalliance'

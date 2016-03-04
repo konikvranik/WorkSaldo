@@ -12,7 +12,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import ch.simas.jtoggl.JToggl;
-import ch.simas.jtoggl.TimeEntry;
+import ch.simas.jtoggl.domain.TimeEntry;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -23,8 +23,7 @@ import java.util.List;
 
 import static android.content.Context.MODE_PRIVATE;
 import static net.suteren.worksaldo.android.DbHelper.*;
-import static net.suteren.worksaldo.android.MainActivity.INSTANT;
-import static net.suteren.worksaldo.android.MainActivity.MAIN;
+import static net.suteren.worksaldo.android.MainActivity.*;
 
 /**
  * Created by vranikp on 24.2.16.
