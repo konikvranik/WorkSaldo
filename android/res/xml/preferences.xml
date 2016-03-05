@@ -1,27 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <CheckBoxPreference
-            android:key="real_worked_time"
-            android:title="@string/real_worked_time"
-            android:summary="@string/real_worked_time_summ"
-            android:defaultValue="true"/>
+        android:key="real_worked_time"
+        android:title="@string/real_worked_time"
+        android:summary="@string/real_worked_time_summ"
+        android:defaultValue="true" />
 
     <EditTextPreference
-            android:key="total_hours"
-            android:title="@string/total_hours"
-            android:summary="@string/total_hours_sum"
-            android:defaultValue="40"/>
+        android:key="total_hours"
+        android:title="@string/total_hours"
+        android:summary="@string/total_hours_sum"
+        android:defaultValue="40"
+        android:inputType="number" />
     <ListPreference
-            android:key="period"
-            android:title="@string/period"
-            android:dialogTitle="@string/period"
-            android:entries="@array/period_entries"
-            android:entryValues="@array/period_values"
-            android:defaultValue="@string/period_default"/>
+        android:key="period"
+        android:title="@string/period"
+        android:dialogTitle="@string/period"
+        android:entries="@array/period_entries"
+        android:entryValues="@array/period_values"
+        android:defaultValue="@string/period_default" />
 
-        <EditTextPreference
-                android:key="api_token"
-                android:title="@string/api_token"
-                android:summary="@string/api_token_sum"
-                android:defaultValue="40"/>
+    <EditTextPreference
+        android:key="api_token"
+        android:title="@string/api_token"
+        android:summary="@string/api_token_sum"
+        android:defaultValue="40" />
 </PreferenceScreen>

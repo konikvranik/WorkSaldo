@@ -43,7 +43,14 @@ public class DbHelper extends SQLiteOpenHelper {
             CREATED_WITH_COL + " " + TEXT_TYPE + ", " +
             TAGS_COL + " " + TEXT_TYPE + "," +
             DURONLY_COL + " " + INTEGER_TYPE + "," +
-            AT_COL + " " + TEXT_TYPE +
+            AT_COL + " " + TEXT_TYPE + "," +
+            "UNIQUE (" +
+            START_COL + "," +
+            STOP_COL + "," +
+            DESCRIPTION_COL + "," +
+            WID_COL + "," +
+            TID_COL + "," +
+            PID_COL + ")" +
             ");";
 
     public static final String CLIENT_TABLE = "CLIENT";
@@ -71,7 +78,7 @@ public class DbHelper extends SQLiteOpenHelper {
     synchronized static DbHelper getDbHelper(Context context) throws PackageManager.NameNotFoundException {
         if (dbHelper == null) {
             dbHelper = new DbHelper(context);
-            addTodayRecords(dbHelper.getWritableDatabase());
+            //    addTodayRecords(dbHelper.getWritableDatabase());
         }
         return dbHelper;
     }
@@ -81,10 +88,10 @@ public class DbHelper extends SQLiteOpenHelper {
 
         db.compileStatement(TIME_ENTRIES_TABLE_CREATE).execute();
         db.compileStatement(CLIENTS_TABLE_CREATE).execute();
-        db.compileStatement(String.format(INSERT_FAKE_DATA, "2016-02-25 19:23:00", "2016-02-25 19:50:00", 27 * 60))
+      /* db.compileStatement(String.format(INSERT_FAKE_DATA, "2016-02-25 19:23:00", "2016-02-25 19:50:00", 27 * 60))
                 .execute();
         db.compileStatement(String.format(INSERT_FAKE_DATA, "2016-02-25 09:23:00", "2016-02-25 11:50:00",
-                2 * 3600 + 27 * 60)).execute();
+                2 * 3600 + 27 * 60)).execute();*/
     }
 
     @Override

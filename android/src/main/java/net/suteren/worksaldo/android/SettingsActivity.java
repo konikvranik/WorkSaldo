@@ -22,6 +22,8 @@ public class SettingsActivity extends PreferenceActivity {
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
+            getPreferenceManager().setSharedPreferencesName(MainActivity.MAIN);
+
             addPreferencesFromResource(R.xml.preferences);
         }
     }

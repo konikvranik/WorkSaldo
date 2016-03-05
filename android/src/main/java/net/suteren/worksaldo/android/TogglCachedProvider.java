@@ -172,13 +172,13 @@ public class TogglCachedProvider extends ContentProvider {
 
     public static Calendar startDate() {
         Calendar c = Calendar.getInstance();
-        c.add(Calendar.DAY_OF_MONTH, -c.get(Calendar.DAY_OF_WEEK));
+        c.add(Calendar.DAY_OF_MONTH, -((c.get(Calendar.DAY_OF_WEEK) + 5) % 7));
         return c;
     }
 
     public static Calendar endDate() {
         Calendar c = Calendar.getInstance();
-        c.add(Calendar.DAY_OF_MONTH, 7 - c.get(Calendar.DAY_OF_WEEK));
+        c.add(Calendar.DAY_OF_MONTH, 7 - ((c.get(Calendar.DAY_OF_WEEK) + 5) % 7));
         return c;
     }
 
