@@ -93,20 +93,26 @@ public class TogglCachedProvider extends ContentProvider {
                     Log.d("TogglCachedProvider", "Loaded from toggl: " + te.size());
                     SQLiteDatabase db = getDbHelper(getContext()).getWritableDatabase();
                     for (TimeEntry e : te) {
+                        Log.d("TogglCachedProvider", String.format("Persisting: %s", te));
                         ContentValues values = new ContentValues(12);
                         values.put(DbHelper.DESCRIPTION_COL, e.getDescription());
                         values.put(DbHelper.WID_COL, e.getWid());
                         values.put(DbHelper.PID_COL, e.getPid());
                         values.put(DbHelper.TID_COL, e.getTid());
-                        values.put(DbHelper.START_COL, DATE_TIME_FORMAT.format(e.getStart()));
-                        values.put(DbHelper.STOP_COL, DATE_TIME_FORMAT.format(e.getStop()));
+                        if (e.getStart() != null)
+                            values.put(DbHelper.START_COL, DATE_TIME_FORMAT.format(e.getStart().getTime()));
+                        if (e.getStop() != null)
+                            values.put(DbHelper.STOP_COL, DATE_TIME_FORMAT.format(e.getStop().getTime()));
                         values.put(DbHelper.DURATION_COL, e.getDuration());
                         //values.put(DbHelper.BILLABLE_COL, null);
                         values.put(DbHelper.CREATED_WITH_COL, e.getCreated_with());
-                        values.put(DbHelper.TAGS_COL, TextUtils.join(";", e.getTag_names()));
+                        if (e.getTag_names() != null)
+                            values.put(DbHelper.TAGS_COL, TextUtils.join(";", e.getTag_names()));
                         values.put(DbHelper.DURONLY_COL, e.getDuronly());
-                        db.insertWithOnConflict(TIME_ENTRY, null, values, SQLiteDatabase.CONFLICT_IGNORE);
+                        long id = db.insertWithOnConflict(TIME_ENTRY, null, values, SQLiteDatabase.CONFLICT_IGNORE);
+                        Log.d("TogglCachedProvider", String.format("Inserted timeentry with id: %d", id));
                     }
+                    db.close();
                 } catch (Exception e) {
                     Log.e("TogglCachedProvider", "unable to get time entries", e);
                 }
@@ -164,16 +170,16 @@ public class TogglCachedProvider extends ContentProvider {
         return 0;
     }
 
-    public static Date startDate() {
+    public static Calendar startDate() {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.DAY_OF_MONTH, -c.get(Calendar.DAY_OF_WEEK));
-        return c.getTime();
+        return c;
     }
 
-    public static Date endDate() {
+    public static Calendar endDate() {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.DAY_OF_MONTH, 7 - c.get(Calendar.DAY_OF_WEEK));
-        return c.getTime();
+        return c;
     }
 
 }

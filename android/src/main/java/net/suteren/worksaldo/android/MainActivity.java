@@ -148,7 +148,7 @@ public class MainActivity extends Activity {
                     .build(),
                     new String[]{DATE_COMPOSITE, DAY_START_COMPOSITE, DAY_END_COMPOSITE, DAY_TOTAL_COMPOSITE},
                     WHERE,
-                    new String[]{DATE_FORMAT.format(startDate()), DATE_FORMAT.format(endDate())},
+                    new String[]{DATE_FORMAT.format(startDate().getTime()), DATE_FORMAT.format(endDate().getTime())},
                     ORDER_BY);
         }
 
