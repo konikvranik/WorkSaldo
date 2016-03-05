@@ -13,6 +13,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import ch.simas.jtoggl.JToggl;
 
+import javax.ws.rs.client.Client;
+
 import static net.suteren.worksaldo.android.TogglCachedProvider.API_KEY;
 
 /**
@@ -67,7 +69,12 @@ public class LoginDialog extends Dialog {
                     protected String doInBackground(Void... params) {
                         String apiToken = null;
                         try {
-                            apiToken = new JToggl(username, password).getCurrentUser().getApi_token();
+                            apiToken = new JToggl(username, password) {
+                                @Override
+                                protected Client prepareClient() {
+                                    return super.prepareClient().register(AndroidFriendlyFeature.class);
+                                }
+                            }.getCurrentUser().getApi_token();
                         } catch (Exception e) {
                             Log.e("MAinActivity", "login failed", e);
                         }

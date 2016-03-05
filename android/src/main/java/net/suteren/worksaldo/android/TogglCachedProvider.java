@@ -14,16 +14,14 @@ import android.util.Log;
 import ch.simas.jtoggl.JToggl;
 import ch.simas.jtoggl.domain.TimeEntry;
 
+import javax.ws.rs.client.Client;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import static android.content.Context.MODE_PRIVATE;
 import static net.suteren.worksaldo.android.DbHelper.*;
-import static net.suteren.worksaldo.android.MainActivity.*;
+import static net.suteren.worksaldo.android.MainActivity.INSTANT;
+import static net.suteren.worksaldo.android.MainActivity.MAIN;
 
 /**
  * Created by vranikp on 24.2.16.
@@ -85,7 +83,12 @@ public class TogglCachedProvider extends ContentProvider {
                 Log.d("TogglCachedProvider", String.format("KEY: %s", key));
                 try {
                     Log.d("TogglCachedProvider", "Loading from toggl for api key: " + key);
-                    JToggl jt = new JToggl(key, API_KEY);
+                    JToggl jt = new JToggl(key, API_KEY) {
+                        @Override
+                        protected Client prepareClient() {
+                            return super.prepareClient().register(AndroidFriendlyFeature.class);
+                        }
+                    };
                     List<TimeEntry> te = jt.getTimeEntries(startDate(), endDate());
                     Log.d("TogglCachedProvider", "Loaded from toggl: " + te.size());
                     SQLiteDatabase db = getDbHelper(getContext()).getWritableDatabase();

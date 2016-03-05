@@ -71,21 +71,37 @@ android {
     }
 
 
+    dexOptions {
+        preDexLibraries = false
+    }
+
 }
 
+project.tasks.withType(com.android.build.gradle.tasks.Dex) {
+    additionalParameters = ['--core-library']
+}
+
+/*
+configurations {
+    compile.exclude group: 'javax.inject', module: 'javax.inject'
+}
+*/
+
 dependencies {
-    compile('ch.simas.jtoggl:jtoggl-api:2.0.1-SNAPSHOT') {
-	exclude module: 'junit'
-	exclude module: 'javax.inject'
+    compile('ch.simas.jtoggl:jtoggl-api:jackson-2.0.1-SNAPSHOT') {
+        exclude module: 'junit'
+        exclude module: 'javax.inject'
         exclude module: 'jaxb-api'
-        exclude module: 'org.eclipse.persistence.core'
+        //exclude module: 'org.eclipse.persistence.core'
     }
-    compile ('com.google.inject:guice:3.0') {
+    //compile fileTree(dir: 'libs', include: '*.jar')
+     compile files('libs/android-ws-combine.jar')
+    compile('com.google.inject:guice:3.0') {
         exclude module: 'aopalliance'
     }
-    /* compile('org.simpleframework:simple-xml:2.7.1') {
+    compile('org.simpleframework:simple-xml:2.7.1') {
         exclude module: 'stax'
         exclude module: 'stax-api'
         exclude module: 'xpp3'
-    }*/
+    }
 }
