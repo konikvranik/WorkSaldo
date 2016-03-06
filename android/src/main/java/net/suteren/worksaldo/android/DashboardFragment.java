@@ -83,9 +83,9 @@ public class DashboardFragment extends Fragment implements LoaderManager.LoaderC
             public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
                 SharedPreferences sharedPreferences = ((MainActivity) getActivity()).getSharedPreferences();
                 boolean rwt = sharedPreferences.getBoolean("real_worked_time", true);
-                int totalWanted = Integer.parseInt(sharedPreferences.getString("total_hours", "0"));
+                int totalWanted = Integer.parseInt(sharedPreferences.getString("total_hours", "40"));
                 long diff = Calendar.getInstance().getTimeInMillis() - startDate().getTimeInMillis();
-                long days = TimeUnit.DAYS.convert(diff, TimeUnit.MILLISECONDS);
+                long days = Math.min(TimeUnit.DAYS.convert(diff, TimeUnit.MILLISECONDS) + 1, 5);
                 Log.d("DashboardFragment", String.format("Days: %d", days));
                 long est = totalWanted / 5 * days;
                 Log.d("DashboardFragment", String.format("Est: %d", est));
@@ -98,15 +98,15 @@ public class DashboardFragment extends Fragment implements LoaderManager.LoaderC
                         try {
                             long start = TIME_FORMAT.parse(data.getString(2)).getTime();
                             long stop = TIME_FORMAT.parse(data.getString(3)).getTime();
-                            cnt += (start - stop) / 1000;
+                            cnt += (stop - start) / 1000;
                         } catch (ParseException e) {
                             Log.e("DashboardFragment", "Parse time", e);
                         }
                     }
                     data.moveToNext();
                 }
-                Log.d("DashboardFragment", String.format("Cnt: %d", cnt));
-                saldo.setText(String.format("%d", est - (cnt / 3600)));
+                Log.d("DashboardFragment", String.format("Cnt: %d", cnt / 3600));
+                saldo.setText(String.format("%d", (cnt / 3600) - est));
                 saldo.invalidate();
             }
 
