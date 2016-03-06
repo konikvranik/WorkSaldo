@@ -1,4 +1,4 @@
-package net.suteren.worksaldo.android;
+package net.suteren.worksaldo.android.provider;
 
 import android.content.ContentProvider;
 import android.content.ContentValues;
@@ -13,6 +13,9 @@ import android.text.TextUtils;
 import android.util.Log;
 import ch.simas.jtoggl.JToggl;
 import ch.simas.jtoggl.domain.TimeEntry;
+import net.suteren.worksaldo.android.DbHelper;
+import net.suteren.worksaldo.android.Period;
+import net.suteren.worksaldo.android.ui.ISharedPreferencesProvider;
 
 import javax.ws.rs.client.Client;
 import java.text.SimpleDateFormat;
@@ -20,15 +23,15 @@ import java.util.*;
 
 import static android.content.Context.MODE_PRIVATE;
 import static net.suteren.worksaldo.android.DbHelper.*;
-import static net.suteren.worksaldo.android.MainActivity.INSTANT;
-import static net.suteren.worksaldo.android.MainActivity.MAIN;
+import static net.suteren.worksaldo.android.ui.MainActivity.INSTANT;
+import static net.suteren.worksaldo.android.ui.MainActivity.MAIN;
 
 /**
  * Created by vranikp on 24.2.16.
  *
  * @author vranikp
  */
-public class TogglCachedProvider extends ContentProvider {
+public class TogglCachedProvider extends ContentProvider implements ISharedPreferencesProvider {
 
     public static final String ORDER_BY = "datetime(" + START_COL + ")";
     public static final String GROUP_BY = "date(" + START_COL + ")";
@@ -38,11 +41,13 @@ public class TogglCachedProvider extends ContentProvider {
     public static final String DATE_NAME = "date";
     public static final String DAY_END_NAME = "stop";
     public static final String DAY_TOTAL_NAME = "total";
+    public static final String DAY_SALDO_NAME = "saldo";
 
     public static final String DATE_COMPOSITE = "date(start) " + DATE_NAME;
-    public static final String DAY_START_COMPOSITE = "min(time(" + START_COL + ")) " + DAY_START_NAME;
-    public static final String DAY_END_COMPOSITE = "max(time(" + STOP_COL + ")) " + DAY_END_NAME;
+    public static final String DAY_START_COMPOSITE = "min(time(" + START_COL + ", 'localtime')) " + DAY_START_NAME;
+    public static final String DAY_END_COMPOSITE = "max(time(" + STOP_COL + ", 'localtime')) " + DAY_END_NAME;
     public static final String DAY_TOTAL_COMPOSITE = "sum(" + DURATION_COL + ") " + DAY_TOTAL_NAME;
+    public static final String DAY_SALDO_COMPOSITE = "sum(" + DURATION_COL + ") " + DAY_SALDO_NAME;
     // Creates a UriMatcher object.
     private static final UriMatcher sUriMatcher = new UriMatcher(0);
 
@@ -55,7 +60,7 @@ public class TogglCachedProvider extends ContentProvider {
 
     public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
     public static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm:ss");
-    public static final SimpleDateFormat DATE_TIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    public static final SimpleDateFormat DATE_TIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
     public static final int UNAUTHORIZED = 401;
     public static final String RESULT_CODE = "resultCode";
 
@@ -89,26 +94,35 @@ public class TogglCachedProvider extends ContentProvider {
                             return super.prepareClient().register(AndroidFriendlyFeature.class);
                         }
                     };
-                    List<TimeEntry> te = jt.getTimeEntries(startDate(), endDate());
+                    Period p = getPeriod(this);
+                    Calendar d = Calendar.getInstance();
+                    List<TimeEntry> te = jt.getTimeEntries(p.from(d), p.to(d));
                     Log.d("TogglCachedProvider", "Loaded from toggl: " + te.size());
                     SQLiteDatabase db = getDbHelper(getContext()).getWritableDatabase();
                     for (TimeEntry e : te) {
                         Log.d("TogglCachedProvider", String.format("Persisting: %s", te));
                         ContentValues values = new ContentValues(12);
                         values.put(DbHelper.DESCRIPTION_COL, e.getDescription());
-                        values.put(DbHelper.WID_COL, e.getWid());
-                        values.put(DbHelper.PID_COL, e.getPid());
-                        values.put(DbHelper.TID_COL, e.getTid());
-                        if (e.getStart() != null)
-                            values.put(DbHelper.START_COL, DATE_TIME_FORMAT.format(e.getStart().getTime()));
-                        if (e.getStop() != null)
-                            values.put(DbHelper.STOP_COL, DATE_TIME_FORMAT.format(e.getStop().getTime()));
+                        values.put(DbHelper.WID_COL, e.getWorkspaceId());
+                        values.put(DbHelper.PID_COL, e.getProjectId());
+                        values.put(DbHelper.TID_COL, e.getTaskId());
+                        final SimpleDateFormat dateTimeFormat = DATE_TIME_FORMAT;
+                        final Calendar start = e.getStart();
+                        if (start != null) {
+                            dateTimeFormat.setTimeZone(start.getTimeZone());
+                            values.put(DbHelper.START_COL, dateTimeFormat.format(start.getTime()));
+                        }
+                        final Calendar stop = e.getStop();
+                        if (stop != null) {
+                            dateTimeFormat.setTimeZone(stop.getTimeZone());
+                            values.put(DbHelper.STOP_COL, dateTimeFormat.format(stop.getTime()));
+                        }
                         values.put(DbHelper.DURATION_COL, e.getDuration());
                         //values.put(DbHelper.BILLABLE_COL, null);
-                        values.put(DbHelper.CREATED_WITH_COL, e.getCreated_with());
-                        if (e.getTag_names() != null)
-                            values.put(DbHelper.TAGS_COL, TextUtils.join(";", e.getTag_names()));
-                        values.put(DbHelper.DURONLY_COL, e.getDuronly());
+                        values.put(DbHelper.CREATED_WITH_COL, e.getCreatedWith());
+                        if (e.getTags() != null)
+                            values.put(DbHelper.TAGS_COL, TextUtils.join(";", e.getTags()));
+                        values.put(DbHelper.DURONLY_COL, e.getDurationOnly());
                         long id = db.insertWithOnConflict(TIME_ENTRY, null, values, SQLiteDatabase.CONFLICT_IGNORE);
                         Log.d("TogglCachedProvider", String.format("Inserted timeentry with id: %d", id));
                     }
@@ -170,16 +184,12 @@ public class TogglCachedProvider extends ContentProvider {
         return 0;
     }
 
-    public static Calendar startDate() {
-        Calendar c = Calendar.getInstance();
-        c.add(Calendar.DAY_OF_MONTH, -((c.get(Calendar.DAY_OF_WEEK) + 5) % 7));
-        return c;
+    public static Period getPeriod(ISharedPreferencesProvider propProvider) {
+        return Period.valueOf(propProvider.getSharedPreferences().getString("period", "week").toUpperCase());
     }
 
-    public static Calendar endDate() {
-        Calendar c = Calendar.getInstance();
-        c.add(Calendar.DAY_OF_MONTH, 7 - ((c.get(Calendar.DAY_OF_WEEK) + 5) % 7));
-        return c;
+    @Override
+    public SharedPreferences getSharedPreferences() {
+        return getContext().getSharedPreferences(MAIN, MODE_PRIVATE);
     }
-
 }

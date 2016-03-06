@@ -17,6 +17,8 @@
     <string name="action_refresh">Refresh</string>
     <string name="api_token">API token</string>
     <string name="api_token_sum">You can obtain API token on \"My Profile\" page in Toggl web interface.</string>
+    <string name="pause">Mandatory work pause</string>
+    <string name="pause_sum">Number of minutes to be subtracted from daily amount of worked hours</string>
     <plurals name="hour">
         <item quantity="one">%d hour</item>
         <item quantity="other">%d hours</item>

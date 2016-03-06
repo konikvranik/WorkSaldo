@@ -1,4 +1,4 @@
-package net.suteren.worksaldo.android;
+package net.suteren.worksaldo.android.ui;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -9,11 +9,12 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import net.suteren.worksaldo.android.R;
 
-import static net.suteren.worksaldo.android.TogglCachedProvider.*;
+import static net.suteren.worksaldo.android.provider.TogglCachedProvider.*;
 
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements ISharedPreferencesProvider {
 
     public static final int INSTANT_DATABASE_LOADER = 1;
     public static final int REMOTE_SERVICE_LOADER = 2;
@@ -74,6 +75,7 @@ public class MainActivity extends Activity {
 
     }
 
+    @Override
     public SharedPreferences getSharedPreferences() {
         return getSharedPreferences(MAIN, MODE_PRIVATE);
     }

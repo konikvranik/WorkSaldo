@@ -10,30 +10,58 @@
 
 
     <TextView
-            android:layout_weight="3"
-            android:layout_width="0dp"
-            android:id="@+id/date"
-            android:layout_height="wrap_content"/>
+        android:layout_weight="10"
+        android:layout_width="0dp"
+        android:id="@+id/date"
+        android:layout_height="wrap_content"
+        android:textAlignment="textEnd"
+        android:text="po 02.04.16"/>
 
     <TextView
-            android:layout_weight="2"
-            android:layout_width="0dp"
-            android:id="@+id/from"
-            android:layout_height="wrap_content"/>
+        android:layout_weight="5"
+        android:layout_width="0dp"
+        android:id="@+id/from"
+        android:textAlignment="textEnd"
+        android:layout_gravity="end"
+        android:gravity="end"
+        android:layout_height="wrap_content"
+        android:text="8:20"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="-"
+        android:layout_weight="1"
+        android:layout_gravity="center_horizontal"
+        android:gravity="center"
+        android:textAlignment="center"/>
+
+    <TextView
+        android:layout_weight="8"
+        android:layout_width="0dp"
+        android:id="@+id/to"
+        android:layout_gravity="start"
+        android:textAlignment="textStart"
+        android:gravity="start"
+        android:layout_height="wrap_content"
+        android:text="17:40"/>
 
 
     <TextView
-            android:layout_weight="2"
-            android:layout_width="0dp"
-            android:id="@+id/to"
-            android:layout_height="wrap_content"/>
+        android:layout_weight="4"
+        android:layout_width="0dp"
+        android:id="@+id/total"
+        android:layout_height="wrap_content"
+        android:textAlignment="textEnd"
+        android:text="-8.8"/>
 
     <TextView
-            android:layout_weight="1"
-            android:layout_width="0dp"
-            android:id="@+id/total"
-            android:layout_height="wrap_content"
-            android:textAlignment="textEnd"/>
+        android:layout_weight="4"
+        android:layout_width="0dp"
+        android:id="@+id/saldo"
+        android:layout_height="wrap_content"
+        android:textAlignment="textEnd"
+        android:text="-8,8"/>
 
 
 </LinearLayout>

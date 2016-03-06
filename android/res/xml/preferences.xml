@@ -5,7 +5,14 @@
         android:title="@string/real_worked_time"
         android:summary="@string/real_worked_time_summ"
         android:defaultValue="true" />
-
+    <EditTextPreference
+        android:key="pause"
+        android:title="@string/pause"
+        android:summary="@string/pause_sum"
+        android:defaultValue="30"
+        android:dependency="real_worked_time"
+        android:disableDependentsState="true"
+        android:inputType="number" />
     <EditTextPreference
         android:key="total_hours"
         android:title="@string/total_hours"

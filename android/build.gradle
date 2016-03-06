@@ -92,13 +92,13 @@ dependencies {
         exclude module: 'junit'
         exclude module: 'javax.inject'
         exclude module: 'jaxb-api'
-        //exclude module: 'org.eclipse.persistence.core'
     }
-    //compile fileTree(dir: 'libs', include: '*.jar')
-     compile files('libs/android-ws-combine.jar')
+    compile files('libs/android-ws-combine.jar')
+
     compile('com.google.inject:guice:3.0') {
         exclude module: 'aopalliance'
     }
+
     compile('org.simpleframework:simple-xml:2.7.1') {
         exclude module: 'stax'
         exclude module: 'stax-api'

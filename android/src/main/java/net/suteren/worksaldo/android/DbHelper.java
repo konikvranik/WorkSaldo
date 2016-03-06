@@ -75,7 +75,7 @@ public class DbHelper extends SQLiteOpenHelper {
                 context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionCode);
     }
 
-    synchronized static DbHelper getDbHelper(Context context) throws PackageManager.NameNotFoundException {
+    public synchronized static DbHelper getDbHelper(Context context) throws PackageManager.NameNotFoundException {
         if (dbHelper == null) {
             dbHelper = new DbHelper(context);
             //    addTodayRecords(dbHelper.getWritableDatabase());

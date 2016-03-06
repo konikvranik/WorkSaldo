@@ -1,7 +1,6 @@
-package net.suteren.worksaldo.android;
+package net.suteren.worksaldo.android.ui;
 
 import android.app.Dialog;
-import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
@@ -12,10 +11,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import ch.simas.jtoggl.JToggl;
+import net.suteren.worksaldo.android.R;
 
 import javax.ws.rs.client.Client;
 
-import static net.suteren.worksaldo.android.TogglCachedProvider.API_KEY;
+import static net.suteren.worksaldo.android.provider.TogglCachedProvider.API_KEY;
 
 /**
  * Created by hpa on 3.3.16.
@@ -74,7 +74,7 @@ public class LoginDialog extends Dialog {
                                 protected Client prepareClient() {
                                     return super.prepareClient().register(AndroidFriendlyFeature.class);
                                 }
-                            }.getCurrentUser().getApi_token();
+                            }.getCurrentUser().getApiToken();
                         } catch (Exception e) {
                             Log.e("MAinActivity", "login failed", e);
                         }
