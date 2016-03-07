@@ -73,8 +73,7 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
         lm.initLoader(INSTANT_DATABASE_LOADER, loaderBundle(true), getDaysLoaderCallback());
         lm.initLoader(SALDO_LOADER, loaderBundle(true), getSaldoLoaderCallback(rootView));
 
-        TextView saldo = (TextView) rootView.findViewById(R.id.saldo);
-        saldo.setOnClickListener(new View.OnClickListener() {
+        rootView.findViewById(R.id.counters).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 switchClosedDay();
@@ -114,7 +113,11 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
     }
 
     public int getColor(int colorId) {
-        return Build.VERSION.SDK_INT >= 23 ? getResources().getColor(colorId, getActivity().getTheme()) : getResources().getColor(colorId);
+        if (Build.VERSION.SDK_INT >= 23) {
+            return getResources().getColor(colorId, getActivity().getTheme());
+        } else {
+            return getResources().getColor(colorId);
+        }
     }
 
 

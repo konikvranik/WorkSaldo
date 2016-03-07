@@ -103,6 +103,13 @@ public class TogglCachedProvider extends ContentProvider implements ISharedPrefe
                     List<TimeEntry> te = jt.getTimeEntries(start, stop);
                     Log.d("TogglCachedProvider", "Loaded from toggl: " + te.size());
                     SQLiteDatabase db = getDbHelper(getContext()).getWritableDatabase();
+                    long minDate = 0;
+                    long maxDate = 0;
+                    for (TimeEntry e : te) {
+                        minDate = Math.min(e.getStart().getTimeInMillis(), minDate);
+                        maxDate = Math.max(e.getStart().getTimeInMillis(), maxDate);
+                    }
+                    db.delete(TIME_ENTRY, WHERE, new String[]{DATE_FORMAT.format(new Date(minDate)), DATE_FORMAT.format(new Date(maxDate))});
                     for (TimeEntry e : te) {
                         Log.d("TogglCachedProvider", String.format("Persisting: %s", te));
                         ContentValues values = new ContentValues(12);
@@ -188,7 +195,6 @@ public class TogglCachedProvider extends ContentProvider implements ISharedPrefe
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
         return 0;
     }
-
 
 
     @Override
