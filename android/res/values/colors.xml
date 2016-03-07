@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <item name="closed" type="color">#521822</item>
+    <item name="open" type="color">#2e4227</item>
+    <item name="negative" type="color">#ff0032</item>
+    <item name="positive" type="color">#00bfff</item>
+    <item name="zero" type="color">#3bff20</item>
+    <integer-array name="numbercolors">
+        <item>@color/negative</item>
+        <item>@color/zero</item>
+        <item>@color/positive</item>
+    </integer-array>
+
+</resources>

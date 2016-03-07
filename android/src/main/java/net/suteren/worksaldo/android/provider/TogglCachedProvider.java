@@ -189,9 +189,7 @@ public class TogglCachedProvider extends ContentProvider implements ISharedPrefe
         return 0;
     }
 
-    public static Period getPeriod(ISharedPreferencesProvider propProvider) {
-        return Period.valueOf(propProvider.getSharedPreferences().getString("period", "week").toUpperCase());
-    }
+
 
     @Override
     public SharedPreferences getSharedPreferences() {

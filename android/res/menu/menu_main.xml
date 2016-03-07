@@ -2,18 +2,19 @@
       xmlns:tools="http://schemas.android.com/tools"
       tools:context=".MainActivity">
     <item
-            android:id="@+id/action_login"
-            android:title="@string/action_login"
-            android:orderInCategory="100"
-            android:showAsAction="never"/>
+        android:id="@+id/action_login"
+        android:title="@string/action_login"
+        android:orderInCategory="100"
+        android:showAsAction="never"/>
     <item
-            android:id="@+id/action_refresh"
-            android:title="@string/action_refresh"
-            android:orderInCategory="100"
-            android:showAsAction="never"/>
+        android:id="@+id/action_refresh"
+        android:title="@string/action_refresh"
+        android:orderInCategory="100"
+        android:icon="@drawable/ic_action_refresh"
+        android:showAsAction="always"/>
     <item
-            android:id="@+id/action_settings"
-            android:title="@string/action_settings"
-            android:orderInCategory="100"
-            android:showAsAction="never"/>
+        android:id="@+id/action_settings"
+        android:title="@string/action_settings"
+        android:orderInCategory="100"
+        android:showAsAction="never"/>
 </menu>
