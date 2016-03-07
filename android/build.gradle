@@ -94,11 +94,9 @@ dependencies {
         exclude module: 'jaxb-api'
     }
     compile files('libs/android-ws-combine.jar')
-
     compile('com.google.inject:guice:3.0') {
         exclude module: 'aopalliance'
     }
-
     compile('org.simpleframework:simple-xml:2.7.1') {
         exclude module: 'stax'
         exclude module: 'stax-api'

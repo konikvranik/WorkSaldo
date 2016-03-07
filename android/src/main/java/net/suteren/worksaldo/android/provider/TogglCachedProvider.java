@@ -60,7 +60,7 @@ public class TogglCachedProvider extends ContentProvider implements ISharedPrefe
 
     public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
     public static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm:ss");
-    public static final SimpleDateFormat DATE_TIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+    public static final SimpleDateFormat DATE_TIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
     public static final int UNAUTHORIZED = 401;
     public static final String RESULT_CODE = "resultCode";
 
@@ -94,9 +94,13 @@ public class TogglCachedProvider extends ContentProvider implements ISharedPrefe
                             return super.prepareClient().register(AndroidFriendlyFeature.class);
                         }
                     };
-                    Period p = getPeriod(this);
-                    Calendar d = Calendar.getInstance();
-                    List<TimeEntry> te = jt.getTimeEntries(p.from(d), p.to(d));
+                    Calendar start = Calendar.getInstance();
+                    Calendar stop = Calendar.getInstance();
+                    start.setTime(DATE_FORMAT.parse(selectionArgs[0]));
+                    stop.setTime(DATE_FORMAT.parse(selectionArgs[1]));
+                    Log.d("TogglCachedProvider", String.format("Get TEs from %s to %s",
+                            DATE_TIME_FORMAT.format(start.getTime()), DATE_TIME_FORMAT.format(stop.getTime())));
+                    List<TimeEntry> te = jt.getTimeEntries(start, stop);
                     Log.d("TogglCachedProvider", "Loaded from toggl: " + te.size());
                     SQLiteDatabase db = getDbHelper(getContext()).getWritableDatabase();
                     for (TimeEntry e : te) {
@@ -107,15 +111,15 @@ public class TogglCachedProvider extends ContentProvider implements ISharedPrefe
                         values.put(DbHelper.PID_COL, e.getProjectId());
                         values.put(DbHelper.TID_COL, e.getTaskId());
                         final SimpleDateFormat dateTimeFormat = DATE_TIME_FORMAT;
-                        final Calendar start = e.getStart();
-                        if (start != null) {
-                            dateTimeFormat.setTimeZone(start.getTimeZone());
-                            values.put(DbHelper.START_COL, dateTimeFormat.format(start.getTime()));
+                        final Calendar teStart = e.getStart();
+                        if (teStart != null) {
+                            dateTimeFormat.setTimeZone(teStart.getTimeZone());
+                            values.put(DbHelper.START_COL, dateTimeFormat.format(teStart.getTime()));
                         }
-                        final Calendar stop = e.getStop();
-                        if (stop != null) {
-                            dateTimeFormat.setTimeZone(stop.getTimeZone());
-                            values.put(DbHelper.STOP_COL, dateTimeFormat.format(stop.getTime()));
+                        final Calendar teStop = e.getStop();
+                        if (teStop != null) {
+                            dateTimeFormat.setTimeZone(teStop.getTimeZone());
+                            values.put(DbHelper.STOP_COL, dateTimeFormat.format(teStop.getTime()));
                         }
                         values.put(DbHelper.DURATION_COL, e.getDuration());
                         //values.put(DbHelper.BILLABLE_COL, null);
@@ -160,6 +164,7 @@ public class TogglCachedProvider extends ContentProvider implements ISharedPrefe
 
             }
         } catch (PackageManager.NameNotFoundException e) {
+            Log.e("TogglCachedProvider", "unable to get time entries", e);
             throw new RuntimeException(e);
         }
     }
