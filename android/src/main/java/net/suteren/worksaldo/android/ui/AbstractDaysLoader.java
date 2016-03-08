@@ -58,4 +58,8 @@ public abstract class AbstractDaysLoader implements LoaderManager.LoaderCallback
         return Period.valueOf(ctx.getSharedPreferences().getString("period", "week").toUpperCase());
     }
 
+    public int getPause() {
+        return Integer.parseInt(ctx.getSharedPreferences().getString("pause", "20").toUpperCase());
+    }
+
 }

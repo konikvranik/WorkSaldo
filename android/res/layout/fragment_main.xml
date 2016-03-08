@@ -18,7 +18,7 @@
         android:layout_marginBottom="@dimen/activity_vertical_margin">
 
 
-        <TextView
+        <net.suteren.worksaldo.android.ui.OutlinedTextView
             android:id="@+id/saldo"
             android:layout_width="wrap_content"
             android:layout_weight="4"
@@ -28,8 +28,8 @@
             android:textAlignment="textEnd"
             android:textSize="60sp"
             android:text="-26,5"
-            android:shadowRadius="25"
-            android:shadowColor="@android:color/black"
+            android:shadowRadius="5"
+            android:shadowColor="@android:color/white"
             android:shadowDx="0"
             android:shadowDy="0"
             android:layout_marginEnd="20dp"/>
@@ -41,25 +41,25 @@
             android:layout_gravity="end"
             android:orientation="vertical">
 
-            <TextView
+            <net.suteren.worksaldo.android.ui.OutlinedTextView
                 android:id="@+id/dailyAverage"
                 android:layout_width="match_parent"
                 android:layout_weight="1"
                 android:gravity="end"
                 android:layout_height="wrap_content"
-                android:shadowRadius="25"
+                android:shadowRadius="2"
                 android:shadowColor="@android:color/black"
                 android:shadowDx="0"
                 android:shadowDy="0"
                 android:text="-8,8"/>
 
-            <TextView
+            <net.suteren.worksaldo.android.ui.OutlinedTextView
                 android:id="@+id/dailyTotal"
                 android:layout_width="match_parent"
                 android:layout_weight="1"
                 android:gravity="end"
                 android:layout_height="wrap_content"
-                android:shadowRadius="10"
+                android:shadowRadius="2"
                 android:shadowColor="@android:color/black"
                 android:shadowDx="0"
                 android:shadowDy="0"

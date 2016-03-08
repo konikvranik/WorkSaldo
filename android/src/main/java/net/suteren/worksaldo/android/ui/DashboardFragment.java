@@ -5,7 +5,6 @@ import android.app.LoaderManager;
 import android.content.Context;
 import android.content.Loader;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.database.Cursor;
 import android.os.Build;
 import android.os.Bundle;
@@ -41,6 +40,7 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
     private final DateFormat DATE_FORMAT_INSTANCE = SimpleDateFormat.getDateInstance(SimpleDateFormat.SHORT);
     private DayBinder dayBinder;
     private Runnable onReload;
+    private ListView lv;
 
     private Context getCtx() {
         return getContext();
@@ -60,7 +60,7 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
 
 
         final View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-        ListView lv = (ListView) rootView.findViewById(R.id.listing);
+        lv = (ListView) rootView.findViewById(R.id.listing);
         final LoaderManager lm = getLoaderManager();
         mAdapter = new SimpleCursorAdapter(getCtx(), R.layout.row, null,
                 new String[]{DATE_NAME, DAY_START_NAME, DAY_END_NAME, DAY_TOTAL_NAME, DAY_SALDO_NAME},
@@ -130,11 +130,13 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
         return new AbstractDaysLoader(this) {
             @Override
             public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+
                 Cursor c = mAdapter.swapCursor(data);
                 if (c != null) {
-                    c.close();
+                    //c.close();
                 }
-                getLoaderManager().restartLoader(SALDO_LOADER, loaderBundle(true), getSaldoLoaderCallback(getView().getRootView()));
+                getLoaderManager().restartLoader(SALDO_LOADER, loaderBundle(true),
+                        getSaldoLoaderCallback(getView().getRootView()));
                 Log.d("LoaderCallbacks", "loader finished");
                 Log.d("LoaderCallbacks", "loaded " + data.getCount() + " items.");
                 if (onReload != null) {
@@ -146,7 +148,7 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
             public void onLoaderReset(Loader<Cursor> loader) {
                 Cursor c = mAdapter.swapCursor(null);
                 if (c != null) {
-                    c.close();
+                    //c.close();
                 }
                 Log.d("LoaderCallbacks", "loader reset");
                 if (onReload != null) {
@@ -170,24 +172,25 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
 
                 boolean rwt = sharedPreferences.getBoolean("real_worked_time", true);
 
-                WorkEstimator we = new WorkEstimator(getPeriod(), Calendar.getInstance(), getTotalHours(), isDayClosed());
+                WorkEstimator we = new WorkEstimator(getPeriod(), Calendar.getInstance(), getTotalHours(), getPause(),
+                        isDayClosed());
 
-                final float[] floats = we.countTotal(data, rwt);
-                final float currentSaldo = we.getSaldo(floats);
+                final float[] workedHours = we.countTotal(data, rwt);
+                final float currentSaldo = we.getSaldo(workedHours);
 
                 TextView saldo = (TextView) rootView.findViewById(R.id.saldo);
                 TextView dailyAverage = (TextView) rootView.findViewById(R.id.dailyAverage);
                 TextView dailyTotal = (TextView) rootView.findViewById(R.id.dailyTotal);
 
-                saldo.setText(String.format("%.1f", currentSaldo));
+                saldo.setText(formatHour(currentSaldo));
                 saldo.setTextColor(getNumberColor(currentSaldo));
 
-                final float todayToAvg = we.getTodayToAvg(floats[1]);
-                dailyAverage.setText(String.format("%.1f", todayToAvg));
+                final float todayToAvg = we.getTodayToAvg(workedHours[1]);
+                dailyAverage.setText(formatHour(todayToAvg));
                 dailyAverage.setTextColor(getNumberColor(todayToAvg));
 
-                final float todayToWhole = we.getTodayToWhole(floats);
-                dailyTotal.setText(String.format("%.1f", todayToWhole));
+                final float todayToWhole = we.getTodayToWhole(workedHours);
+                dailyTotal.setText(formatHour(todayToWhole));
                 dailyTotal.setTextColor(getNumberColor(todayToWhole));
 
                 saldo.invalidate();
@@ -221,7 +224,13 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
 
     @Override
     public void onReload(Runnable action) {
+
         this.onReload = action;
+        if (lv == null)
+            return;
+        lv.invalidateViews();
+        lv.invalidate();
+
     }
 
     private class DayBinder implements SimpleCursorAdapter.ViewBinder {
@@ -231,14 +240,20 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
         @Override
         public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
             String value = null;
-            Calendar c = Calendar.getInstance();
-            WorkEstimator we = new WorkEstimator(getDaysLoaderCallback().getPeriod(), c, getDaysLoaderCallback().getTotalHours(), isDayClosed());
+            WorkEstimator we = new WorkEstimator(getDaysLoaderCallback().getPeriod(), Calendar.getInstance(),
+                    getDaysLoaderCallback().getTotalHours(), getDaysLoaderCallback().getPause(), isDayClosed());
             Integer color = null;
+
+            String string = cursor.getString(columnIndex);
+            SimpleDateFormat dateFormat = DATE_FORMAT;
+
+            Calendar c = Calendar.getInstance();
+            dateFormat.setTimeZone(c.getTimeZone());
 
             switch (columnIndex) {
                 case 1:
                     try {
-                        final Date date = DATE_FORMAT.parse(cursor.getString(columnIndex));
+                        final Date date = dateFormat.parse(string);
                         value = String.format("%s %s", WEEKDAY_FORMAT.format(date), DATE_FORMAT_INSTANCE.format(date));
                     } catch (ParseException e) {
                         throw new RuntimeException(e);
@@ -248,38 +263,36 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
                 case 2:
                 case 3:
                     try {
-                        value = SimpleDateFormat.getTimeInstance(SimpleDateFormat.SHORT).format(TIME_FORMAT
-                                .parse(cursor.getString(columnIndex)));
+                        value = string == null ? "Ø" : SimpleDateFormat.getTimeInstance(SimpleDateFormat.SHORT).format
+                                (TIME_FORMAT
+                                        .parse(string));
                     } catch (ParseException e) {
                         throw new RuntimeException(e);
                     }
                     break;
 
                 case 4:
-                    float count = we.getCount(cursor.getFloat(columnIndex), cursor.getString(2), cursor.getString(3), realHours);
-                    try {
-                        value = getResources().getQuantityString(Math.round(count), R.plurals.hour);
-                    } catch (Resources.NotFoundException e) {
-                        value = String.format("%.1f", count);
-                    }
+                    float count = we.getCount(cursor.getFloat(columnIndex), cursor.getString(2), cursor.getString(3),
+                            realHours);
+                    value = formatHour(count);
                     break;
 
                 case 5:
 
                     try {
-                        c.setTime(DATE_FORMAT.parse(cursor.getString(1)));
+
+                        c.setTime(dateFormat.parse(cursor.getString(1)));
+                        float s = we.getCount(cursor.getFloat(4), cursor.getString(2), cursor.getString(3), realHours)
+                                - we.getHoursPerDay();
+                        color = getNumberColor(s);
+                        value = formatHour(s);
                     } catch (ParseException e) {
-                        throw new RuntimeException(e);
+                        value = "Ø";
                     }
-                    float s = we.getCount(cursor.getFloat(4), cursor.getString(2), cursor.getString(3), realHours) - we.getHoursPerDay();
-                    color = getNumberColor(s);
-                    value = String.format("%.1f", s);
                     break;
             }
 
-            if (value != null)
-
-            {
+            if (value != null) {
                 TextView tv = (TextView) view;
                 tv.setText(value);
                 if (color != null) {
@@ -297,6 +310,10 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
             this.realHours = mode;
         }
 
+    }
+
+    private String formatHour(float s) {
+        return String.format("%.0f:%02.0f", Math.floor(s), Math.abs((s - (int) s) * 60));
     }
 
     public boolean isDayClosed() {

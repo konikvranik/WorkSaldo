@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
+import java.util.TimeZone;
 
 import static android.content.Context.MODE_PRIVATE;
 import static net.suteren.worksaldo.android.DbHelper.*;
@@ -112,21 +113,24 @@ public class TogglCachedProvider extends ContentProvider implements ISharedPrefe
                     for (TimeEntry e : te) {
                         Log.d("TogglCachedProvider", String.format("Persisting: %s", te));
                         ContentValues values = new ContentValues(12);
-                        values.put(DbHelper.DESCRIPTION_COL, e.getDescription());
+                        values.put(DbHelper.DESCRIPTION_COL, e.getDescription() == null ? "" : e.getDescription());
                         values.put(DbHelper.WID_COL, e.getWorkspaceId());
                         values.put(DbHelper.PID_COL, e.getProjectId());
                         values.put(DbHelper.TID_COL, e.getTaskId());
+
                         final SimpleDateFormat dateTimeFormat = DATE_TIME_FORMAT;
                         final Calendar teStart = e.getStart();
-                        if (teStart != null) {
-                            dateTimeFormat.setTimeZone(teStart.getTimeZone());
-                            values.put(DbHelper.START_COL, dateTimeFormat.format(teStart.getTime()));
+                        dateTimeFormat.setTimeZone(teStart.getTimeZone());
+                        values.put(DbHelper.START_COL, dateTimeFormat.format(teStart.getTime()));
+
+                        Calendar teStop = e.getStop();
+                        if (teStop == null) {
+                            teStop = Calendar.getInstance();
+                            teStop.setTimeZone(TimeZone.getTimeZone("GMT"));
                         }
-                        final Calendar teStop = e.getStop();
-                        if (teStop != null) {
-                            dateTimeFormat.setTimeZone(teStop.getTimeZone());
-                            values.put(DbHelper.STOP_COL, dateTimeFormat.format(teStop.getTime()));
-                        }
+                        dateTimeFormat.setTimeZone(teStop.getTimeZone());
+                        values.put(DbHelper.STOP_COL, dateTimeFormat.format(teStop.getTime()));
+
                         values.put(DbHelper.DURATION_COL, e.getDuration());
                         //values.put(DbHelper.BILLABLE_COL, null);
                         values.put(DbHelper.CREATED_WITH_COL, e.getCreatedWith());

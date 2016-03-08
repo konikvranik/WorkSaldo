@@ -32,14 +32,14 @@ public class DbHelper extends SQLiteOpenHelper {
     public static final String INTEGER_TYPE = "INTEGER";
     public static final String TEXT_TYPE = "TEXT";
     private static final String TIME_ENTRIES_TABLE_CREATE = "CREATE TABLE " + TIME_ENTRY + " (" +
-            DESCRIPTION_COL + " " + TEXT_TYPE + "," +
-            WID_COL + " " + INTEGER_TYPE + "," +
-            PID_COL + " " + INTEGER_TYPE + "," +
-            TID_COL + " " + INTEGER_TYPE + "," +
+            DESCRIPTION_COL + " " + TEXT_TYPE + " NOT NULL," +
+            WID_COL + " " + INTEGER_TYPE + " DEFAULT -1," +
+            PID_COL + " " + INTEGER_TYPE + " DEFAULT -1," +
+            TID_COL + " " + INTEGER_TYPE + " DEFAULT -1," +
             BILLABLE_COL + " " + INTEGER_TYPE + "," +
-            START_COL + " " + TEXT_TYPE + "," +
-            STOP_COL + " " + TEXT_TYPE + "," +
-            DURATION_COL + " " + INTEGER_TYPE + "," +
+            START_COL + " " + TEXT_TYPE + " NOT NULL," +
+            STOP_COL + " " + TEXT_TYPE + " NOT NULL," +
+            DURATION_COL + " " + INTEGER_TYPE + " NOT NULL," +
             CREATED_WITH_COL + " " + TEXT_TYPE + ", " +
             TAGS_COL + " " + TEXT_TYPE + "," +
             DURONLY_COL + " " + INTEGER_TYPE + "," +

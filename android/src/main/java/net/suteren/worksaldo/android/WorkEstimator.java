@@ -3,15 +3,13 @@ package net.suteren.worksaldo.android;
 import android.database.Cursor;
 import android.text.format.DateUtils;
 import android.util.Log;
-import net.suteren.worksaldo.android.ui.ISharedPreferencesProvider;
 
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
-import static net.suteren.worksaldo.android.provider.TogglCachedProvider.DATE_FORMAT;
-import static net.suteren.worksaldo.android.provider.TogglCachedProvider.TIME_FORMAT;
+import static net.suteren.worksaldo.android.provider.TogglCachedProvider.*;
 
 /**
  * Created by hpa on 6.3.16.
@@ -25,26 +23,29 @@ public class WorkEstimator {
     private Period period;
     private int pause;
 
-    public WorkEstimator(Period period, Calendar date, float total, boolean closedDay) {
-        this(period, period.from(date), period.to(date), date, total, closedDay);
+    public WorkEstimator(Period period, Calendar date, float total, int pause, boolean closedDay) {
+        this(period, period.from(date), period.to(date), date, total, pause, closedDay);
     }
 
-    public WorkEstimator(Calendar from, Calendar to, Calendar date, float total, boolean closedDay) {
-        this(Period.CUSTOM, from, to, date, total, closedDay);
+    public WorkEstimator(Calendar from, Calendar to, Calendar date, float total, int pause, boolean closedDay) {
+        this(Period.CUSTOM, from, to, date, total, pause, closedDay);
     }
 
-    private WorkEstimator(Period period, Calendar from, Calendar to, Calendar date, float total, boolean closedDay) {
+    private WorkEstimator(Period period, Calendar from, Calendar to, Calendar date, float total, int pause, boolean
+            closedDay) {
         this.period = period;
         this.date = date;
         this.from = from;
         this.to = to;
         this.total = total;
         this.closedDay = closedDay;
+        setPause(pause);
 
     }
 
     public float getSaldo(float... cnt) {
-        return cnt[0] + (closedDay && cnt.length > 1 ? cnt[1] : 0) - (getPastDayCount() * total / period.getDayCount(date));
+        return cnt[0] + (closedDay && cnt.length > 1 ? cnt[1] : 0) - (getPastDayCount() * total / period.getDayCount
+                (date));
     }
 
 
@@ -54,7 +55,8 @@ public class WorkEstimator {
 
     public long getPastDayCount() {
         long diff = date.getTimeInMillis() - from.getTimeInMillis();
-        return Math.min(TimeUnit.DAYS.convert(diff, TimeUnit.MILLISECONDS) + (closedDay ? 1 : 0), period.getDayCount(date));
+        return Math.min(TimeUnit.DAYS.convert(diff, TimeUnit.MILLISECONDS) + (closedDay ? 1 : 0), period.getDayCount
+                (date));
     }
 
 
@@ -73,11 +75,12 @@ public class WorkEstimator {
 
 
             String stop = data.getString(3);
+            assert stop != null;
+
             if (today) {
                 try {
-                    long stopDate = TIME_FORMAT.parse(stop).getTime();
                     Date now = new Date();
-                    if (now.getTime() > stopDate && !closedDay) {
+                    if (stop != null && now.getTime() > TIME_FORMAT.parse(stop).getTime() && !closedDay) {
                         stop = TIME_FORMAT.format(now);
                     }
                 } catch (ParseException e) {
@@ -96,12 +99,23 @@ public class WorkEstimator {
         return new float[]{cnt, todayCount};
     }
 
-    public float getCount(Float total, String start, String stop, boolean realHours) {
+    private static String getStopNow() {
+        return TIME_FORMAT.format(Calendar.getInstance().getTime());
+    }
+
+    public float getCount(Float worked, String start, String stop, boolean realHours) {
+
+        assert start != null;
+        assert stop != null;
 
         float count = 0;
         try {
-            count = (realHours ? total :
-                    (int) (TIME_FORMAT.parse(stop).getTime() - TIME_FORMAT.parse(start).getTime()) / 1000 - getPause()) / 3600;
+            if (stop == null) {
+                stop = getStopNow();
+            }
+            long stopTime = TIME_FORMAT.parse(stop).getTime();
+            count = (realHours ? worked :
+                    (int) (stopTime - TIME_FORMAT.parse(start).getTime()) / 1000 - (getPause() * 60)) / 3600;
         } catch (ParseException e) {
             Log.e("DashboardFragment", "Unable to parse date", e);
         }
