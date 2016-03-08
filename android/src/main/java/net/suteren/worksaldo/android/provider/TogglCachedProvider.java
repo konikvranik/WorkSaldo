@@ -14,17 +14,18 @@ import android.util.Log;
 import ch.simas.jtoggl.JToggl;
 import ch.simas.jtoggl.domain.TimeEntry;
 import net.suteren.worksaldo.android.DbHelper;
-import net.suteren.worksaldo.android.Period;
 import net.suteren.worksaldo.android.ui.ISharedPreferencesProvider;
 
 import javax.ws.rs.client.Client;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.List;
 
 import static android.content.Context.MODE_PRIVATE;
 import static net.suteren.worksaldo.android.DbHelper.*;
-import static net.suteren.worksaldo.android.ui.MainActivity.INSTANT;
-import static net.suteren.worksaldo.android.ui.MainActivity.MAIN;
+import static net.suteren.worksaldo.android.ui.MainActivity.*;
 
 /**
  * Created by vranikp on 24.2.16.
@@ -35,7 +36,10 @@ public class TogglCachedProvider extends ContentProvider implements ISharedPrefe
 
     public static final String ORDER_BY = "datetime(" + START_COL + ")";
     public static final String GROUP_BY = "date(" + START_COL + ")";
-    public static final String WHERE = "date(" + START_COL + ") >= date(?) and date(" + START_COL + ") <= date(?)";
+    public static final String SELECT_WHERE = "date(" + START_COL + ") >= date(?) and date(" + START_COL + ") <= date" +
+            "(?)";
+    public static final String DELETE_WHERE = "date(" + START_COL + ") >= date(?) and date(" + START_COL + ") <= date" +
+            "(?)";
 
     public static final String DAY_START_NAME = "start";
     public static final String DATE_NAME = "date";
@@ -103,13 +107,8 @@ public class TogglCachedProvider extends ContentProvider implements ISharedPrefe
                     List<TimeEntry> te = jt.getTimeEntries(start, stop);
                     Log.d("TogglCachedProvider", "Loaded from toggl: " + te.size());
                     SQLiteDatabase db = getDbHelper(getContext()).getWritableDatabase();
-                    long minDate = 0;
-                    long maxDate = 0;
-                    for (TimeEntry e : te) {
-                        minDate = Math.min(e.getStart().getTimeInMillis(), minDate);
-                        maxDate = Math.max(e.getStart().getTimeInMillis(), maxDate);
-                    }
-                    db.delete(TIME_ENTRY, WHERE, new String[]{DATE_FORMAT.format(new Date(minDate)), DATE_FORMAT.format(new Date(maxDate))});
+
+                    db.delete(TIME_ENTRY, DELETE_WHERE, selectionArgs);
                     for (TimeEntry e : te) {
                         Log.d("TogglCachedProvider", String.format("Persisting: %s", te));
                         ContentValues values = new ContentValues(12);
