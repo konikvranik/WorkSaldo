@@ -133,6 +133,7 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
             public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
 
                 Cursor c = mAdapter.swapCursor(data);
+                mAdapter.notifyDataSetChanged();
                 if (c != null) {
                     //c.close();
                 }
@@ -225,10 +226,7 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
 
     @Override
     public void onReload(Runnable action) {
-
         this.onReload = action;
-        mAdapter.notifyDataSetChanged();
-
     }
 
     private class DayBinder implements SimpleCursorAdapter.ViewBinder {
