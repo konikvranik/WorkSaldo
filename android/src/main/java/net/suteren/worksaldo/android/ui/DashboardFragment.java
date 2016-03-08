@@ -72,6 +72,7 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
 
         lm.initLoader(INSTANT_DATABASE_LOADER, loaderBundle(true), getDaysLoaderCallback());
         lm.initLoader(SALDO_LOADER, loaderBundle(true), getSaldoLoaderCallback(rootView));
+        getLoaderManager().initLoader(REMOTE_SERVICE_LOADER, loaderBundle(false), getDaysLoaderCallback());
 
         rootView.findViewById(R.id.counters).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -219,7 +220,7 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
 
     @Override
     public void reload() {
-        getLoaderManager().initLoader(REMOTE_SERVICE_LOADER, loaderBundle(false), getDaysLoaderCallback());
+        getLoaderManager().restartLoader(REMOTE_SERVICE_LOADER, loaderBundle(false), getDaysLoaderCallback());
     }
 
     @Override
@@ -228,8 +229,8 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
         this.onReload = action;
         if (lv == null)
             return;
-        lv.invalidateViews();
-        lv.invalidate();
+     //   lv.invalidateViews();
+       // lv.invalidate();
 
     }
 
