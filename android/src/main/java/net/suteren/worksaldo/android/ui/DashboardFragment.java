@@ -227,10 +227,7 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
     public void onReload(Runnable action) {
 
         this.onReload = action;
-        if (lv == null)
-            return;
-        lv.invalidate();
-        lv.invalidateViews();
+        mAdapter.notifyDataSetChanged();
 
     }
 
