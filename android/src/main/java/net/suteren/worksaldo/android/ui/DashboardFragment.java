@@ -229,8 +229,8 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
         this.onReload = action;
         if (lv == null)
             return;
-     //   lv.invalidateViews();
-       // lv.invalidate();
+        lv.invalidate();
+        lv.invalidateViews();
 
     }
 
