@@ -1,7 +1,7 @@
 package net.suteren.worksaldo;
 
 /**
- * Created by vranikp on 9.3.16.
+ * Class for evaluating balance of worked time.
  *
  * @author vranikp
  */
@@ -37,20 +37,42 @@ public interface IWorkEstimator {
 
     /**
      * Returns desired worked hours per average day. Demanded hours for period / count of days od period.
+     *
      * @return
      */
     float getHoursPerDay();
 
+    /**
+     * @return Sum of worked hours except today.
+     */
     float getWorkedHours();
 
+    /**
+     * @return Hours worked today.
+     */
     float getWorkedHoursToday();
 
-    IWorkEstimator addDay(Day day);
+    /**
+     * Add hours to be counted in calculation.
+     *
+     * @param day
+     * @return Instance of self for chaining.
+     */
+    IWorkEstimator addHours(ChunkOfWork day);
 
-    interface Day {
+    /**
+     * Chunk of work which determines worked hour and if it was worked "today".
+     */
+    interface ChunkOfWork {
 
+        /**
+         * @return true for day which is considered to be today.
+         */
         boolean isToday();
 
+        /**
+         * @return Sum of hours worked this day.
+         */
         float getHours();
     }
 }
