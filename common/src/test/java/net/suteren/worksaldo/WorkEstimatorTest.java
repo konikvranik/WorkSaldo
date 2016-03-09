@@ -1,15 +1,15 @@
-package net.suteren.worksaldo.android;
+package net.suteren.worksaldo;
 
 
 import android.database.MatrixCursor;
 import android.util.Log;
 import junit.framework.TestCase;
+import org.testng.annotations.Test;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-import static net.suteren.worksaldo.android.provider.TogglCachedProvider.*;
 
 
 /**
@@ -17,7 +17,8 @@ import static net.suteren.worksaldo.android.provider.TogglCachedProvider.*;
  *
  * @author vranikp
  */
-public class WorkEstimatorTest extends TestCase {
+@Test(groups = {})
+public class WorkEstimatorTest  {
 
     public void testGetSaldoTest() {
         Calendar cal = Calendar.getInstance();
@@ -33,12 +34,14 @@ public class WorkEstimatorTest extends TestCase {
         caltest.set(1975, 10, 24); // Monday
 
         DateFormat dateTimeInstance = SimpleDateFormat.getDateTimeInstance();
-        assertEquals(String.format("%s ... %s", dateTimeInstance.format(caltest.getTime()), dateTimeInstance.format
-                (Period.WEEK.from(cal).getTime())), caltest.getTimeInMillis(), Period.WEEK.from(cal).getTimeInMillis());
+        Assert.assertEquals(String.format("%s ... %s", dateTimeInstance.format(caltest.getTime()), dateTimeInstance
+                .format
+                        (Period.WEEK.from(cal).getTime())), caltest.getTimeInMillis(), Period.WEEK.from(cal).getTimeInMillis());
 
         caltest.set(1975, 10, 30); // Sunday
-        assertEquals(String.format("%s ... %s", dateTimeInstance.format(caltest.getTime()), dateTimeInstance.format
-                (Period.WEEK.to(cal).getTime())), caltest.getTimeInMillis(), Period.WEEK.to(cal).getTimeInMillis());
+        Assert.assertEquals(String.format("%s ... %s", dateTimeInstance.format(caltest.getTime()), dateTimeInstance
+                .format
+                        (Period.WEEK.to(cal).getTime())), caltest.getTimeInMillis(), Period.WEEK.to(cal).getTimeInMillis());
 
         assertEquals(4, Math.round(we.getPastDayCount()));
 
@@ -46,13 +49,13 @@ public class WorkEstimatorTest extends TestCase {
 
         //assertEquals(308, Math.round(we.getCount(8f, "08:30:15", null, false) * 60));
 
-        assertEquals(-2 * 60, (int) we.getSaldo(30f, 4f) * 60);
-        assertEquals(8 * 60, (int) we.getHoursPerDay() * 60);
-        assertEquals(-3 * 60, (int) we.getTodayToAvg(5f) * 60);
-        assertEquals(-5 * 60, (int) we.getTodayToWhole(new float[]{30f, 5f}) * 60);
+        Assert.assertEquals(-2 * 60, (int) we.getSaldo(30f, 4f) * 60);
+        Assert.assertEquals(8 * 60, (int) we.getHoursPerDay() * 60);
+        Assert.assertEquals(-3 * 60, (int) we.getTodayToAvg(5f) * 60);
+        Assert.assertEquals(-5 * 60, (int) we.getTodayToWhole(new float[]{30f, 5f}) * 60);
 
-        MatrixCursor c = new MatrixCursor(new String[]{"id", DATE_NAME, DAY_START_NAME, DAY_END_NAME, DAY_TOTAL_NAME,
-                DAY_SALDO_NAME});
+        MatrixCursor c = new MatrixCursor(new String[]{"id", TogglCachedProvider.DATE_NAME, TogglCachedProvider.DAY_START_NAME, TogglCachedProvider.DAY_END_NAME, TogglCachedProvider.DAY_TOTAL_NAME,
+                TogglCachedProvider.DAY_SALDO_NAME});
         c.newRow().add(1).add("2016-03-07").add("08:30:00").add("16:00:00").add(7.5).add(7.5);
         c.newRow().add(2).add("2016-03-08").add("08:00:00").add("17:00:00").add(9).add(9);
         c.newRow().add(3).add("2016-03-09").add("08:00:00").add("17:30:00").add(9.5).add(9.5);
@@ -61,8 +64,8 @@ public class WorkEstimatorTest extends TestCase {
         c.moveToFirst();
 
         float[] actual = we.countTotal(c, false);
-        assertEquals(27.5, actual[0]);
-        assertEquals(9.15, actual[1]);
+        Assert.assertEquals(27.5, actual[0]);
+        Assert.assertEquals(9.15, actual[1]);
     }
 
     public void testGetHoursPerDay() {

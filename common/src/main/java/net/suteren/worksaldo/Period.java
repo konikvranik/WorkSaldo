@@ -1,7 +1,7 @@
-package net.suteren.worksaldo.android;
+package net.suteren.worksaldo;
 
-import java.util.Calendar;
-import java.util.concurrent.TimeUnit;
+
+import org.joda.time.LocalDate;
 
 /**
  * Created by hpa on 6.3.16.
@@ -11,8 +11,8 @@ public enum Period {
 
     private double dayCount;
 
-    public Calendar from(Calendar date) {
-        Calendar d = Calendar.getInstance();
+    public LocalDate from(LocalDate date) {
+        LocalDate d = LocalDate.getInstance();
         d.setTimeInMillis(0);
         d.set(Calendar.DAY_OF_MONTH, date.get(Calendar.DAY_OF_MONTH));
         d.set(Calendar.MONTH, date.get(Calendar.MONTH));
@@ -24,10 +24,10 @@ public enum Period {
 
         switch (this) {
             case MONTH:
-                d.set(Calendar.DAY_OF_MONTH, 1);
+                d.set(LocalDate.DAY_OF_MONTH, 1);
                 break;
             case WEEK:
-                d.add(Calendar.DAY_OF_MONTH, -((d.get(Calendar.DAY_OF_WEEK) + 5) % 7));
+                d.add(LocalDate.DAY_OF_MONTH, -((d.get(LocalDate.DAY_OF_WEEK) + 5) % 7));
                 break;
         }
 
@@ -63,7 +63,7 @@ public enum Period {
     }
 
 
-    public long getDayCount(Calendar date) {
+    public long getDayCount(LocalDate date) {
         switch (this) {
             case DAY:
                 return 1;
