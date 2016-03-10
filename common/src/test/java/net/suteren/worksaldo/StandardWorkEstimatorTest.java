@@ -37,7 +37,14 @@ public class StandardWorkEstimatorTest {
 
     @Test
     public void testGetSaldoToday() throws Exception {
-
+        LocalDateTime today = LocalDateTime.parse("2016-03-03T19:50:20.045"); // Thursday
+        StandardWorkEstimator we = new StandardWorkEstimator(Period.WEEK, today, Duration.standardHours(40))
+                .addHours(chunkOfWork(LocalTime.parse("09:00:00"), LocalTime.parse("18:07:00"), Duration.standardMinutes(30), false))
+                .addHours(chunkOfWork(LocalTime.parse("09:28:00"), LocalTime.parse("18:34:00"), Duration.standardMinutes(30), false))
+                .addHours(chunkOfWork(LocalTime.parse("08:51:00"), LocalTime.parse("17:42:00"), Duration.standardMinutes(30), false))
+                .addHours(chunkOfWork(LocalTime.parse("16:17:00"), LocalTime.parse("17:37:00"), Duration.standardMinutes(30), true));
+        assertEquals(we.getWorkedHours().getStandardHours(), 25);
+        assertEquals(we.getSaldo().getStandardHours(), 1);
     }
 
     @Test

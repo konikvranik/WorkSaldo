@@ -40,7 +40,7 @@ public class StandardWorkEstimator implements IWorkEstimator {
 
     @Override
     public Duration getRemainingToday() {
-        return getWorkedHoursToday().minus(getHoursPerDay());
+        return getSaldoToday().plus(getSaldo());
     }
 
     @Override
@@ -91,7 +91,6 @@ public class StandardWorkEstimator implements IWorkEstimator {
 
             @Override
             public Duration getHours() {
-
                 return amount;
             }
         };
@@ -107,6 +106,20 @@ public class StandardWorkEstimator implements IWorkEstimator {
             @Override
             public Duration getHours() {
                 return new Duration(toDateTime(from), toDateTime(to));
+            }
+        };
+    }
+
+    public static ChunkOfWork chunkOfWork(final BaseLocal from, final BaseLocal to, final Duration pause, final boolean isToday) {
+        return new ChunkOfWork() {
+            @Override
+            public boolean isToday() {
+                return isToday;
+            }
+
+            @Override
+            public Duration getHours() {
+                return new Duration(toDateTime(from), toDateTime(to)).minus(pause);
             }
         };
     }

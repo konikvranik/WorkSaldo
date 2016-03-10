@@ -31,6 +31,14 @@ import static net.suteren.worksaldo.android.ui.MainActivity.*;
  */
 public class DashboardFragment extends Fragment implements ISharedPreferencesProviderWithContext, IReloadable {
 
+    public static final PeriodFormatter PERIOD_FORMATTER = new PeriodFormatterBuilder()
+            .printZeroIfSupported()
+            .appendHours()
+            .appendSeparator(":")
+            .minimumPrintedDigits(2)
+            .rejectSignedValues(true)
+            .appendMinutes()
+            .toFormatter();
     private static final DateTimeFormatter WEEKDAY_FORMAT = DateTimeFormat.forPattern("E");
     public static final String DAY_CLOSED_TIMESTAMP = "day_closed_timestamp";
     private SimpleCursorAdapter mAdapter;
@@ -164,14 +172,29 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
 
                 boolean rwt = sharedPreferences.getBoolean("real_worked_time", true);
 
-                IWorkEstimator we = new StandardWorkEstimator(getPeriod(), LocalDateTime.now(), Duration.standardHours(getTotalHours()));
+                StandardWorkEstimator we = new StandardWorkEstimator(getPeriod(), LocalDateTime.now(), Duration.standardHours(getTotalHours()));
 
                 data.moveToFirst();
+
+                int cnt = 0;
+
                 while (!data.isAfterLast()) {
-                    final LocalTime start = TIME_FORMAT.parseLocalTime(data.getString(2));
-                    we.addHours(StandardWorkEstimator.chunkOfWork(start, TIME_FORMAT.parseLocalTime(data.getString(3)), LocalDate.now().equals(start)));
+                    final boolean isToday = LocalDate.now().isEqual(DATE_FORMAT.parseLocalDate(data.getString(1)));
+                    Log.d("DashboardFragment", String.format("%s - %s", data.getString(2), data.getString(3)));
+                    final IWorkEstimator.ChunkOfWork day = StandardWorkEstimator.chunkOfWork(
+                            TIME_FORMAT.parseLocalTime(data.getString(2)),
+                            isToday && !isDayClosed() ? LocalTime.now() : TIME_FORMAT.parseLocalTime(data.getString(3)),
+                            Duration.standardMinutes(getPause()),
+                            isToday);
+                    Log.d("DashboardFragment", String.format("%d", day.getHours().getStandardHours()));
+                    Log.d("DashboardFragment", String.format("%s", day.isToday()));
+                    we.addHours(day);
+                    Log.d("DashboardFragment", String.format("%d - Worked: %s", ++cnt, PERIOD_FORMATTER.print(we.getWorkedHours().toPeriod())));
                     data.moveToNext();
                 }
+                Log.d("DashboardFragment", String.format("Expected: %s", PERIOD_FORMATTER.print(we.getExpected().toPeriod())));
+                Log.d("DashboardFragment", String.format("Worked: %s", PERIOD_FORMATTER.print(we.getWorkedHours().toPeriod())));
+                Log.d("DashboardFragment", String.format("Hours Per Day: %s", PERIOD_FORMATTER.print(we.getHoursPerDay().toPeriod())));
 
                 final Duration currentSaldo = we.getSaldo();
 
@@ -179,22 +202,22 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
                 TextView dailyAverage = (TextView) rootView.findViewById(R.id.dailyAverage);
                 TextView dailyTotal = (TextView) rootView.findViewById(R.id.dailyTotal);
 
-                saldo.setText(periodFormatter().print(currentSaldo.toPeriod()));
+                saldo.setText(PERIOD_FORMATTER.print(currentSaldo.toPeriod()));
                 saldo.setTextColor(getNumberColor(currentSaldo.getStandardSeconds()));
 
                 final Duration saldoToday = we.getSaldoToday();
-                dailyAverage.setText(periodFormatter().print(saldoToday.toPeriod()));
+                dailyAverage.setText(PERIOD_FORMATTER.print(saldoToday.toPeriod()));
                 dailyAverage.setTextColor(getNumberColor(saldoToday.getStandardSeconds()));
 
                 final Duration remainingToday = we.getRemainingToday();
-                dailyTotal.setText(periodFormatter().print(remainingToday.toPeriod()));
+                dailyTotal.setText(PERIOD_FORMATTER.print(remainingToday.toPeriod()));
                 dailyTotal.setTextColor(getNumberColor(remainingToday.getStandardSeconds()));
 
                 saldo.invalidate();
                 dailyAverage.invalidate();
                 dailyTotal.invalidate();
 
-                Log.d("DashboardFragment", "Salgo reloaded");
+                Log.d("DashboardFragment", "Saldo reloaded");
 
             }
         };
@@ -237,7 +260,7 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
                     Duration.standardHours(getDaysLoaderCallback().getTotalHours()));
 
             final LocalTime start = TIME_FORMAT.parseLocalTime(cursor.getString(2));
-            we.addHours(StandardWorkEstimator.chunkOfWork(start, TIME_FORMAT.parseLocalTime(cursor.getString(3)), true));
+            we.addHours(StandardWorkEstimator.chunkOfWork(start, TIME_FORMAT.parseLocalTime(cursor.getString(3)), Duration.standardMinutes(getDaysLoaderCallback().getPause()), true));
 
             Integer color = null;
 
@@ -256,7 +279,7 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
                     break;
 
                 case 4:
-                    value = periodFormatter().print(we.getWorkedHoursToday().toPeriod());
+                    value = PERIOD_FORMATTER.print(we.getWorkedHoursToday().toPeriod());
                     break;
 
                 case 5:
@@ -264,7 +287,7 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
 
                     final Duration saldoToday = we.getSaldoToday();
                     color = getNumberColor(saldoToday.getStandardSeconds());
-                    value = periodFormatter().print(saldoToday.toPeriod());
+                    value = PERIOD_FORMATTER.print(saldoToday.toPeriod());
                     break;
             }
 
@@ -288,16 +311,6 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
 
     }
 
-    PeriodFormatter periodFormatter() {
-        return new PeriodFormatterBuilder()
-                .printZeroIfSupported()
-                .appendHours()
-                .appendSeparator(":")
-                .minimumPrintedDigits(2)
-                .rejectSignedValues(true)
-                .appendMinutes()
-                .toFormatter();
-    }
 
     public boolean isDayClosed() {
         return getSharedPreferences().getLong(DAY_CLOSED_TIMESTAMP, 0) > System.currentTimeMillis();
