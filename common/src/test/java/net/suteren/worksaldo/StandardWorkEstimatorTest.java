@@ -19,7 +19,7 @@ public class StandardWorkEstimatorTest {
         StandardWorkEstimator we = new StandardWorkEstimator(Period.WEEK, today, Duration.standardHours(40))
                 .addHours(chunkOfWork(Duration.standardHours(7).plus(Duration.standardMinutes(30)), true))
                 .addHours(chunkOfWork(LocalTime.parse("08:30:00"), LocalTime.parse("16:30:00"), false))
-                .addHours(chunkOfWork(LocalDateTime.parse("2016-03-01T08:30:00"), LocalDateTime.parse("2016-03-01T16:30:00"), false))
+                .addHours(chunkOfWork(LocalDateTime.parse("2016-03-01T08:30:00"), LocalDateTime.parse("2016-03-01T16:00:00"), false))
                 .addHours(chunkOfWork(LocalTime.parse("08:00:00"), LocalTime.parse("08:30:00"), true));
 
         assertEquals(Period.WEEK.from(today.toLocalDate()), LocalDate.parse("2016-02-29"));
@@ -27,9 +27,9 @@ public class StandardWorkEstimatorTest {
         assertEquals(Period.WEEK.getDayCount(today.toLocalDate()), Days.days(5));
         assertEquals(Period.WEEK.getDaysBefore(today.toLocalDate()), Days.days(3));
 
-        assertEquals(we.getExpected().getStandardHours(), Duration.standardHours(8).plus(Duration.standardHours(8)).plus(Duration.standardHours(8)).getStandardHours());
-        assertEquals(we.getWorkedHours().getStandardHours(), Duration.standardHours(8).plus(Duration.standardHours(8)).getStandardHours());
-        assertEquals(we.getSaldo().getStandardHours(), Duration.standardHours(-8).getStandardHours());
+        assertEquals(we.getExpected(), Duration.standardHours(8+8+8));
+        assertEquals(we.getWorkedHours(), Duration.standardHours(8+7).plus(Duration.standardMinutes(30)));
+        assertEquals(we.getSaldo(), Duration.standardHours(-8).plus(Duration.standardMinutes(-30)));
     }
 
     @Test
