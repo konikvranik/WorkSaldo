@@ -1,1 +1,1 @@
-includeFlat 'common'
+includeFlat 'common', 'jtoggl-api'

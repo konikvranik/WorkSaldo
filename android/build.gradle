@@ -88,7 +88,7 @@ configurations {
 */
 
 dependencies {
-    compile('ch.simas.jtoggl:jtoggl-api:jackson-2.0.1-SNAPSHOT') {
+    compile ('ch.simas.jtoggl:jtoggl-api:jackson-2.0.1-SNAPSHOT') {
         exclude module: 'junit'
         exclude module: 'javax.inject'
         exclude module: 'jaxb-api'
