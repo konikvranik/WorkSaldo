@@ -87,8 +87,21 @@ configurations {
 }
 */
 
+/*
+configurations.compile.exclude module: 'javax.inject'
+configurations.compile.exclude module: 'jaxb-api'
+*/
+
 dependencies {
+    /*
     compile ('ch.simas.jtoggl:jtoggl-api:jackson-2.0.1-SNAPSHOT') {
+        exclude module: 'junit'
+        exclude module: 'javax.inject'
+        exclude module: 'jaxb-api'
+    }
+    */
+    compile project(':common')
+    compile(project(':jtoggl-api')) {
         exclude module: 'junit'
         exclude module: 'javax.inject'
         exclude module: 'jaxb-api'

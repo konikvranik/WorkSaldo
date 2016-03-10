@@ -1,1 +1,2 @@
 includeFlat 'common', 'jtoggl-api'
+project(':jtoggl-api').projectDir = new File('../jtoggl/jtoggl-api')

@@ -15,15 +15,12 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
+import net.suteren.worksaldo.IWorkEstimator;
+import net.suteren.worksaldo.StandardWorkEstimator;
 import net.suteren.worksaldo.android.IReloadable;
 import net.suteren.worksaldo.android.R;
-import net.suteren.worksaldo.android.WorkEstimator;
-
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
+import org.joda.time.*;
+import org.joda.time.format.*;
 
 import static android.content.Context.MODE_PRIVATE;
 import static net.suteren.worksaldo.android.provider.TogglCachedProvider.*;
@@ -34,10 +31,9 @@ import static net.suteren.worksaldo.android.ui.MainActivity.*;
  */
 public class DashboardFragment extends Fragment implements ISharedPreferencesProviderWithContext, IReloadable {
 
-    private static final DateFormat WEEKDAY_FORMAT = new SimpleDateFormat("E");
+    private static final DateTimeFormatter WEEKDAY_FORMAT = DateTimeFormat.forPattern("E");
     public static final String DAY_CLOSED_TIMESTAMP = "day_closed_timestamp";
     private SimpleCursorAdapter mAdapter;
-    private final DateFormat DATE_FORMAT_INSTANCE = SimpleDateFormat.getDateInstance(SimpleDateFormat.SHORT);
     private DayBinder dayBinder;
     private Runnable onReload;
     private ListView lv;
@@ -99,13 +95,7 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
     }
 
     private void closeDay() {
-        Calendar c = Calendar.getInstance();
-        c.set(Calendar.HOUR, 0);
-        c.set(Calendar.MINUTE, 0);
-        c.set(Calendar.SECOND, 0);
-        c.set(Calendar.MILLISECOND, 0);
-        c.add(Calendar.DAY_OF_WEEK, 1);
-        getSharedPreferences().edit().putLong(DAY_CLOSED_TIMESTAMP, c.getTimeInMillis()).apply();
+        getSharedPreferences().edit().putLong(DAY_CLOSED_TIMESTAMP, DateTime.now().plus(Days.days(1)).getMillis()).apply();
         updateCountersColor(getView());
     }
 
@@ -174,26 +164,31 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
 
                 boolean rwt = sharedPreferences.getBoolean("real_worked_time", true);
 
-                WorkEstimator we = new WorkEstimator(getPeriod(), Calendar.getInstance(), getTotalHours(), getPause(),
-                        isDayClosed());
+                IWorkEstimator we = new StandardWorkEstimator(getPeriod(), LocalDateTime.now(), Duration.standardHours(getTotalHours()));
 
-                final float[] workedHours = we.countTotal(data, rwt);
-                final float currentSaldo = we.getSaldo(workedHours);
+                data.moveToFirst();
+                while (!data.isAfterLast()) {
+                    final LocalTime start = TIME_FORMAT.parseLocalTime(data.getString(2));
+                    we.addHours(StandardWorkEstimator.chunkOfWork(start, TIME_FORMAT.parseLocalTime(data.getString(3)), LocalDate.now().equals(start)));
+                    data.moveToNext();
+                }
+
+                final Duration currentSaldo = we.getSaldo();
 
                 TextView saldo = (TextView) rootView.findViewById(R.id.saldo);
                 TextView dailyAverage = (TextView) rootView.findViewById(R.id.dailyAverage);
                 TextView dailyTotal = (TextView) rootView.findViewById(R.id.dailyTotal);
 
-                saldo.setText(formatHour(currentSaldo));
-                saldo.setTextColor(getNumberColor(currentSaldo));
+                saldo.setText(periodFormatter().print(currentSaldo.toPeriod()));
+                saldo.setTextColor(getNumberColor(currentSaldo.getStandardSeconds()));
 
-                final float todayToAvg = we.getTodayToAvg(workedHours[1]);
-                dailyAverage.setText(formatHour(todayToAvg));
-                dailyAverage.setTextColor(getNumberColor(todayToAvg));
+                final Duration saldoToday = we.getSaldoToday();
+                dailyAverage.setText(periodFormatter().print(saldoToday.toPeriod()));
+                dailyAverage.setTextColor(getNumberColor(saldoToday.getStandardSeconds()));
 
-                final float todayToWhole = we.getTodayToWhole(workedHours);
-                dailyTotal.setText(formatHour(todayToWhole));
-                dailyTotal.setTextColor(getNumberColor(todayToWhole));
+                final Duration remainingToday = we.getRemainingToday();
+                dailyTotal.setText(periodFormatter().print(remainingToday.toPeriod()));
+                dailyTotal.setTextColor(getNumberColor(remainingToday.getStandardSeconds()));
 
                 saldo.invalidate();
                 dailyAverage.invalidate();
@@ -236,55 +231,40 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
         @Override
         public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
             String value = null;
-            WorkEstimator we = new WorkEstimator(getDaysLoaderCallback().getPeriod(), Calendar.getInstance(),
-                    getDaysLoaderCallback().getTotalHours(), getDaysLoaderCallback().getPause(), isDayClosed());
+            LocalTime stop = TIME_FORMAT.parseLocalTime(cursor.getString(3));
+            LocalDateTime day = DATE_FORMAT.parseLocalDate(cursor.getString(1)).toLocalDateTime(stop);
+            IWorkEstimator we = new StandardWorkEstimator(getDaysLoaderCallback().getPeriod(), day,
+                    Duration.standardHours(getDaysLoaderCallback().getTotalHours()));
+
+            final LocalTime start = TIME_FORMAT.parseLocalTime(cursor.getString(2));
+            we.addHours(StandardWorkEstimator.chunkOfWork(start, TIME_FORMAT.parseLocalTime(cursor.getString(3)), true));
+
             Integer color = null;
 
             String string = cursor.getString(columnIndex);
-            SimpleDateFormat dateFormat = DATE_FORMAT;
 
-            Calendar c = Calendar.getInstance();
-            dateFormat.setTimeZone(c.getTimeZone());
 
             switch (columnIndex) {
                 case 1:
-                    try {
-                        final Date date = dateFormat.parse(string);
-                        value = String.format("%s %s", WEEKDAY_FORMAT.format(date), DATE_FORMAT_INSTANCE.format(date));
-                    } catch (ParseException e) {
-                        throw new RuntimeException(e);
-                    }
+                    final LocalDate date = DATE_FORMAT.parseLocalDate(string);
+                    value = String.format("%s %s", WEEKDAY_FORMAT.print(date), DateTimeFormat.mediumDate().print(date));
                     break;
 
                 case 2:
                 case 3:
-                    try {
-                        value = string == null ? "Ø" : SimpleDateFormat.getTimeInstance(SimpleDateFormat.SHORT).format
-                                (TIME_FORMAT
-                                        .parse(string));
-                    } catch (ParseException e) {
-                        throw new RuntimeException(e);
-                    }
+                    value = string == null ? "Ø" : DateTimeFormat.shortTime().print(TIME_FORMAT.parseDateTime(string));
                     break;
 
                 case 4:
-                    float count = we.getCount(cursor.getFloat(columnIndex), cursor.getString(2), cursor.getString(3),
-                            realHours);
-                    value = formatHour(count);
+                    value = periodFormatter().print(we.getWorkedHoursToday().toPeriod());
                     break;
 
                 case 5:
 
-                    try {
 
-                        c.setTime(dateFormat.parse(cursor.getString(1)));
-                        float s = we.getCount(cursor.getFloat(4), cursor.getString(2), cursor.getString(3), realHours)
-                                - we.getHoursPerDay();
-                        color = getNumberColor(s);
-                        value = formatHour(s);
-                    } catch (ParseException e) {
-                        value = "Ø";
-                    }
+                    final Duration saldoToday = we.getSaldoToday();
+                    color = getNumberColor(saldoToday.getStandardSeconds());
+                    value = periodFormatter().print(saldoToday.toPeriod());
                     break;
             }
 
@@ -308,8 +288,15 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
 
     }
 
-    private String formatHour(float s) {
-        return String.format("%.0f:%02.0f", Math.floor(s), Math.abs((s - (int) s) * 60));
+    PeriodFormatter periodFormatter() {
+        return new PeriodFormatterBuilder()
+                .printZeroIfSupported()
+                .appendHours()
+                .appendSeparator(":")
+                .minimumPrintedDigits(2)
+                .rejectSignedValues(true)
+                .appendMinutes()
+                .toFormatter();
     }
 
     public boolean isDayClosed() {

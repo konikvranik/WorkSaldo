@@ -40,7 +40,7 @@ public class StandardWorkEstimator implements IWorkEstimator {
 
     @Override
     public Duration getRemainingToday() {
-        return null;
+        return getWorkedHoursToday().minus(getHoursPerDay());
     }
 
     @Override

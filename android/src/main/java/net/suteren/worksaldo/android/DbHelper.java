@@ -5,9 +5,6 @@ import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 /**
  * Created by vranikp on 24.2.16.
  *
@@ -101,12 +98,5 @@ public class DbHelper extends SQLiteOpenHelper {
 
     }
 
-    private static void addTodayRecords(SQLiteDatabase db) {
-        String today = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
-        db.compileStatement(String.format(INSERT_FAKE_DATA,
-                today + " 19:23:00", today + " 19:50:00", 27 * 60)).execute();
-        db.compileStatement(String.format(INSERT_FAKE_DATA,
-                today + " 09:23:00", today + " 11:50:00", 2 * 3600 + 27 * 60)).execute();
-    }
 
 }

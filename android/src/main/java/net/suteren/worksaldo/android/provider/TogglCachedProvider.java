@@ -15,18 +15,21 @@ import ch.simas.jtoggl.JToggl;
 import ch.simas.jtoggl.domain.TimeEntry;
 import net.suteren.worksaldo.android.DbHelper;
 import net.suteren.worksaldo.android.ui.ISharedPreferencesProvider;
+import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 
 import javax.ws.rs.client.Client;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.List;
-import java.util.TimeZone;
 
 import static android.content.Context.MODE_PRIVATE;
 import static net.suteren.worksaldo.android.DbHelper.*;
-import static net.suteren.worksaldo.android.ui.MainActivity.*;
+import static net.suteren.worksaldo.android.ui.MainActivity.INSTANT;
+import static net.suteren.worksaldo.android.ui.MainActivity.MAIN;
 
 /**
  * Created by vranikp on 24.2.16.
@@ -63,9 +66,9 @@ public class TogglCachedProvider extends ContentProvider implements ISharedPrefe
     public static final String TIMESHEET_URI = URI_BASE + "/" + TIMEENTRY_PATH;
     public static final String API_KEY = "api_token";
 
-    public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
-    public static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm:ss");
-    public static final SimpleDateFormat DATE_TIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+    public static final DateTimeFormatter DATE_FORMAT = DateTimeFormat.forPattern("yyyy-MM-dd").withZoneUTC();
+    public static final DateTimeFormatter TIME_FORMAT = DateTimeFormat.forPattern("HH:mm:ss").withZoneUTC();
+    public static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSS").withZoneUTC();
     public static final int UNAUTHORIZED = 401;
     public static final String RESULT_CODE = "resultCode";
 
@@ -82,7 +85,7 @@ public class TogglCachedProvider extends ContentProvider implements ISharedPrefe
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
         boolean instant = Boolean.parseBoolean(uri.getQueryParameter(INSTANT));
-        Bundle report = null;
+        Bundle report;
         if (!instant) {
             SharedPreferences sharedPreferences = getContext().getSharedPreferences(MAIN, MODE_PRIVATE);
             String key = sharedPreferences.getString(API_KEY, null);
@@ -99,13 +102,8 @@ public class TogglCachedProvider extends ContentProvider implements ISharedPrefe
                             return super.prepareClient().register(AndroidFriendlyFeature.class);
                         }
                     };
-                    Calendar start = Calendar.getInstance();
-                    Calendar stop = Calendar.getInstance();
-                    start.setTime(DATE_FORMAT.parse(selectionArgs[0]));
-                    stop.setTime(DATE_FORMAT.parse(selectionArgs[1]));
-                    Log.d("TogglCachedProvider", String.format("Get TEs from %s to %s",
-                            DATE_TIME_FORMAT.format(start.getTime()), DATE_TIME_FORMAT.format(stop.getTime())));
-                    List<TimeEntry> te = jt.getTimeEntries(start, stop);
+                    Log.d("TogglCachedProvider", String.format("Get TEs from %s to %s", selectionArgs[0], selectionArgs[1]));
+                    List<TimeEntry> te = jt.getTimeEntries(ISODateTimeFormat.date().parseLocalDate(selectionArgs[0]), ISODateTimeFormat.date().parseLocalDate(selectionArgs[1]));
                     Log.d("TogglCachedProvider", "Loaded from toggl: " + te.size());
                     SQLiteDatabase db = getDbHelper(getContext()).getWritableDatabase();
 
@@ -118,18 +116,12 @@ public class TogglCachedProvider extends ContentProvider implements ISharedPrefe
                         values.put(DbHelper.PID_COL, e.getProjectId());
                         values.put(DbHelper.TID_COL, e.getTaskId());
 
-                        final SimpleDateFormat dateTimeFormat = DATE_TIME_FORMAT;
-                        final Calendar teStart = e.getStart();
-                        dateTimeFormat.setTimeZone(teStart.getTimeZone());
-                        values.put(DbHelper.START_COL, dateTimeFormat.format(teStart.getTime()));
+                        final DateTimeFormatter dateTimeFormat = DATE_TIME_FORMAT;
 
-                        Calendar teStop = e.getStop();
-                        if (teStop == null) {
-                            teStop = Calendar.getInstance();
-                            teStop.setTimeZone(TimeZone.getTimeZone("GMT"));
-                        }
-                        dateTimeFormat.setTimeZone(teStop.getTimeZone());
-                        values.put(DbHelper.STOP_COL, dateTimeFormat.format(teStop.getTime()));
+                        values.put(DbHelper.START_COL, dateTimeFormat.print(e.getStart()));
+
+                        DateTime teStop = e.getStop();
+                        values.put(DbHelper.STOP_COL, dateTimeFormat.print(teStop));
 
                         values.put(DbHelper.DURATION_COL, e.getDuration());
                         //values.put(DbHelper.BILLABLE_COL, null);

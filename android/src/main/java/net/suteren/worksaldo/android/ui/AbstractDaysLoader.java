@@ -7,10 +7,9 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
-import net.suteren.worksaldo.android.Period;
+import net.suteren.worksaldo.Period;
 import net.suteren.worksaldo.android.provider.TogglCachedProvider;
-
-import java.util.Calendar;
+import org.joda.time.LocalDate;
 
 import static net.suteren.worksaldo.android.provider.TogglCachedProvider.*;
 
@@ -28,7 +27,7 @@ public abstract class AbstractDaysLoader implements LoaderManager.LoaderCallback
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         boolean instant = args.getBoolean(MainActivity.INSTANT, false);
-        Calendar d = Calendar.getInstance();
+        LocalDate d = LocalDate.now();
         String start = formatDate(getPeriod().from(d));
         String stop = formatDate(getPeriod().to(d));
         Log.d("DashboardFragment", String.format("start: %s, stop: %s", start, stop));
@@ -46,8 +45,8 @@ public abstract class AbstractDaysLoader implements LoaderManager.LoaderCallback
                 ORDER_BY);
     }
 
-    private static String formatDate(Calendar time) {
-        return DATE_FORMAT.format(time.getTime());
+    private static String formatDate(LocalDate time) {
+        return DATE_FORMAT.print(time);
     }
 
     protected int getTotalHours() {
