@@ -36,7 +36,7 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
             .appendHours()
             .appendSeparator(":")
             .minimumPrintedDigits(2)
-            .rejectSignedValues(true)
+            .rejectSignedValues(false)
             .appendMinutes()
             .toFormatter();
     private static final DateTimeFormatter WEEKDAY_FORMAT = DateTimeFormat.forPattern("E");
@@ -172,18 +172,22 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
 
                 boolean rwt = sharedPreferences.getBoolean("real_worked_time", true);
 
-                StandardWorkEstimator we = new StandardWorkEstimator(getPeriod(), LocalDateTime.now(), Duration.standardHours(getTotalHours()));
+                LocalDateTime now = LocalDateTime.now();
+                if (isDayClosed()) {
+                    now = now.plus(Duration.standardDays(1));
+                }
+                StandardWorkEstimator we = new StandardWorkEstimator(getPeriod(), now, Duration.standardHours(getTotalHours()));
 
                 data.moveToFirst();
 
                 int cnt = 0;
 
                 while (!data.isAfterLast()) {
-                    final boolean isToday = LocalDate.now().isEqual(DATE_FORMAT.parseLocalDate(data.getString(1)));
+                    final boolean isToday = !isDayClosed() && LocalDate.now().isEqual(DATE_FORMAT.parseLocalDate(data.getString(1)));
                     Log.d("DashboardFragment", String.format("%s - %s", data.getString(2), data.getString(3)));
                     final IWorkEstimator.ChunkOfWork day = StandardWorkEstimator.chunkOfWork(
                             TIME_FORMAT.parseLocalTime(data.getString(2)),
-                            isToday && !isDayClosed() ? LocalTime.now() : TIME_FORMAT.parseLocalTime(data.getString(3)),
+                            isToday ? LocalTime.now() : TIME_FORMAT.parseLocalTime(data.getString(3)),
                             Duration.standardMinutes(getPause()),
                             isToday);
                     Log.d("DashboardFragment", String.format("%d", day.getHours().getStandardHours()));
