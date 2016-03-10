@@ -29,15 +29,13 @@ public class StandardWorkEstimator implements IWorkEstimator {
 
     public Duration getExpected() {
         final LocalDate now = this.now.toLocalDate();
-        final Days periodLength = period.getDayCount(now);
-        final Days pastDays = Days.daysBetween(period.from(now), now);
-        return demandedHours.multipliedBy(pastDays.getDays()).dividedBy(periodLength.getDays());
+        return demandedHours.multipliedBy(Days.daysBetween(period.from(now), now).getDays()).dividedBy(period.getDayCount(now).getDays());
     }
 
 
     @Override
     public Duration getSaldoToday() {
-        return null;
+        return getWorkedHoursToday().minus(getHoursPerDay());
     }
 
     @Override
@@ -47,12 +45,12 @@ public class StandardWorkEstimator implements IWorkEstimator {
 
     @Override
     public Duration getRemainingTotal() {
-        return null;
+        return demandedHours.minus(getWorkedHours());
     }
 
     @Override
     public Duration getHoursPerDay() {
-        return null;
+        return demandedHours.dividedBy(period.getDayCount(this.now.toLocalDate()).getDays());
     }
 
     @Override
@@ -66,9 +64,16 @@ public class StandardWorkEstimator implements IWorkEstimator {
         return sum;
     }
 
+
     @Override
     public Duration getWorkedHoursToday() {
-        return null;
+        Duration sum = Duration.ZERO;
+        for (ChunkOfWork ch : chunksOfWork) {
+            if (ch.isToday()) {
+                sum = sum.plus(ch.getHours());
+            }
+        }
+        return sum;
     }
 
     @Override
