@@ -1,81 +1,49 @@
 package net.suteren.worksaldo;
 
 
+import org.joda.time.Days;
 import org.joda.time.LocalDate;
 
 /**
  * Created by hpa on 6.3.16.
  */
 public enum Period {
-    DAY, WEEK, MONTH, CUSTOM;
+    DAY, WEEK, MONTH, CUSTOM, period;
 
     private double dayCount;
 
     public LocalDate from(LocalDate date) {
-        LocalDate d = LocalDate.getInstance();
-        d.setTimeInMillis(0);
-        d.set(Calendar.DAY_OF_MONTH, date.get(Calendar.DAY_OF_MONTH));
-        d.set(Calendar.MONTH, date.get(Calendar.MONTH));
-        d.set(Calendar.YEAR, date.get(Calendar.YEAR));
-
-        d.set(Calendar.MINUTE, 0);
-        d.set(Calendar.SECOND, 0);
-        d.set(Calendar.MILLISECOND, 0);
 
         switch (this) {
             case MONTH:
-                d.set(LocalDate.DAY_OF_MONTH, 1);
-                break;
+                return date.dayOfMonth().withMinimumValue();
             case WEEK:
-                d.add(LocalDate.DAY_OF_MONTH, -((d.get(LocalDate.DAY_OF_WEEK) + 5) % 7));
-                break;
+                return date.dayOfWeek().withMinimumValue();
         }
-
-        return d;
+        return date;
     }
 
-    public Calendar to(Calendar date) {
-       Calendar d = Calendar.getInstance();
-
-        d.setTimeInMillis(0);
-        d.set(Calendar.DAY_OF_MONTH, date.get(Calendar.DAY_OF_MONTH));
-        d.set(Calendar.MONTH, date.get(Calendar.MONTH));
-        d.set(Calendar.YEAR, date.get(Calendar.YEAR));
-
-        //d.set(Calendar.HOUR_OF_DAY, 0);
-        d.set(Calendar.MINUTE, 0);
-        d.set(Calendar.SECOND, 0);
-        d.set(Calendar.MILLISECOND, 0);
-
+    public LocalDate to(LocalDate date) {
         switch (this) {
             case MONTH:
-                d.set(Calendar.DAY_OF_MONTH, 1);
-                d.add(Calendar.MONTH, 1);
-                break;
+                return date.dayOfMonth().withMaximumValue();
             case WEEK:
-                d.add(Calendar.DAY_OF_MONTH, 7 - ((d.get(Calendar.DAY_OF_WEEK) + 5) % 7) - 1);
-                break;
-            case DAY:
-                d.add(Calendar.DAY_OF_MONTH, 1);
+                return date.dayOfWeek().withMaximumValue();
         }
-
-        return d;
+        return date;
     }
 
 
-    public long getDayCount(LocalDate date) {
-        switch (this) {
-            case DAY:
-                return 1;
-            case WEEK:
-                return 5;
-            case MONTH:
-                return date.getActualMaximum(Calendar.DAY_OF_MONTH);
-            case CUSTOM:
-                return TimeUnit.DAYS.convert(to(date).getTimeInMillis() - from(date).getTimeInMillis(), TimeUnit
-                        .MILLISECONDS);
-            default:
-                return 0;
+    public Days getDayCount(LocalDate date) {
+        Days daysInPeriod = Days.daysBetween(from(date), to(date)).plus(1);
+        if (daysInPeriod.getDays() > 5) {
+            daysInPeriod = Days.days(5);
         }
+        return daysInPeriod;
     }
+
+    public Days getDaysBefore(LocalDate date) {
+        return Days.daysBetween(from(date), date);
+    }
+
 }

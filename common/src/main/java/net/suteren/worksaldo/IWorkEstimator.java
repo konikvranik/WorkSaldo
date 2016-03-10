@@ -1,5 +1,7 @@
 package net.suteren.worksaldo;
 
+import org.joda.time.Duration;
+
 /**
  * Class for evaluating balance of worked time.
  *
@@ -12,45 +14,45 @@ public interface IWorkEstimator {
      *
      * @return whole balance
      */
-    float getSaldo();
+    Duration getSaldo();
 
     /**
      * Returns balance for current day (worked today - hours per day).
      *
      * @return balance of today
      */
-    float getSaldoToday();
+    Duration getSaldoToday();
 
     /**
      * Returns balance of today + balance cumulated over other days.
      *
      * @return
      */
-    float getRemainingToday();
+    Duration getRemainingToday();
 
     /**
      * Returns remainder to work to have all hours done. Demanded sum of hours - hours worked.
      *
      * @return
      */
-    float getRemainingTotal();
+    Duration getRemainingTotal();
 
     /**
      * Returns desired worked hours per average day. Demanded hours for period / count of days od period.
      *
      * @return
      */
-    float getHoursPerDay();
+    Duration getHoursPerDay();
 
     /**
      * @return Sum of worked hours except today.
      */
-    float getWorkedHours();
+    Duration getWorkedHours();
 
     /**
      * @return Hours worked today.
      */
-    float getWorkedHoursToday();
+    Duration getWorkedHoursToday();
 
     /**
      * Add hours to be counted in calculation.
@@ -73,6 +75,6 @@ public interface IWorkEstimator {
         /**
          * @return Sum of hours worked this day.
          */
-        float getHours();
+        Duration getHours();
     }
 }

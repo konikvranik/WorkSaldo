@@ -1,20 +1,11 @@
 package net.suteren.worksaldo;
 
-import android.database.Cursor;
-import android.text.format.DateUtils;
-import android.util.Log;
-
-import java.text.ParseException;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
-
-import static net.suteren.worksaldo.android.provider.TogglCachedProvider.*;
-
 /**
  * Created by hpa on 6.3.16.
  */
-public class WorkEstimator implements IWorkEstimator {
+public class WorkEstimator {
+
+    /*
     private final boolean closedDay;
     private Calendar from;
     private Calendar to;
@@ -149,4 +140,5 @@ public class WorkEstimator implements IWorkEstimator {
     public float getTodayToWhole(float[] workedPast) {
         return getTodayToAvg(workedPast[1]) + getSaldo(workedPast[0], workedPast[1]);
     }
+*/
 }
