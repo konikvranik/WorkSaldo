@@ -16,7 +16,6 @@ import ch.simas.jtoggl.domain.TimeEntry;
 import net.suteren.worksaldo.android.DbHelper;
 import net.suteren.worksaldo.android.ui.ISharedPreferencesProvider;
 import org.joda.time.DateTime;
-import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
@@ -28,7 +27,6 @@ import java.util.List;
 
 import static android.content.Context.MODE_PRIVATE;
 import static net.suteren.worksaldo.android.DbHelper.*;
-import static net.suteren.worksaldo.android.ui.MainActivity.INSTANT;
 import static net.suteren.worksaldo.android.ui.MainActivity.MAIN;
 
 /**
@@ -62,6 +60,19 @@ public class TogglCachedProvider extends ContentProvider implements ISharedPrefe
     public static final String URI_BASE = "net.suteren.toggl.provider";
     public static final String USER_PATH = "user";
     public static final String TIMEENTRY_PATH = "timeentry";
+    public static final Uri TIMEENTRIES_URI = new Uri.Builder().scheme("content")
+            .authority(TogglCachedProvider.URI_BASE)
+            .appendPath(TogglCachedProvider.TIMEENTRY_PATH).build();
+
+    public static final String RELOAD_PATH = "reload";
+    public static final Uri RELOAD_URI = new Uri.Builder().scheme("content")
+            .authority(TogglCachedProvider.URI_BASE)
+            .appendPath(TogglCachedProvider.RELOAD_PATH).build();
+
+    public static final int MATCHED_RELOAD = 3;
+    public static final int MATCHED_USER = 1;
+    public static final int MATCHED_TIMEENTRY = 2;
+
 
     public static final String TIMESHEET_URI = URI_BASE + "/" + TIMEENTRY_PATH;
     public static final String API_KEY = "api_token";
@@ -73,8 +84,9 @@ public class TogglCachedProvider extends ContentProvider implements ISharedPrefe
     public static final String RESULT_CODE = "resultCode";
 
     {
-        sUriMatcher.addURI(URI_BASE, USER_PATH, 1);
-        sUriMatcher.addURI(URI_BASE, TIMEENTRY_PATH, 2);
+        sUriMatcher.addURI(URI_BASE, USER_PATH, MATCHED_USER);
+        sUriMatcher.addURI(URI_BASE, TIMEENTRY_PATH, MATCHED_TIMEENTRY);
+        sUriMatcher.addURI(URI_BASE, RELOAD_PATH, MATCHED_RELOAD);
     }
 
     @Override
@@ -84,90 +96,103 @@ public class TogglCachedProvider extends ContentProvider implements ISharedPrefe
 
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
-        boolean instant = Boolean.parseBoolean(uri.getQueryParameter(INSTANT));
-        Bundle report;
-        if (!instant) {
-            SharedPreferences sharedPreferences = getContext().getSharedPreferences(MAIN, MODE_PRIVATE);
-            String key = sharedPreferences.getString(API_KEY, null);
-            if (key == null || "".equals(key.trim())) {
-                report = new Bundle();
-                report.putInt(RESULT_CODE, UNAUTHORIZED);
-            } else {
-                Log.d("TogglCachedProvider", String.format("KEY: %s", key));
-                try {
-                    Log.d("TogglCachedProvider", "Loading from toggl for api key: " + key);
-                    JToggl jt = new JToggl(key, API_KEY) {
-                        @Override
-                        protected Client prepareClient() {
-                            return super.prepareClient().register(AndroidFriendlyFeature.class);
-                        }
-                    };
-                    Log.d("TogglCachedProvider", String.format("Get TEs from %s to %s", selectionArgs[0], selectionArgs[1]));
-                    List<TimeEntry> te = jt.getTimeEntries(ISODateTimeFormat.date().parseLocalDate(selectionArgs[0]), ISODateTimeFormat.date().parseLocalDate(selectionArgs[1]));
-                    Log.d("TogglCachedProvider", "Loaded from toggl: " + te.size());
-                    SQLiteDatabase db = getDbHelper(getContext()).getWritableDatabase();
+        Log.d("TogglCachedProvider", "Querying data for uri " + uri.toString());
 
-                    db.delete(TIME_ENTRY, DELETE_WHERE, selectionArgs);
-                    for (TimeEntry e : te) {
-                        Log.d("TogglCachedProvider", String.format("Persisting: %s", te));
-                        ContentValues values = new ContentValues(12);
-                        values.put(DbHelper.DESCRIPTION_COL, e.getDescription() == null ? "" : e.getDescription());
-                        values.put(DbHelper.WID_COL, e.getWorkspaceId());
-                        values.put(DbHelper.PID_COL, e.getProjectId());
-                        values.put(DbHelper.TID_COL, e.getTaskId());
 
-                        final DateTimeFormatter dateTimeFormat = DATE_TIME_FORMAT;
+        switch (sUriMatcher.match(uri)) {
 
-                        values.put(DbHelper.START_COL, dateTimeFormat.print(e.getStart()));
+            // If the incoming URI was for user
+            case MATCHED_RELOAD:
+                Log.d("TogglCachedProvider", "Querying Toggl");
+                reloadTimeentriesFromToggl(selectionArgs);
+                Log.d("TogglCachedProvider", "Notifying uri " + TIMEENTRIES_URI.toString());
+                getContext().getContentResolver().notifyChange(TIMEENTRIES_URI, null);
+                return null;
 
-                        DateTime teStop = e.getStop();
-                        values.put(DbHelper.STOP_COL, dateTimeFormat.print(teStop));
+            // If the incoming URI was for time sheet entries
+            case MATCHED_TIMEENTRY:
+                Log.d("TogglCachedProvider", "Querying DB");
+                final Cursor cursor = reloadTimeentiresFromDb(projection, selection, selectionArgs, sortOrder);
+                cursor.setNotificationUri(getContext().getContentResolver(), TIMEENTRIES_URI);
+                return cursor;
 
-                        values.put(DbHelper.DURATION_COL, e.getDuration());
-                        //values.put(DbHelper.BILLABLE_COL, null);
-                        values.put(DbHelper.CREATED_WITH_COL, e.getCreatedWith());
-                        if (e.getTags() != null)
-                            values.put(DbHelper.TAGS_COL, TextUtils.join(";", e.getTags()));
-                        values.put(DbHelper.DURONLY_COL, e.getDurationOnly());
-                        long id = db.insertWithOnConflict(TIME_ENTRY, null, values, SQLiteDatabase.CONFLICT_IGNORE);
-                        Log.d("TogglCachedProvider", String.format("Inserted timeentry with id: %d", id));
-                    }
-                    db.close();
-                } catch (Exception e) {
-                    Log.e("TogglCachedProvider", "unable to get time entries", e);
-                }
-            }
+            default:
+                // If the URI is not recognized, you should do some error handling here.
+                return null;
 
         }
-        List<String> proj = Arrays.asList(projection);
-        if (!proj.contains(ID_COLUMN_NAME)) {
-            proj = new ArrayList<>(Arrays.asList(projection));
-            proj.add(0, ID_COLUMN_NAME);
-            projection = proj.toArray(new String[proj.size()]);
-        }
+
+    }
+
+    Cursor reloadTimeentiresFromDb(String[] projection, String selection, String[] selectionArgs, String sortOrder) {
         try {
-            switch (sUriMatcher.match(uri)) {
-
-                // If the incoming URI was for user
-                case 1:
-
-                    return null;
-
-                // If the incoming URI was for time sheet entries
-                case 2:
-                    SQLiteDatabase readableDatabase = getDbHelper(getContext()).getReadableDatabase();
-                    Cursor cursor = readableDatabase
-                            .query(TIME_ENTRY, projection, selection, selectionArgs, GROUP_BY, null, sortOrder);
-                    return cursor;
-
-                default:
-                    // If the URI is not recognized, you should do some error handling here.
-                    return null;
-
+            List<String> proj = Arrays.asList(projection);
+            if (!proj.contains(ID_COLUMN_NAME)) {
+                proj = new ArrayList<>(Arrays.asList(projection));
+                proj.add(0, ID_COLUMN_NAME);
+                projection = proj.toArray(new String[proj.size()]);
             }
+            SQLiteDatabase readableDatabase = getDbHelper(getContext()).getReadableDatabase();
+            Cursor cursor = readableDatabase
+                    .query(TIME_ENTRY, projection, selection, selectionArgs, GROUP_BY, null, sortOrder);
+            return cursor;
         } catch (PackageManager.NameNotFoundException e) {
             Log.e("TogglCachedProvider", "unable to get time entries", e);
             throw new RuntimeException(e);
+        }
+    }
+
+    void reloadTimeentriesFromToggl(String[] selectionArgs) {
+        Bundle report;
+        SharedPreferences sharedPreferences = getContext().getSharedPreferences(MAIN, MODE_PRIVATE);
+        String key = sharedPreferences.getString(API_KEY, null);
+        if (key == null || "".equals(key.trim())) {
+            report = new Bundle();
+            report.putInt(RESULT_CODE, UNAUTHORIZED);
+        } else {
+            Log.d("TogglCachedProvider", String.format("KEY: %s", key));
+            try {
+                Log.d("TogglCachedProvider", "Loading from toggl for api key: " + key);
+                JToggl jt = new JToggl(key, API_KEY) {
+                    @Override
+                    protected Client prepareClient() {
+                        return super.prepareClient().register(AndroidFriendlyFeature.class);
+                    }
+                };
+                Log.d("TogglCachedProvider", String.format("Get TEs from %s to %s", selectionArgs[0], selectionArgs[1]));
+                List<TimeEntry> te = jt.getTimeEntries(ISODateTimeFormat.date().parseLocalDate(selectionArgs[0]), ISODateTimeFormat.date().parseLocalDate(selectionArgs[1]));
+                Log.d("TogglCachedProvider", "Loaded from toggl: " + te.size());
+                SQLiteDatabase db = getDbHelper(getContext()).getWritableDatabase();
+
+                db.delete(TIME_ENTRY, DELETE_WHERE, selectionArgs);
+                for (TimeEntry e : te) {
+                    Log.d("TogglCachedProvider", String.format("Persisting: %s", te));
+                    ContentValues values = new ContentValues(12);
+                    values.put(DbHelper.DESCRIPTION_COL, e.getDescription() == null ? "" : e.getDescription());
+                    values.put(DbHelper.WID_COL, e.getWorkspaceId());
+                    values.put(DbHelper.PID_COL, e.getProjectId());
+                    values.put(DbHelper.TID_COL, e.getTaskId());
+
+                    final DateTimeFormatter dateTimeFormat = DATE_TIME_FORMAT;
+
+                    values.put(DbHelper.START_COL, dateTimeFormat.print(e.getStart()));
+
+                    DateTime teStop = e.getStop();
+                    values.put(DbHelper.STOP_COL, dateTimeFormat.print(teStop));
+
+                    values.put(DbHelper.DURATION_COL, e.getDuration());
+                    //values.put(DbHelper.BILLABLE_COL, null);
+                    values.put(DbHelper.CREATED_WITH_COL, e.getCreatedWith());
+                    if (e.getTags() != null)
+                        values.put(DbHelper.TAGS_COL, TextUtils.join(";", e.getTags()));
+                    values.put(DbHelper.DURONLY_COL, e.getDurationOnly());
+                    long id = db.insertWithOnConflict(TIME_ENTRY, null, values, SQLiteDatabase.CONFLICT_IGNORE);
+                    Log.d("TogglCachedProvider", String.format("Inserted timeentry with id: %d", id));
+                }
+                db.close();
+            } catch (Exception e) {
+                Log.e("TogglCachedProvider", "unable to get time entries", e);
+            }
         }
     }
 

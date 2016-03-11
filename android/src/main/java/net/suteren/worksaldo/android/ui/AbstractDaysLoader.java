@@ -26,20 +26,13 @@ public abstract class AbstractDaysLoader implements LoaderManager.LoaderCallback
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        boolean instant = args.getBoolean(MainActivity.INSTANT, false);
         LocalDate d = LocalDate.now();
         String start = formatDate(getPeriod().from(d));
         String stop = formatDate(getPeriod().to(d));
         Log.d("DashboardFragment", String.format("start: %s, stop: %s", start, stop));
-        return new CursorLoader(ctx.getContext(),
-                new Uri.Builder().scheme("content")
-                        .authority(TogglCachedProvider.URI_BASE)
-                        .appendPath(TogglCachedProvider.TIMEENTRY_PATH)
-                        .appendQueryParameter(MainActivity.INSTANT, String.valueOf(instant))
-                        .build(),
+        return new CursorLoader(ctx.getContext(), TIMEENTRIES_URI,
                 new String[]{DATE_COMPOSITE, DAY_START_COMPOSITE, DAY_END_COMPOSITE, DAY_TOTAL_COMPOSITE,
                         DAY_SALDO_COMPOSITE},
-
                 SELECT_WHERE,
                 new String[]{start, stop},
                 ORDER_BY);

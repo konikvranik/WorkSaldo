@@ -21,10 +21,8 @@ import static net.suteren.worksaldo.android.provider.TogglCachedProvider.API_KEY
 
 public class MainActivity extends Activity implements ISharedPreferencesProvider {
 
-    public static final int INSTANT_DATABASE_LOADER = 1;
-    public static final int REMOTE_SERVICE_LOADER = 2;
-    public static final int SALDO_LOADER = 3;
-    public static final String INSTANT = "instant";
+    public static final int DAYS_LOADER = 1;
+    public static final int DAYS_UPDATER = 2;
 
     public static final String MAIN = "main";
     private Menu myMenu;
@@ -107,13 +105,6 @@ public class MainActivity extends Activity implements ISharedPreferencesProvider
     @Override
     public SharedPreferences getSharedPreferences() {
         return getSharedPreferences(MAIN, MODE_PRIVATE);
-    }
-
-
-    public static Bundle loaderBundle(boolean value) {
-        Bundle instantBundle = new Bundle();
-        instantBundle.putBoolean("instant", value);
-        return instantBundle;
     }
 
     public boolean startUpdating() {
