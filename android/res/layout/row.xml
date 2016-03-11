@@ -53,6 +53,8 @@
         android:id="@+id/total"
         android:layout_height="wrap_content"
         android:textAlignment="textEnd"
+        android:gravity="end"
+        android:layout_gravity="end"
         android:text="-8.8"/>
 
     <TextView
@@ -61,6 +63,8 @@
         android:id="@+id/saldo"
         android:layout_height="wrap_content"
         android:textAlignment="textEnd"
+        android:gravity="end"
+        android:layout_gravity="end"
         android:text="-8,8"/>
 
 

@@ -22,6 +22,10 @@ import net.suteren.worksaldo.android.R;
 import org.joda.time.*;
 import org.joda.time.format.*;
 
+import java.io.IOException;
+import java.io.Writer;
+import java.util.Locale;
+
 import static android.content.Context.MODE_PRIVATE;
 import static net.suteren.worksaldo.android.provider.TogglCachedProvider.*;
 import static net.suteren.worksaldo.android.ui.MainActivity.*;
@@ -36,8 +40,34 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
             .appendHours()
             .appendSeparator(":")
             .minimumPrintedDigits(2)
-            .rejectSignedValues(false)
-            .appendMinutes()
+            .append(new PeriodPrinter() {
+                @Override
+                public int calculatePrintedLength(ReadablePeriod period, Locale locale) {
+                    return 2;
+                }
+
+                @Override
+                public int countFieldsToPrint(ReadablePeriod period, int stopAt, Locale locale) {
+                    return 1;
+                }
+
+                @Override
+                public void printTo(StringBuffer buf, ReadablePeriod period, Locale locale) {
+                    buf.append(String.format("%02d", Math.abs(period.get(DurationFieldType.minutes()))));
+                }
+
+                @Override
+                public void printTo(Writer out, ReadablePeriod period, Locale locale) throws IOException {
+                    StringBuffer sb = new StringBuffer();
+                    printTo(sb, period, locale);
+                    out.write(sb.toString());
+                }
+            }, new PeriodParser() {
+                @Override
+                public int parseInto(ReadWritablePeriod period, String periodStr, int position, Locale locale) {
+                    throw new UnsupportedOperationException();
+                }
+            })
             .toFormatter();
     private static final DateTimeFormatter WEEKDAY_FORMAT = DateTimeFormat.forPattern("E");
     public static final String DAY_CLOSED_TIMESTAMP = "day_closed_timestamp";
@@ -82,7 +112,6 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
             @Override
             public void onClick(View v) {
                 switchClosedDay();
-                lm.restartLoader(SALDO_LOADER, loaderBundle(true), getSaldoLoaderCallback(rootView));
                 Log.d("DashboardFragment", "Day is now " + (isDayClosed() ? "closed" : "open"));
             }
         });
@@ -100,10 +129,12 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
         } else {
             closeDay();
         }
+        LoaderManager lm = getLoaderManager();
+        lm.restartLoader(INSTANT_DATABASE_LOADER, loaderBundle(true), getDaysLoaderCallback());
     }
 
     private void closeDay() {
-        getSharedPreferences().edit().putLong(DAY_CLOSED_TIMESTAMP, DateTime.now().plus(Days.days(1)).getMillis()).apply();
+        getSharedPreferences().edit().putLong(DAY_CLOSED_TIMESTAMP, DateTime.now().withTimeAtStartOfDay().plus(Days.days(1)).getMillis()).apply();
         updateCountersColor(getView());
     }
 
@@ -131,7 +162,6 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
             public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
 
                 Cursor c = mAdapter.swapCursor(data);
-                mAdapter.notifyDataSetChanged();
                 if (c != null) {
                     //c.close();
                 }
@@ -262,9 +292,14 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
             LocalDateTime day = DATE_FORMAT.parseLocalDate(cursor.getString(1)).toLocalDateTime(stop);
             IWorkEstimator we = new StandardWorkEstimator(getDaysLoaderCallback().getPeriod(), day,
                     Duration.standardHours(getDaysLoaderCallback().getTotalHours()));
+            boolean isToday = day.toLocalDate().isEqual(LocalDate.now());
 
-            final LocalTime start = TIME_FORMAT.parseLocalTime(cursor.getString(2));
-            we.addHours(StandardWorkEstimator.chunkOfWork(start, TIME_FORMAT.parseLocalTime(cursor.getString(3)), Duration.standardMinutes(getDaysLoaderCallback().getPause()), true));
+            final LocalTime to = isDayClosed() || !isToday ? stop : LocalTime.now();
+            LocalTime time = TIME_FORMAT.parseLocalTime(cursor.getString(2));
+            we.addHours(StandardWorkEstimator.chunkOfWork(time,
+                    to,
+                    Duration.standardMinutes(getDaysLoaderCallback().getPause()),
+                    true));
 
             Integer color = null;
 
@@ -277,9 +312,10 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
                     value = String.format("%s %s", WEEKDAY_FORMAT.print(date), DateTimeFormat.mediumDate().print(date));
                     break;
 
-                case 2:
                 case 3:
-                    value = string == null ? "Ø" : DateTimeFormat.shortTime().print(TIME_FORMAT.parseDateTime(string));
+                    time = to;
+                case 2:
+                    value = string == null ? "Ø" : DateTimeFormat.shortTime().print(time);
                     break;
 
                 case 4:
@@ -317,6 +353,6 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
 
 
     public boolean isDayClosed() {
-        return getSharedPreferences().getLong(DAY_CLOSED_TIMESTAMP, 0) > System.currentTimeMillis();
+        return new DateTime(getSharedPreferences().getLong(DAY_CLOSED_TIMESTAMP, 0)).isAfter(DateTime.now());
     }
 }
