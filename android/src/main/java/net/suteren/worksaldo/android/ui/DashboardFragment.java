@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AnalogClock;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
@@ -329,6 +330,16 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
             TextView saldo = (TextView) rootView.findViewById(R.id.saldo);
             TextView dailyAverage = (TextView) rootView.findViewById(R.id.dailyAverage);
             TextView dailyTotal = (TextView) rootView.findViewById(R.id.dailyTotal);
+            AnalogClock clock = (AnalogClock) rootView.findViewById(R.id.clock);
+
+            if (isDayClosed()) {
+                clock.setVisibility(View.GONE);
+                saldo.setVisibility(View.VISIBLE);
+            } else {
+                clock.setVisibility(View.VISIBLE);
+                saldo.setVisibility(View.GONE);
+            }
+
 
             saldo.setText(PERIOD_FORMATTER.print(currentSaldo.toPeriod()));
             saldo.setTextColor(getNumberColor(currentSaldo.getStandardSeconds()));

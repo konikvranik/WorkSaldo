@@ -26,6 +26,7 @@ public class MainActivity extends Activity implements ISharedPreferencesProvider
 
     public static final String MAIN = "main";
     private Menu myMenu;
+    private LoginDialog loginDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,13 +69,20 @@ public class MainActivity extends Activity implements ISharedPreferencesProvider
             startActivity(new Intent(this, SettingsActivity.class));
             return true;
         } else if (id == R.id.action_login) {
-            new LoginDialog(this).show();
+            getLoginDialog().show();
         } else if (id == R.id.action_refresh) {
             Log.d("MainActivity", "refreshing...");
             reloadFragment();
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    LoginDialog getLoginDialog() {
+        if (loginDialog==null){
+            loginDialog=new LoginDialog(this);
+        }
+        return loginDialog;
     }
 
     private void reloadFragment() {
@@ -96,7 +104,7 @@ public class MainActivity extends Activity implements ISharedPreferencesProvider
     private void checkLogin() {
 
         if (getSharedPreferences().getString(API_KEY, null) == null) {
-            new LoginDialog(this).show();
+            getLoginDialog().show();
         }
 
 
