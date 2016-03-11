@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">WorkSaldo</string>
-    <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="username">Toggl username</string>
     <string name="password">Toggl password</string>
