@@ -13,6 +13,10 @@ buildscript {
 }
 
 allprojects {
+
+    Properties buildProps = new Properties()
+    buildProps.load(project.rootProject.file('local.properties').newDataInputStream())
+
     repositories {
         jcenter()
         maven {
