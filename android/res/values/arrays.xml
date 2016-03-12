@@ -1,11 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string-array name="period_entries">
-        <item>month</item>
-        <item>week</item>
-        <item>day</item>
-        <item>custom</item>
-    </string-array>
     <string-array name="period_values">
         <item>month</item>
         <item>week</item>

@@ -1,3 +1,6 @@
 [submodule "jtoggl"]
 	path = jtoggl
 	url = https://github.com/konikvranik/jtoggl.git
+[submodule "androidsvg"]
+	path = androidsvg
+	url = https://github.com/senkir/androidsvg.git

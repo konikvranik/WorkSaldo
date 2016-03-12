@@ -19,4 +19,10 @@
     <string name="total_hours">Požadovaný počet odpracovaných hodin</string>
     <string name="total_hours_sum">Hodiny, které je nutno odpracovat ve zvolené periodě.</string>
     <string name="username">Uživatelské jméno</string>
+    <string-array name="period_entries">
+        <item>měsíc</item>
+        <item>týden</item>
+        <item>den</item>
+        <item>vlastní</item>
+    </string-array>
 </resources>

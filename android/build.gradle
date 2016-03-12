@@ -101,6 +101,7 @@ dependencies {
     }
     */
     compile project(':common')
+    compile project(':androidsvg')
     compile(project(':jtoggl-api')) {
         exclude module: 'junit'
         exclude module: 'javax.inject'

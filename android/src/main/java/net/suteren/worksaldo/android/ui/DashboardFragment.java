@@ -14,10 +14,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AnalogClock;
-import android.widget.ListView;
-import android.widget.SimpleCursorAdapter;
-import android.widget.TextView;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.*;
+import com.caverock.androidsvg.SVGImageView;
 import net.suteren.worksaldo.*;
 import net.suteren.worksaldo.Period;
 import net.suteren.worksaldo.android.IReloadable;
@@ -184,7 +184,7 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
     }
 
     private void updateCountersColor(View view) {
-        view.findViewById(R.id.counters).setBackgroundColor(getColor(isDayClosed() ? R.color.closed : R.color.open));
+        //view.findViewById(R.id.counters).setBackgroundColor(getColor(isDayClosed() ? R.color.closed : R.color.open));
     }
 
     public int getColor(int colorId) {
@@ -346,13 +346,19 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
             TextView dailyAverage = (TextView) rootView.findViewById(R.id.dailyAverage);
             TextView dailyTotal = (TextView) rootView.findViewById(R.id.dailyTotal);
             AnalogClock clock = (AnalogClock) rootView.findViewById(R.id.clock);
+            ImageView gears = (SVGImageView) rootView.findViewById(R.id.gears);
+
 
             if (isDayClosed()) {
                 clock.setVisibility(View.GONE);
                 saldo.setVisibility(View.VISIBLE);
+                gears.setVisibility(View.GONE);
+                gears.clearAnimation();
             } else {
                 clock.setVisibility(View.VISIBLE);
                 saldo.setVisibility(View.GONE);
+                gears.setVisibility(View.VISIBLE);
+                gears.startAnimation(AnimationUtils.loadAnimation(getActivity(), R.anim.rotate_gear));
             }
 
 
