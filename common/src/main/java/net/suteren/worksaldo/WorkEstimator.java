@@ -1,20 +1,11 @@
-package net.suteren.worksaldo.android;
-
-import android.database.Cursor;
-import android.text.format.DateUtils;
-import android.util.Log;
-
-import java.text.ParseException;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
-
-import static net.suteren.worksaldo.android.provider.TogglCachedProvider.*;
+package net.suteren.worksaldo;
 
 /**
  * Created by hpa on 6.3.16.
  */
 public class WorkEstimator {
+
+    /*
     private final boolean closedDay;
     private Calendar from;
     private Calendar to;
@@ -43,12 +34,14 @@ public class WorkEstimator {
 
     }
 
+    @Override
     public float getSaldo(float... cnt) {
         return cnt[0] + (closedDay && cnt.length > 1 ? cnt[1] : 0) - (getPastDayCount() * total / period.getDayCount
                 (date));
     }
 
 
+    @Override
     public float getHoursPerDay() {
         return total / period.getDayCount(date);
     }
@@ -122,10 +115,12 @@ public class WorkEstimator {
         return count;
     }
 
+    @Override
     public int getPause() {
         return pause;
     }
 
+    @Override
     public void setPause(int pause) {
         this.pause = pause;
     }
@@ -136,11 +131,14 @@ public class WorkEstimator {
     }
 
 
+    @Override
     public float getTodayToAvg(float workedToday) {
         return workedToday - getHoursPerDay();
     }
 
+    @Override
     public float getTodayToWhole(float[] workedPast) {
         return getTodayToAvg(workedPast[1]) + getSaldo(workedPast[0], workedPast[1]);
     }
+*/
 }

@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import net.suteren.worksaldo.android.R;
-import net.suteren.worksaldo.android.ui.MainActivity;
 
 /**
  * Created by vranikp on 3.3.16.

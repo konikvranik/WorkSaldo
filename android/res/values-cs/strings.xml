@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">WorkSaldo</string>
+    <string name="action_login">Přihlášení</string>
+    <string name="action_refresh">Obnovit</string>
+    <string name="action_settings">Nastavení</string>
+    <string name="api_token">API token</string>
+    <string name="api_token_sum">API token získáte na stránce "My Profile" na stránkách toggl.com</string>
+    <string name="dissmiss">Zrušit</string>
+    <string name="invalid_password">Neplatné jméno nebo heslo</string>
+    <string name="login">Přihlášení</string>
+    <string name="password">Heslo</string>
+    <string name="pause">Povinná přestávka v práci</string>
+    <string name="pause_sum">Tento čas bude odečten od doby pobytu v práci.</string>
+    <string name="period">Časové období</string>
+    <string name="period_default">týden</string>
+    <string name="real_worked_time">Započítávat skutečný odpracovaný čas</string>
+    <string name="real_worked_time_summ">Pokud je zvoleno, bude započítáván skutečný odpracovaný čas podle Toggl. Jinak se započítá rozdíl mezi příchodem do práce a odchodem z práce mínus povinná pauza.</string>
+    <string name="total_hours">Požadovaný počet odpracovaných hodin</string>
+    <string name="total_hours_sum">Hodiny, které je nutno odpracovat ve zvolené periodě.</string>
+    <string name="username">Uživatelské jméno</string>
+    <string-array name="period_entries">
+        <item>měsíc</item>
+        <item>týden</item>
+        <item>den</item>
+        <item>vlastní</item>
+    </string-array>
+</resources>

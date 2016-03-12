@@ -1,2 +1,2 @@
-include ':android', ':jtoggl-api'
+include ':android', ':jtoggl-api', ':common', ':androidsvg'
 project(':jtoggl-api').projectDir = new File('jtoggl/jtoggl-api')
