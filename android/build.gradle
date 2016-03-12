@@ -2,7 +2,7 @@ buildscript {
     repositories {
         jcenter()
         maven {
-            url "https://raw.githubusercontent.com/konikvranik/repository/master/"
+            url "https://raw.githubusercontent.com/konikvranik/m2repo/master/"
         }
 
     }
@@ -11,7 +11,7 @@ buildscript {
     }
 }
 
-apply plugin: 'net.suteren.android-eclipse'
+apply plugin: 'android'
 
 repositories {
     jcenter()
@@ -68,6 +68,7 @@ android {
         exclude 'META-INF/jersey-module-version'
         exclude 'META-INF/LICENSE'
         exclude 'META-INF/NOTICE'
+        exclude 'META-INF/LICENSE.txt'
     }
 
 
