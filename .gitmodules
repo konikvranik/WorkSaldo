@@ -3,4 +3,4 @@
 	url = https://github.com/konikvranik/jtoggl.git
 [submodule "androidsvg"]
 	path = androidsvg
-	url = https://github.com/senkir/androidsvg.git
+	url = https://github.com/konikvranik/androidsvg.git
