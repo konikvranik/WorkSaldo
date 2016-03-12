@@ -15,7 +15,9 @@ buildscript {
 allprojects {
 
     Properties buildProps = new Properties()
-    buildProps.load(project.rootProject.file('local.properties').newDataInputStream())
+    if (project.rootProject.file('local.properties').exists()) {
+        properties.load(project.rootProject.file('local.properties').newDataInputStream())
+    }
 
     repositories {
         jcenter()
