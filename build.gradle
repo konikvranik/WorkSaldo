@@ -14,9 +14,12 @@ buildscript {
 
 allprojects {
 
-    Properties buildProps = new Properties()
     if (project.rootProject.file('local.properties').exists()) {
-        properties.load(project.rootProject.file('local.properties').newDataInputStream())
+        Properties buildProps = new Properties()
+        buildProps.load(project.rootProject.file('local.properties').newDataInputStream())
+        buildProps.each { prop ->
+            project.ext.set(prop.key, prop.value)
+        }
     }
 
     repositories {

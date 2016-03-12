@@ -22,9 +22,12 @@ repositories {
 
 }
 
-Properties properties = new Properties()
 if (project.rootProject.file('local.properties').exists()) {
-    properties.load(project.rootProject.file('local.properties').newDataInputStream())
+    Properties buildProps = new Properties()
+    buildProps.load(project.rootProject.file('local.properties').newDataInputStream())
+    buildProps.each { prop ->
+        project.ext.set(prop.key, prop.value)
+    }
 }
 
 android {
@@ -49,8 +52,8 @@ android {
             storeFile file("release.keystore")
             keyAlias "worksaldo"
 
-            storePassword properties.getProperty('pwd.keystore')
-            keyPassword properties.getProperty('pwd.key')
+            storePassword project.ext.get('pwd.keystore')
+            keyPassword project.ext.get('pwd.key')
             //storePassword System.getenv("KSTOREPWD")
             //keyPassword System.getenv("KEYPWD")
             //storePassword System.console().readLine("\nKeystore password: ")
