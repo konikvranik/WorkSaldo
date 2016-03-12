@@ -1,0 +1,77 @@
+buildscript {
+    repositories {
+        jcenter()
+        maven {
+            url "https://raw.githubusercontent.com/konikvranik/repository/master/"
+        }
+        dependencies {
+            classpath 'com.android.tools.build:gradle:1.1.1'
+        }
+    }
+}
+
+apply plugin: 'android-library'
+
+repositories {
+    jcenter()
+    mavenLocal()
+    maven {
+        url "http://pandora.comerge.net:8081/nexus/content/repositories/public_snapshots/"
+    }
+
+}
+
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion "23.0.2"
+
+    defaultConfig {
+     //   applicationId "com.caverock.androidsvg"
+        minSdkVersion 21
+        targetSdkVersion 23
+        versionCode 1
+        versionName "1.0"
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
+    }
+
+    signingConfigs {
+        release {
+            storeFile file("release.keystore")
+            keyAlias "worksaldo"
+
+            storePassword properties.getProperty('pwd.keystore')
+            keyPassword properties.getProperty('pwd.key')
+            //storePassword System.getenv("KSTOREPWD")
+            //keyPassword System.getenv("KEYPWD")
+            //storePassword System.console().readLine("\nKeystore password: ")
+            //keyPassword System.console().readLine("\nKey password: ")
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+        }
+    }
+
+    packagingOptions {
+        exclude 'META-INF/jersey-module-version'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/NOTICE'
+    }
+
+
+}
+
+
+dependencies {
+}
