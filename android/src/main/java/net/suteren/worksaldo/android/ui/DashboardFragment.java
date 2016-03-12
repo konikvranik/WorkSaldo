@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -77,6 +78,7 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
     private DayBinder dayBinder;
     private Runnable onReload;
     private ListView lv;
+    private SwipeRefreshLayout refresh;
 
     private Context getCtx() {
         return getContext();
@@ -96,6 +98,19 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
 
         final View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         lv = (ListView) rootView.findViewById(R.id.listing);
+        refresh = (SwipeRefreshLayout) rootView.findViewById(R.id.refresh);
+        refresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                reload();
+                onReload(new Runnable() {
+                    @Override
+                    public void run() {
+                        refresh.setRefreshing(false);
+                    }
+                });
+            }
+        });
         final LoaderManager lm = getLoaderManager();
         mAdapter = new SimpleCursorAdapter(getCtx(), R.layout.row, null,
                 new String[]{DATE_NAME, DAY_START_NAME, DAY_END_NAME, DAY_TOTAL_NAME, DAY_SALDO_NAME},

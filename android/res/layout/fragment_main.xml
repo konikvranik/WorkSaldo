@@ -1,35 +1,33 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:tools="http://schemas.android.com/tools"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:orientation="vertical"
-              tools:context=".MainActivity$PlaceholderFragment">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivity$PlaceholderFragment">
 
 
     <LinearLayout
         android:id="@+id/counters"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="160dp"
         android:orientation="horizontal"
         android:paddingLeft="@dimen/activity_horizontal_margin"
         android:paddingRight="@dimen/activity_horizontal_margin"
         android:paddingTop="@dimen/activity_vertical_margin"
-        android:paddingBottom="@dimen/activity_vertical_margin"
-        android:layout_marginBottom="@dimen/activity_vertical_margin">
+        android:paddingBottom="@dimen/activity_vertical_margin">
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_weight="4"
             android:layout_gravity="end"
             android:gravity="end"
-            android:layout_height="wrap_content">
+            android:layout_height="match_parent">
 
             <AnalogClock
                 android:id="@+id/clock"
-                android:layout_width="80sp"
+                android:layout_width="120dp"
                 android:layout_gravity="end"
-                android:layout_height="80sp"
-                />
+                android:layout_height="120dp" />
 
 
         </LinearLayout>
@@ -38,17 +36,17 @@
             android:id="@+id/saldo"
             android:layout_width="wrap_content"
             android:layout_weight="4"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_gravity="end"
-            android:gravity="end"
-            android:textAlignment="textEnd"
-            android:textSize="60sp"
+            android:gravity="center"
+            android:textAlignment="center"
+            android:textSize="60dp"
             android:text="-26,5"
             android:shadowRadius="5"
             android:shadowColor="@android:color/white"
             android:shadowDx="0"
             android:shadowDy="0"
-            android:layout_marginEnd="20dp"/>
+            android:layout_marginEnd="20dp" />
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -67,7 +65,7 @@
                 android:shadowColor="@android:color/black"
                 android:shadowDx="0"
                 android:shadowDy="0"
-                android:text="-8,8"/>
+                android:text="-8,8" />
 
             <net.suteren.worksaldo.android.ui.OutlinedTextView
                 android:id="@+id/dailyTotal"
@@ -79,19 +77,24 @@
                 android:shadowColor="@android:color/black"
                 android:shadowDx="0"
                 android:shadowDy="0"
-                android:text="-18,8"
-                />
+                android:text="-18,8" />
 
         </LinearLayout>
     </LinearLayout>
 
-
-    <ListView
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/refresh"
+        android:layout_width="match_parent"
         android:layout_marginLeft="@dimen/activity_horizontal_margin"
         android:layout_marginRight="@dimen/activity_horizontal_margin"
-        android:layout_below="@id/counters"
-        android:id="@+id/listing"
-        android:layout_width="match_parent"
-        android:layout_height="fill_parent"/>
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        android:layout_height="fill_parent">
 
+        <ListView
+            android:id="@+id/listing"
+            android:layout_width="match_parent"
+            android:layout_height="fill_parent" />
+
+    </android.support.v4.widget.SwipeRefreshLayout>
 </LinearLayout>

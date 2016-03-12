@@ -115,6 +115,7 @@ dependencies {
         exclude module: 'stax-api'
         exclude module: 'xpp3'
     }
+    compile 'com.android.support:support-v4:23.+'
 
     testCompile 'junit:junit:4.12'
 
