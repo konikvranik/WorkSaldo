@@ -30,7 +30,10 @@ public class StandardWorkEstimator implements IWorkEstimator {
     @Override
     public Duration getExpected() {
         final LocalDate now = this.now.toLocalDate();
-        return demandedHours.multipliedBy(Days.daysBetween(period.from(now), now).getDays()).dividedBy(period.getDayCount(now).getDays());
+
+        final int totalDays = period.getDayCount(now).getDays();
+        final int daysBefore = period.getDaysBefore(now).getDays();
+        return demandedHours.multipliedBy(daysBefore).dividedBy(totalDays);
     }
 
 
@@ -41,17 +44,26 @@ public class StandardWorkEstimator implements IWorkEstimator {
 
     @Override
     public Duration getRemainingToday() {
-        return getSaldoToday().plus(getSaldo());
+        if (period.getDaysBefore(now.toLocalDate()).getDays() < period.getDayCount(now.toLocalDate()).getDays()) {
+            return getWorkedHours().plus(getWorkedHoursToday()).minus(getExpected().plus(getHoursPerDay()));
+        } else {
+            return Duration.ZERO;
+        }
     }
 
     @Override
     public Duration getRemainingTotal() {
-        return demandedHours.minus(getWorkedHours());
+        return getWorkedHours().plus(getWorkedHoursToday()).minus(demandedHours);
     }
 
     @Override
     public Duration getHoursPerDay() {
-        return demandedHours.dividedBy(period.getDayCount(this.now.toLocalDate()).getDays());
+        if (period.getDaysBefore(now.toLocalDate()).getDays() < period.getDayCount(now.toLocalDate()).getDays()) {
+            return demandedHours.dividedBy(period.getDayCount(this.now.toLocalDate()).getDays());
+        } else {
+            return Duration.ZERO;
+        }
+
     }
 
     @Override
