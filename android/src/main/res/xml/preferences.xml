@@ -5,8 +5,22 @@
         android:title="@string/real_worked_time"
         android:summary="@string/real_worked_time_summ"
         android:disableDependentsState="true"
-        android:defaultValue="true"/>
+        android:defaultValue="false"/>
 
+    <ListPreference
+        android:key="period"
+        android:title="@string/period"
+        android:dialogTitle="@string/period"
+        android:entries="@array/period_entries"
+        android:entryValues="@array/period_values"
+        android:defaultValue="@string/period_default"/>
+    <EditTextPreference
+        android:key="total_hours"
+        android:title="@string/total_hours"
+        android:summary="@string/total_hours_sum"
+        android:defaultValue="40"
+        android:numeric="integer"
+        android:inputType="number"/>
     <EditTextPreference
         android:key="pause"
         android:title="@string/pause"
@@ -15,20 +29,6 @@
         android:numeric="integer"
         android:dependency="real_worked_time"
         android:inputType="number"/>
-    <EditTextPreference
-        android:key="total_hours"
-        android:title="@string/total_hours"
-        android:summary="@string/total_hours_sum"
-        android:defaultValue="40"
-        android:numeric="integer"
-        android:inputType="number"/>
-    <ListPreference
-        android:key="period"
-        android:title="@string/period"
-        android:dialogTitle="@string/period"
-        android:entries="@array/period_entries"
-        android:entryValues="@array/period_values"
-        android:defaultValue="@string/period_default"/>
 
     <EditTextPreference
         android:key="api_token"

@@ -18,6 +18,7 @@ import android.view.animation.AnimationUtils;
 import android.widget.*;
 import com.caverock.androidsvg.SVGImageView;
 import net.suteren.worksaldo.IWorkEstimator;
+import net.suteren.worksaldo.IWorkEstimator.ChunkOfWork;
 import net.suteren.worksaldo.Period;
 import net.suteren.worksaldo.StandardWorkEstimator;
 import net.suteren.worksaldo.android.IRefreshable;
@@ -30,6 +31,7 @@ import java.io.Writer;
 import java.util.Locale;
 
 import static android.content.Context.MODE_PRIVATE;
+import static net.suteren.worksaldo.StandardWorkEstimator.chunkOfWork;
 import static net.suteren.worksaldo.android.provider.TogglCachedProvider.*;
 import static net.suteren.worksaldo.android.ui.MainActivity.*;
 
@@ -116,7 +118,7 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
                 new String[]{DATE_NAME, DAY_START_NAME, DAY_END_NAME, DAY_TOTAL_NAME, DAY_SALDO_NAME},
                 new int[]{R.id.date, R.id.from, R.id.to, R.id.total, R.id.saldo}, 0);
         dayBinder = new DayBinder();
-        dayBinder.setMode(((MainActivity) getActivity()).getSharedPreferences().getBoolean("real_worked_time", true));
+        dayBinder.setMode(getRealWorkedTime());
         mAdapter.setViewBinder(dayBinder);
         lv.setAdapter(mAdapter);
 
@@ -266,17 +268,19 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
             String value = null;
             LocalTime stop = TIME_FORMAT.parseLocalTime(cursor.getString(3));
             LocalDateTime day = DATE_FORMAT.parseLocalDate(cursor.getString(1)).toLocalDateTime(stop);
-            IWorkEstimator we = new StandardWorkEstimator(getPeriod(), day,
-                    Duration.standardHours(getTotalHours()));
+            IWorkEstimator we = new StandardWorkEstimator(getPeriod(), day, Duration.standardHours(getTotalHours()));
             boolean isToday = day.toLocalDate().isEqual(LocalDate.now());
 
             final LocalTime to = getEndTime(stop, isToday);
             LocalTime time = TIME_FORMAT.parseLocalTime(cursor.getString(2));
-            we.addHours(StandardWorkEstimator.chunkOfWork(time,
-                    to,
-                    Duration.standardMinutes(getPause()),
-                    true));
-
+            if (getRealWorkedTime()) {
+                long duration = cursor.getLong(4);
+                if (duration > 0) {
+                    we.addHours(chunkOfWork(Duration.standardSeconds(duration), true));
+                }
+            } else {
+                we.addHours(chunkOfWork(time, to, Duration.standardMinutes(getPause()), true));
+            }
             Integer color = null;
 
             String string = cursor.getString(columnIndex);
@@ -299,8 +303,6 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
                     break;
 
                 case 5:
-
-
                     final Duration saldoToday = we.getSaldoToday();
                     color = getNumberColor(saldoToday.getStandardSeconds());
                     value = PERIOD_FORMATTER.print(saldoToday.toPeriod());
@@ -341,6 +343,11 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
         StandardWorkEstimator we = getSaldoWorkEstimator(data);
 
         final Duration currentSaldo = we.getSaldo();
+        final Duration saldoToday = we.getSaldoToday();
+        final Duration remainingToday = we.getRemainingToday();
+        if (isDayClosed()) {
+            currentSaldo.plus(we.getSaldoToday());
+        }
 
         final View rootView = getView().getRootView();
         if (rootView != null) {
@@ -349,7 +356,6 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
             TextView dailyTotal = (TextView) rootView.findViewById(R.id.dailyTotal);
             AnalogClock clock = (AnalogClock) rootView.findViewById(R.id.clock);
             ImageView gears = (SVGImageView) rootView.findViewById(R.id.gears);
-
 
             if (isDayClosed()) {
                 clock.setVisibility(View.GONE);
@@ -367,11 +373,9 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
             saldo.setText(PERIOD_FORMATTER.print(currentSaldo.toPeriod()));
             saldo.setTextColor(getNumberColor(currentSaldo.getStandardSeconds()));
 
-            final Duration saldoToday = we.getSaldoToday();
             dailyAverage.setText(PERIOD_FORMATTER.print(saldoToday.toPeriod()));
             dailyAverage.setTextColor(getNumberColor(saldoToday.getStandardSeconds()));
 
-            final Duration remainingToday = we.getRemainingToday();
             dailyTotal.setText(PERIOD_FORMATTER.print(remainingToday.toPeriod()));
             dailyTotal.setTextColor(getNumberColor(remainingToday.getStandardSeconds()));
 
@@ -384,31 +388,34 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
     }
 
     private StandardWorkEstimator getSaldoWorkEstimator(Cursor data) {
-        SharedPreferences sharedPreferences = getSharedPreferences();
-
-        boolean rwt = sharedPreferences.getBoolean("real_worked_time", true);
 
         LocalDateTime now = LocalDateTime.now();
-        if (isDayClosed()) {
-            now = now.plus(Duration.standardDays(1));
-        }
         StandardWorkEstimator we = new StandardWorkEstimator(getPeriod(), now, Duration.standardHours(getTotalHours()));
 
         data.moveToFirst();
 
-        int cnt = 0;
-
         while (!data.isAfterLast()) {
-            final boolean isToday = !isDayClosed() && LocalDate.now().isEqual(DATE_FORMAT.parseLocalDate(data.getString(1)));
-            final IWorkEstimator.ChunkOfWork day = StandardWorkEstimator.chunkOfWork(
-                    TIME_FORMAT.parseLocalTime(data.getString(2)),
-                    isToday ? LocalTime.now() : TIME_FORMAT.parseLocalTime(data.getString(3)),
-                    Duration.standardMinutes(getPause()),
-                    isToday);
-            we.addHours(day);
+            final boolean isToday = LocalDate.now().isEqual(DATE_FORMAT.parseLocalDate(data.getString(1)));
+
+            if (getRealWorkedTime()) {
+                long duration = data.getLong(4);
+                if (duration > 0) {
+                    we.addHours(chunkOfWork(Duration.standardSeconds(duration), isToday));
+                }
+            } else {
+                we.addHours(chunkOfWork(
+                        TIME_FORMAT.parseLocalTime(data.getString(2)),
+                        getEndTime(TIME_FORMAT.parseLocalTime(data.getString(3)), isToday),
+                        Duration.standardMinutes(getPause()),
+                        isToday));
+            }
             data.moveToNext();
         }
         return we;
+    }
+
+    private boolean getRealWorkedTime() {
+        return getSharedPreferences().getBoolean("real_worked_time", false);
     }
 
     public int getPause() {
