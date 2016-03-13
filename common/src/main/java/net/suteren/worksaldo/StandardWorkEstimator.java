@@ -27,6 +27,7 @@ public class StandardWorkEstimator implements IWorkEstimator {
         return getWorkedHours().minus(getExpected());
     }
 
+    @Override
     public Duration getExpected() {
         final LocalDate now = this.now.toLocalDate();
         return demandedHours.multipliedBy(Days.daysBetween(period.from(now), now).getDays()).dividedBy(period.getDayCount(now).getDays());

@@ -16,6 +16,8 @@ public interface IWorkEstimator {
      */
     Duration getSaldo();
 
+    Duration getExpected();
+
     /**
      * Returns balance for current day (worked today - hours per day).
      *

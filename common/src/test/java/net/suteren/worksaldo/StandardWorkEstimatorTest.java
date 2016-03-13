@@ -13,88 +13,64 @@ import static org.testng.Assert.assertEquals;
 @Test
 public class StandardWorkEstimatorTest {
 
-    @Test(groups = {"unitTests"})
-    public void testGetSaldo() throws Exception {
+    @Test(groups = {"unitTests"}, dataProvider = "variants")
+    public void testGetSaldo(IWorkEstimator we, Duration saldo, Duration saldoToday, Duration remainingToday, Duration remainingTotal, Duration hoursPerDay, Duration workedHours, Duration workedToday) throws Exception {
 
-        LocalDateTime today = LocalDateTime.parse("2016-03-03T15:50:20.045"); // Thursday
-        StandardWorkEstimator we = new StandardWorkEstimator(Period.WEEK, today, Duration.standardHours(40))
-                .addHours(chunkOfWork(Duration.standardHours(7).plus(Duration.standardMinutes(30)), true))
-                .addHours(chunkOfWork(LocalTime.parse("08:30:00"), LocalTime.parse("16:30:00"), false))
-                .addHours(chunkOfWork(LocalDateTime.parse("2016-03-01T08:30:00"), LocalDateTime.parse("2016-03-01T16:00:00"), false))
-                .addHours(chunkOfWork(LocalTime.parse("08:00:00"), LocalTime.parse("09:00:00"), true));
+        assertEquals(we.getSaldo(), saldo);
 
-        assertEquals(Period.WEEK.from(today.toLocalDate()), LocalDate.parse("2016-02-29"));
-        assertEquals(Period.WEEK.to(today.toLocalDate()), LocalDate.parse("2016-03-06"));
-        assertEquals(Period.WEEK.getDayCount(today.toLocalDate()), Days.days(5));
-        assertEquals(Period.WEEK.getDaysBefore(today.toLocalDate()), Days.days(3));
-
-        assertEquals(we.getExpected(), Duration.standardHours(8 + 8 + 8));
-        assertEquals(we.getWorkedHours(), Duration.standardHours(8 + 7).plus(Duration.standardMinutes(30)));
-        assertEquals(we.getSaldo(), Duration.standardHours(-8).plus(Duration.standardMinutes(-30)));
-        assertEquals(we.getHoursPerDay(), Duration.standardHours(8));
-        assertEquals(we.getWorkedHoursToday(), Duration.standardHours(8).plus(Duration.standardMinutes(30)));
-        assertEquals(we.getSaldoToday(), Duration.standardMinutes(30));
     }
 
-    @Test
-    public void testGetSaldoToday() throws Exception {
-        LocalDateTime today = LocalDateTime.parse("2016-03-03T19:50:20.045"); // Thursday
-        StandardWorkEstimator we = new StandardWorkEstimator(Period.WEEK, today, Duration.standardHours(40))
-                .addHours(chunkOfWork(LocalTime.parse("09:00:00"), LocalTime.parse("18:07:00"), Duration.standardMinutes(30), false))
-                .addHours(chunkOfWork(LocalTime.parse("09:28:00"), LocalTime.parse("18:34:00"), Duration.standardMinutes(30), false))
-                .addHours(chunkOfWork(LocalTime.parse("08:51:00"), LocalTime.parse("17:42:00"), Duration.standardMinutes(30), false))
-                .addHours(chunkOfWork(LocalTime.parse("16:17:00"), LocalTime.parse("17:37:00"), Duration.standardMinutes(30), true));
-        assertEquals(we.getWorkedHours().getStandardHours(), 25);
-        assertEquals(we.getSaldo().getStandardHours(), 1);
+    @Test(dataProvider = "variants")
+    public void testGetSaldoToday(IWorkEstimator we, Duration saldo, Duration saldoToday, Duration remainingToday, Duration remainingTotal, Duration hoursPerDay, Duration workedHours, Duration workedToday) throws Exception {
+        assertEquals(we.getSaldoToday(), saldoToday);
     }
 
     @Test(dataProvider = "variants")
     public void testGetRemainingToday(IWorkEstimator we, Duration saldo, Duration saldoToday, Duration remainingToday, Duration remainingTotal, Duration hoursPerDay, Duration workedHours, Duration workedToday) throws Exception {
-
+        assertEquals(we.getRemainingToday(), remainingToday);
     }
 
-    @Test
-    public void testGetRemainingTotal() throws Exception {
-
+    @Test(dataProvider = "variants")
+    public void testGetRemainingTotal(IWorkEstimator we, Duration saldo, Duration saldoToday, Duration remainingToday, Duration remainingTotal, Duration hoursPerDay, Duration workedHours, Duration workedToday) throws Exception {
+        assertEquals(we.getRemainingTotal(), remainingTotal);
     }
 
-    @Test
-    public void testGetHoursPerDay() throws Exception {
-
+    @Test(dataProvider = "variants")
+    public void testGetHoursPerDay(IWorkEstimator we, Duration saldo, Duration saldoToday, Duration remainingToday, Duration remainingTotal, Duration hoursPerDay, Duration workedHours, Duration workedToday) throws Exception {
+        assertEquals(we.getHoursPerDay(), hoursPerDay);
     }
 
-    @Test
-    public void testGetWorkedHours() throws Exception {
-
+    @Test(dataProvider = "variants")
+    public void testGetWorkedHours(IWorkEstimator we, Duration saldo, Duration saldoToday, Duration remainingToday, Duration remainingTotal, Duration hoursPerDay, Duration workedHours, Duration workedToday) throws Exception {
+        assertEquals(we.getWorkedHours(), workedHours);
     }
 
-    @Test
-    public void testGetWorkedHoursToday() throws Exception {
-
+    @Test(dataProvider = "variants")
+    public void testGetWorkedHoursToday(IWorkEstimator we, Duration saldo, Duration saldoToday, Duration remainingToday, Duration remainingTotal, Duration hoursPerDay, Duration workedHours, Duration workedToday) throws Exception {
+        assertEquals(we.getWorkedHoursToday(), workedToday);
     }
 
-    @Test
-    public void testAddHours() throws Exception {
-
+    @Test(dataProvider = "variants")
+    public void testAddHours(IWorkEstimator we, Duration saldo, Duration saldoToday, Duration remainingToday, Duration remainingTotal, Duration hoursPerDay, Duration workedHours, Duration workedToday) throws Exception {
     }
 
     @DataProvider
     public Object[][] variants() {
         return new Object[][]{
                 {new StandardWorkEstimator(Period.WEEK, LocalDateTime.parse("2016-03-16T08:00:00"), Duration.standardHours(40)) // Sunday
-                        .addHours(chunkOfWork(LocalTime.parse("09:00"), LocalTime.parse("18:07"), Duration.standardMinutes(30), false))
-                        .addHours(chunkOfWork(LocalTime.parse("09:28"), LocalTime.parse("18:34"), Duration.standardMinutes(30), false))
-                        .addHours(chunkOfWork(LocalTime.parse("08:51"), LocalTime.parse("17:42"), Duration.standardMinutes(30), false))
-                        .addHours(chunkOfWork(LocalTime.parse("08:00"), LocalTime.parse("17:00"), Duration.standardMinutes(30), false))
-                        .addHours(chunkOfWork(LocalTime.parse("09:04"), LocalTime.parse("15:31"), Duration.standardMinutes(30), false))
+                        .addHours(chunkOfWork(LocalTime.parse("09:00"), LocalTime.parse("18:07"), Duration.standardMinutes(30), false)) // 09:07 - 00:30, 37
+                        .addHours(chunkOfWork(LocalTime.parse("09:28"), LocalTime.parse("18:34"), Duration.standardMinutes(30), false)) // 09:06 - 00:30, 36
+                        .addHours(chunkOfWork(LocalTime.parse("08:51"), LocalTime.parse("17:42"), Duration.standardMinutes(30), false)) // 08:51 - 00:30, 21
+                        .addHours(chunkOfWork(LocalTime.parse("08:00"), LocalTime.parse("17:00"), Duration.standardMinutes(30), false)) // 09:00 - 00:30, 30
+                        .addHours(chunkOfWork(LocalTime.parse("09:04"), LocalTime.parse("15:31"), Duration.standardMinutes(30), false)) // 06:27 - 00:30, -02:03
                         ,
-                        Duration.standardMinutes(1),
-                        Duration.standardMinutes(0),
-                        Duration.standardMinutes(1),
-                        Duration.standardMinutes(0),
-                        Duration.standardMinutes(1),
-                        Duration.standardMinutes(0),
-                        Duration.standardMinutes(1)}
+                        Duration.standardMinutes(1), // Saldo
+                        Duration.standardMinutes(0), // Saldo today
+                        Duration.standardMinutes(0), // remaining today
+                        Duration.standardMinutes(-1), // remaining total
+                        Duration.standardHours(8), // hours per day
+                        Duration.standardMinutes(1).plus(Duration.standardHours(40)), // worked hours
+                        Duration.standardMinutes(0)} // worked today
         };
 
     }
