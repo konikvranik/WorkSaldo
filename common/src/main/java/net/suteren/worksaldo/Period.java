@@ -10,6 +10,7 @@ import org.joda.time.LocalDate;
 public enum Period {
     DAY, WEEK, MONTH, CUSTOM, period;
 
+    public static final int MAX_DAYS = 5;
     private double dayCount;
 
     public LocalDate from(LocalDate date) {
@@ -35,15 +36,18 @@ public enum Period {
 
 
     public Days getDayCount(LocalDate date) {
-        Days daysInPeriod = Days.daysBetween(from(date), to(date)).plus(1);
-        if (daysInPeriod.getDays() > 5) {
-            daysInPeriod = Days.days(5);
+        return cutOff(Days.daysBetween(from(date), to(date)).plus(1));
+    }
+
+    Days cutOff(Days daysInPeriod) {
+        if (daysInPeriod.getDays() > MAX_DAYS) {
+            daysInPeriod = Days.days(MAX_DAYS);
         }
         return daysInPeriod;
     }
 
     public Days getDaysBefore(LocalDate date) {
-        return Days.daysBetween(from(date), date);
+        return cutOff(Days.daysBetween(from(date), date));
     }
 
 }

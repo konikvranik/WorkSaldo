@@ -1,6 +1,7 @@
 package net.suteren.worksaldo;
 
 import org.joda.time.*;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import static net.suteren.worksaldo.StandardWorkEstimator.chunkOfWork;
@@ -47,8 +48,8 @@ public class StandardWorkEstimatorTest {
         assertEquals(we.getSaldo().getStandardHours(), 1);
     }
 
-    @Test
-    public void testGetRemainingToday() throws Exception {
+    @Test(dataProvider = "variants")
+    public void testGetRemainingToday(IWorkEstimator we, Duration saldo, Duration saldoToday, Duration remainingToday, Duration remainingTotal, Duration hoursPerDay, Duration workedHours, Duration workedToday) throws Exception {
 
     }
 
@@ -74,6 +75,27 @@ public class StandardWorkEstimatorTest {
 
     @Test
     public void testAddHours() throws Exception {
+
+    }
+
+    @DataProvider
+    public Object[][] variants() {
+        return new Object[][]{
+                {new StandardWorkEstimator(Period.WEEK, LocalDateTime.parse("2016-03-16T08:00:00"), Duration.standardHours(40)) // Sunday
+                        .addHours(chunkOfWork(LocalTime.parse("09:00"), LocalTime.parse("18:07"), Duration.standardMinutes(30), false))
+                        .addHours(chunkOfWork(LocalTime.parse("09:28"), LocalTime.parse("18:34"), Duration.standardMinutes(30), false))
+                        .addHours(chunkOfWork(LocalTime.parse("08:51"), LocalTime.parse("17:42"), Duration.standardMinutes(30), false))
+                        .addHours(chunkOfWork(LocalTime.parse("08:00"), LocalTime.parse("17:00"), Duration.standardMinutes(30), false))
+                        .addHours(chunkOfWork(LocalTime.parse("09:04"), LocalTime.parse("15:31"), Duration.standardMinutes(30), false))
+                        ,
+                        Duration.standardMinutes(1),
+                        Duration.standardMinutes(0),
+                        Duration.standardMinutes(1),
+                        Duration.standardMinutes(0),
+                        Duration.standardMinutes(1),
+                        Duration.standardMinutes(0),
+                        Duration.standardMinutes(1)}
+        };
 
     }
 }
