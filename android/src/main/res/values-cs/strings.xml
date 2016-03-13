@@ -13,7 +13,6 @@
     <string name="pause">Povinná přestávka v práci</string>
     <string name="pause_sum">Tento čas bude odečten od doby pobytu v práci.</string>
     <string name="period">Časové období</string>
-    <string name="period_default">týden</string>
     <string name="real_worked_time">Započítávat skutečný odpracovaný čas</string>
     <string name="real_worked_time_summ">Pokud je zvoleno, bude započítáván skutečný odpracovaný čas podle Toggl. Jinak se započítá rozdíl mezi příchodem do práce a odchodem z práce mínus povinná pauza.</string>
     <string name="total_hours">Požadovaný počet odpracovaných hodin</string>

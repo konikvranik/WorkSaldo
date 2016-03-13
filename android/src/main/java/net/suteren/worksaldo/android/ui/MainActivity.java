@@ -1,11 +1,14 @@
 package net.suteren.worksaldo.android.ui;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import net.suteren.worksaldo.android.IRefreshable;
+import net.suteren.worksaldo.android.IReloadable;
 import net.suteren.worksaldo.android.R;
 
 import static net.suteren.worksaldo.android.provider.TogglCachedProvider.API_KEY;
@@ -34,6 +37,18 @@ public class MainActivity extends Activity implements ISharedPreferencesProvider
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        Fragment f = getFragmentManager().findFragmentById(R.id.container);
+        if (f instanceof IReloadable) {
+            ((IReloadable) f).reload();
+        }
+        if (f instanceof IRefreshable) {
+            ((IRefreshable) f).refresh();
+        }
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
@@ -58,9 +73,9 @@ public class MainActivity extends Activity implements ISharedPreferencesProvider
         return super.onOptionsItemSelected(item);
     }
 
-    LoginDialog getLoginDialog() {
-        if (loginDialog==null){
-            loginDialog=new LoginDialog(this);
+    private LoginDialog getLoginDialog() {
+        if (loginDialog == null) {
+            loginDialog = new LoginDialog(this);
         }
         return loginDialog;
     }

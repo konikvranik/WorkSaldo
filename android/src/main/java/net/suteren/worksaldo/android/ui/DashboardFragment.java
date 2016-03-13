@@ -20,6 +20,7 @@ import android.widget.*;
 import com.caverock.androidsvg.SVGImageView;
 import net.suteren.worksaldo.*;
 import net.suteren.worksaldo.Period;
+import net.suteren.worksaldo.android.IRefreshable;
 import net.suteren.worksaldo.android.IReloadable;
 import net.suteren.worksaldo.android.R;
 import org.joda.time.*;
@@ -36,7 +37,7 @@ import static net.suteren.worksaldo.android.ui.MainActivity.*;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class DashboardFragment extends Fragment implements ISharedPreferencesProviderWithContext, IReloadable {
+public class DashboardFragment extends Fragment implements ISharedPreferencesProviderWithContext, IRefreshable {
 
     public static final PeriodFormatter PERIOD_FORMATTER = new PeriodFormatterBuilder()
             .printZeroIfSupported()
@@ -174,8 +175,7 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
         } else {
             closeDay();
         }
-        mAdapter.notifyDataSetChanged();
-        getLoaderManager().initLoader(DAYS_LOADER, null, getDaysLoaderCallback());
+        refresh();
     }
 
     private void closeDay() {
@@ -208,7 +208,6 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
 
                 Cursor c = mAdapter.swapCursor(data);
                 if (c != null) {
-                    Log.d("LoaderCallbacks", "closing cursor");
                     c.close();
                 }
 
@@ -242,14 +241,24 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
         }
     }
 
-    @Override
     public void reload() {
         getLoaderManager().restartLoader(DAYS_UPDATER, null, getReloadCallback());
     }
 
-    @Override
     public void onReload(Runnable action) {
         this.onReload = action;
+    }
+
+    @Override
+    public void refresh() {
+        Log.d("DashboardFragment", "Refreshing");
+        getLoaderManager().initLoader(DAYS_LOADER, null, getDaysLoaderCallback());
+        mAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void onRefresh(Runnable action) {
+
     }
 
     private class DayBinder implements SimpleCursorAdapter.ViewBinder {
@@ -334,9 +343,6 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
 
     void refreshSaldo(Cursor data) {
         StandardWorkEstimator we = getSaldoWorkEstimator(data);
-        Log.d("DashboardFragment", String.format("Expected: %s", PERIOD_FORMATTER.print(we.getExpected().toPeriod())));
-        Log.d("DashboardFragment", String.format("Worked: %s", PERIOD_FORMATTER.print(we.getWorkedHours().toPeriod())));
-        Log.d("DashboardFragment", String.format("Hours Per Day: %s", PERIOD_FORMATTER.print(we.getHoursPerDay().toPeriod())));
 
         final Duration currentSaldo = we.getSaldo();
 
@@ -404,17 +410,14 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
                     isToday ? LocalTime.now() : TIME_FORMAT.parseLocalTime(data.getString(3)),
                     Duration.standardMinutes(getPause()),
                     isToday);
-            Log.d("DashboardFragment", String.format("%d", day.getHours().getStandardHours()));
-            Log.d("DashboardFragment", String.format("%s", day.isToday()));
             we.addHours(day);
-            Log.d("DashboardFragment", String.format("%d - Worked: %s", ++cnt, PERIOD_FORMATTER.print(we.getWorkedHours().toPeriod())));
             data.moveToNext();
         }
         return we;
     }
 
     public int getPause() {
-        return Integer.parseInt(getSharedPreferences().getString("pause", "20").toUpperCase());
+        return Integer.parseInt(getSharedPreferences().getString("pause", "30").toUpperCase());
     }
 
     protected int getTotalHours() {
