@@ -18,7 +18,6 @@ import android.view.animation.AnimationUtils;
 import android.widget.*;
 import com.caverock.androidsvg.SVGImageView;
 import net.suteren.worksaldo.IWorkEstimator;
-import net.suteren.worksaldo.IWorkEstimator.ChunkOfWork;
 import net.suteren.worksaldo.Period;
 import net.suteren.worksaldo.StandardWorkEstimator;
 import net.suteren.worksaldo.android.IRefreshable;
