@@ -14,14 +14,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.*;
 import com.caverock.androidsvg.SVGImageView;
-import net.suteren.worksaldo.*;
+import net.suteren.worksaldo.IWorkEstimator;
 import net.suteren.worksaldo.Period;
+import net.suteren.worksaldo.StandardWorkEstimator;
 import net.suteren.worksaldo.android.IRefreshable;
-import net.suteren.worksaldo.android.IReloadable;
 import net.suteren.worksaldo.android.R;
 import org.joda.time.*;
 import org.joda.time.format.*;
@@ -122,7 +121,6 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
         lv.setAdapter(mAdapter);
 
         lm.initLoader(DAYS_LOADER, null, getDaysLoaderCallback());
-        lm.initLoader(DAYS_UPDATER, null, getReloadCallback());
 
         rootView.findViewById(R.id.counters).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -133,8 +131,6 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
         });
 
         updateCountersColor(rootView);
-
-        reload();
 
         return rootView;
     }
@@ -252,8 +248,8 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
     @Override
     public void refresh() {
         Log.d("DashboardFragment", "Refreshing");
-        getLoaderManager().initLoader(DAYS_LOADER, null, getDaysLoaderCallback());
-        mAdapter.notifyDataSetChanged();
+        getActivity().getContentResolver().notifyChange(TIMEENTRIES_URI, null);
+        getLoaderManager().restartLoader(DAYS_LOADER, null, getDaysLoaderCallback());
     }
 
     @Override
@@ -270,15 +266,15 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
             String value = null;
             LocalTime stop = TIME_FORMAT.parseLocalTime(cursor.getString(3));
             LocalDateTime day = DATE_FORMAT.parseLocalDate(cursor.getString(1)).toLocalDateTime(stop);
-            IWorkEstimator we = new StandardWorkEstimator(getDaysLoaderCallback().getPeriod(), day,
-                    Duration.standardHours(getDaysLoaderCallback().getTotalHours()));
+            IWorkEstimator we = new StandardWorkEstimator(getPeriod(), day,
+                    Duration.standardHours(getTotalHours()));
             boolean isToday = day.toLocalDate().isEqual(LocalDate.now());
 
             final LocalTime to = getEndTime(stop, isToday);
             LocalTime time = TIME_FORMAT.parseLocalTime(cursor.getString(2));
             we.addHours(StandardWorkEstimator.chunkOfWork(time,
                     to,
-                    Duration.standardMinutes(getDaysLoaderCallback().getPause()),
+                    Duration.standardMinutes(getPause()),
                     true));
 
             Integer color = null;
@@ -404,7 +400,6 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
 
         while (!data.isAfterLast()) {
             final boolean isToday = !isDayClosed() && LocalDate.now().isEqual(DATE_FORMAT.parseLocalDate(data.getString(1)));
-            Log.d("DashboardFragment", String.format("%s - %s", data.getString(2), data.getString(3)));
             final IWorkEstimator.ChunkOfWork day = StandardWorkEstimator.chunkOfWork(
                     TIME_FORMAT.parseLocalTime(data.getString(2)),
                     isToday ? LocalTime.now() : TIME_FORMAT.parseLocalTime(data.getString(3)),
@@ -424,4 +419,26 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
         return Integer.parseInt(getSharedPreferences().getString("total_hours", "40"));
     }
 
+    public abstract class AbstractDaysLoader implements LoaderManager.LoaderCallbacks<Cursor> {
+
+        protected ISharedPreferencesProviderWithContext ctx;
+
+        public AbstractDaysLoader(ISharedPreferencesProviderWithContext ctx) {
+            this.ctx = ctx;
+        }
+
+        @Override
+        public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+            LocalDate d = LocalDate.now();
+            String start = DATE_FORMAT.print(getPeriod().from(d));
+            String stop = DATE_FORMAT.print(getPeriod().to(d));
+            Log.d("DashboardFragment", String.format("start: %s, stop: %s", start, stop));
+            return new CursorLoader(ctx.getContext(), TIMEENTRIES_URI,
+                    new String[]{DATE_COMPOSITE, DAY_START_COMPOSITE, DAY_END_COMPOSITE, DAY_TOTAL_COMPOSITE,
+                            DAY_SALDO_COMPOSITE},
+                    SELECT_WHERE,
+                    new String[]{start, stop},
+                    ORDER_BY);
+        }
+    }
 }
