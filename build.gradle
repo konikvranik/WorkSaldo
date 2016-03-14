@@ -12,6 +12,8 @@ buildscript {
     }
 }
 
+//org.gradle.jvmargs="-Xmx1024m -XX:MaxPermSize=512m -Xms512m"
+
 allprojects {
 
     if (project.rootProject.file('local.properties').exists()) {
