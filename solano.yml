@@ -3,6 +3,6 @@ java:
   gragle_version: '2.2'
   
 tests:
-  - gradle test
+  - gradle test -p common
 
 submodules: true
