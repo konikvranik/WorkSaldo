@@ -28,6 +28,8 @@ import org.joda.time.format.*;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Locale;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static android.content.Context.MODE_PRIVATE;
 import static net.suteren.worksaldo.StandardWorkEstimator.chunkOfWork;
@@ -75,11 +77,13 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
             .toFormatter();
     private static final DateTimeFormatter WEEKDAY_FORMAT = DateTimeFormat.forPattern("E");
     public static final String DAY_CLOSED_TIMESTAMP = "day_closed_timestamp";
+    public static final int MINUTE = 60000;
     private SimpleCursorAdapter mAdapter;
     private DayBinder dayBinder;
     private Runnable onReload;
     private ListView lv;
     private SwipeRefreshLayout refresh;
+    private Timer refreshTimer;
 
     private Context getCtx() {
         return getContext();
@@ -133,6 +137,14 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
 
         updateCountersColor(rootView);
 
+        refreshTimer = new Timer();
+        refreshTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                refresh();
+            }
+        }, MINUTE, MINUTE);
+
         return rootView;
     }
 
@@ -160,6 +172,17 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
                 }
             }
         };
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    public void onDestroy() {
+        refreshTimer.cancel();
+        super.onDestroy();
     }
 
     private Period getPeriod() {
@@ -249,8 +272,14 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
     @Override
     public void refresh() {
         Log.d("DashboardFragment", "Refreshing");
-        getActivity().getContentResolver().notifyChange(TIMEENTRIES_URI, null);
-        getLoaderManager().restartLoader(DAYS_LOADER, null, getDaysLoaderCallback());
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                getActivity().getContentResolver().notifyChange(TIMEENTRIES_URI, null);
+                getLoaderManager().restartLoader(DAYS_LOADER, null, getDaysLoaderCallback());
+            }
+        });
+
     }
 
     @Override
