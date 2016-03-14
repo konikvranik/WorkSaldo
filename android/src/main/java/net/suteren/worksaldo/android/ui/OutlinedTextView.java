@@ -6,7 +6,9 @@ import android.util.AttributeSet;
 import android.widget.TextView;
 
 /**
- * Created by vranikp on 8.3.16.
+ * Simple but ugly way how to implement text with outline.
+ * Draws several times whole text with shadow so shadow becomes less transparent and looks more like outline.
+ * TODO: make it better in future.
  *
  * @author vranikp
  */

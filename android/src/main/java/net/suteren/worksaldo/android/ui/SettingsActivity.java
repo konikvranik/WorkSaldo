@@ -6,11 +6,12 @@ import android.preference.PreferenceFragment;
 import net.suteren.worksaldo.android.R;
 
 /**
- * Created by vranikp on 3.3.16.
+ * Preferences screen of this application.
  *
  * @author vranikp
  */
 public class SettingsActivity extends PreferenceActivity {
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -20,11 +21,11 @@ public class SettingsActivity extends PreferenceActivity {
     }
 
     public static class SettingsFragment extends PreferenceFragment {
+
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             getPreferenceManager().setSharedPreferencesName(MainActivity.MAIN);
-
             addPreferencesFromResource(R.xml.preferences);
         }
     }

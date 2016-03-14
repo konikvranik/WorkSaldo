@@ -58,15 +58,19 @@ public class MainActivity extends Activity implements ISharedPreferencesProvider
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            startActivity(new Intent(this, SettingsActivity.class));
-            return true;
-        } else if (id == R.id.action_login) {
-            getLoginDialog().show();
-        }
+        switch (id){
 
-        return super.onOptionsItemSelected(item);
+            case R.id.action_settings:
+                startActivity(new Intent(this, SettingsActivity.class));
+                return true;
+
+            case R.id.action_login:
+                getLoginDialog().show();
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     private LoginDialog getLoginDialog() {
@@ -77,12 +81,9 @@ public class MainActivity extends Activity implements ISharedPreferencesProvider
     }
 
     private void checkLogin() {
-
         if (getSharedPreferences().getString(API_KEY, null) == null) {
             getLoginDialog().show();
         }
-
-
     }
 
     @Override
