@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 /**
  * Created by vranikp on 24.2.16.
@@ -68,33 +69,29 @@ public class DbHelper extends SQLiteOpenHelper {
     private static DbHelper dbHelper;
 
     private DbHelper(Context context) throws PackageManager.NameNotFoundException {
-        super(context, "main", null,
-                context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionCode);
+        super(context, "main", null, context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionCode);
     }
 
-    public synchronized static DbHelper getDbHelper(Context context) throws PackageManager.NameNotFoundException {
+    public synchronized static DbHelper getDbHelper(Context context) {
         if (dbHelper == null) {
-            dbHelper = new DbHelper(context);
-            //    addTodayRecords(dbHelper.getWritableDatabase());
+            try {
+                dbHelper = new DbHelper(context);
+            } catch (PackageManager.NameNotFoundException e) {
+                Log.e("DbHelper", "Unable to create DB helper", e);
+                throw new RuntimeException(e);
+            }
         }
         return dbHelper;
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-
         db.compileStatement(TIME_ENTRIES_TABLE_CREATE).execute();
         db.compileStatement(CLIENTS_TABLE_CREATE).execute();
-      /* db.compileStatement(String.format(INSERT_FAKE_DATA, "2016-02-25 19:23:00", "2016-02-25 19:50:00", 27 * 60))
-                .execute();
-        db.compileStatement(String.format(INSERT_FAKE_DATA, "2016-02-25 09:23:00", "2016-02-25 11:50:00",
-                2 * 3600 + 27 * 60)).execute();*/
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        onCreate(db);
-
 
     }
 

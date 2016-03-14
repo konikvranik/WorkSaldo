@@ -27,11 +27,7 @@ public class MainActivity extends Activity implements ISharedPreferencesProvider
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         if (savedInstanceState == null) {
-            DashboardFragment fragment = new DashboardFragment();
-            getFragmentManager().beginTransaction()
-                    .add(R.id.container, fragment)
-                    .commit();
-
+            getFragmentManager().beginTransaction().add(R.id.container, new DashboardFragment()).commit();
         }
         checkLogin();
     }

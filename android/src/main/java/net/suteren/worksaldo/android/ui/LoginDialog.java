@@ -13,19 +13,23 @@ import android.widget.TextView;
 import ch.simas.jtoggl.JToggl;
 import net.suteren.worksaldo.android.R;
 
-import javax.net.ssl.SSLEngineResult;
 import javax.ws.rs.client.Client;
 
 import static net.suteren.worksaldo.android.provider.TogglCachedProvider.API_KEY;
 
 /**
- * Created by hpa on 3.3.16.
+ * Dialog which allow user to login, obtain api_token and stores it to shared preferences.
  */
 public class LoginDialog extends Dialog {
 
     private MainActivity mainActivity;
     private AsyncTask<String, Void, String> togglLogin;
 
+    /**
+     * Constructs login dialog.
+     *
+     * @param mainActivity Main activity which nests login dialog.
+     */
     public LoginDialog(MainActivity mainActivity) {
         super(mainActivity);
         this.mainActivity = mainActivity;
@@ -36,16 +40,17 @@ public class LoginDialog extends Dialog {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login_dialog);
         final Button okButton = (Button) findViewById(R.id.okButton);
-        Button cancelButton = (Button) findViewById(R.id.cancelButton);
+        final Button cancelButton = (Button) findViewById(R.id.cancelButton);
         final EditText usernameField = (EditText) findViewById(R.id.username);
         final EditText passwordField = (EditText) findViewById(R.id.password);
         final TextView errorMessage = (TextView) findViewById(R.id.error);
+
         setTitle(R.string.login);
 
+        // This watcher hides error message when username or password changes.
         TextWatcher watcher = new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
             }
 
             @Override
@@ -55,7 +60,6 @@ public class LoginDialog extends Dialog {
 
             @Override
             public void afterTextChanged(Editable s) {
-
             }
         };
         usernameField.addTextChangedListener(watcher);
@@ -73,7 +77,7 @@ public class LoginDialog extends Dialog {
                 if (togglLogin != null && AsyncTask.Status.RUNNING == togglLogin.getStatus()) {
                     togglLogin.cancel(true);
                 }
-                togglLogin = greateLoginTask(okButton, usernameField, passwordField, errorMessage);
+                togglLogin = createLoginTask(okButton, usernameField, passwordField, errorMessage);
                 togglLogin.execute(username, password);
 
             }
@@ -91,7 +95,7 @@ public class LoginDialog extends Dialog {
         });
     }
 
-    private AsyncTask<String, Void, String> greateLoginTask(final Button okButton, final EditText usernameField, final EditText passwordField, final TextView errorMessage) {
+    private AsyncTask<String, Void, String> createLoginTask(final Button okButton, final EditText usernameField, final EditText passwordField, final TextView errorMessage) {
         return new AsyncTask<String, Void, String>() {
 
             @Override
@@ -106,7 +110,7 @@ public class LoginDialog extends Dialog {
                         }
                     }.getCurrentUser().getApiToken();
                 } catch (Exception e) {
-                    Log.e("MAinActivity", "login failed", e);
+                    Log.e("LoginDialog", "login failed", e);
                 }
                 return apiToken;
             }

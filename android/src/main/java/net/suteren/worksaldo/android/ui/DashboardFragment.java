@@ -37,10 +37,13 @@ import static net.suteren.worksaldo.android.provider.TogglCachedProvider.*;
 import static net.suteren.worksaldo.android.ui.MainActivity.*;
 
 /**
- * A placeholder fragment containing a simple view.
+ * Fragment of main dashboard. Contains counters of work progress and list of days of work in actual period.
  */
 public class DashboardFragment extends Fragment implements ISharedPreferencesProviderWithContext, IRefreshable {
 
+    /**
+     * formatting duration of work in H:mm format with possible sign before hours.
+     */
     public static final PeriodFormatter PERIOD_FORMATTER = new PeriodFormatterBuilder()
             .printZeroIfSupported()
             .appendHours()
@@ -75,9 +78,52 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
                 }
             })
             .toFormatter();
+
+    private LoaderManager.LoaderCallbacks DAYS_LOADER_CALLBACK = new AbstractDaysLoader(this) {
+        @Override
+        public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+
+            Cursor c = mAdapter.swapCursor(data);
+            if (c != null) {
+                c.close();
+            }
+
+            refreshSaldo(data);
+            Log.d("LoaderCallbacks", "loaded " + data.getCount() + " items.");
+        }
+
+        @Override
+        public void onLoaderReset(Loader<Cursor> loader) {
+            Log.d("LoaderCallbacks", "loader reset");
+        }
+    };
+
+    private LoaderManager.LoaderCallbacks RELOAD_CALLBACK = new AbstractDaysLoader(this) {
+        @Override
+        public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+            LocalDate d = LocalDate.now();
+            String start = DATE_FORMAT.print(getPeriod().from(d));
+            String stop = DATE_FORMAT.print(getPeriod().to(d));
+            return new CursorLoader(getActivity(), RELOAD_URI, null, null, new String[]{start, stop}, null);
+        }
+
+        @Override
+        public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+            if (onReload != null) {
+                onReload.run();
+            }
+        }
+
+        @Override
+        public void onLoaderReset(Loader<Cursor> loader) {
+            if (onReload != null) {
+                onReload.run();
+            }
+        }
+    };
     private static final DateTimeFormatter WEEKDAY_FORMAT = DateTimeFormat.forPattern("E");
-    public static final String DAY_CLOSED_TIMESTAMP = "day_closed_timestamp";
-    public static final int MINUTE = 60000;
+    private static final String DAY_CLOSED_TIMESTAMP = "day_closed_timestamp";
+    private static final int MINUTE = 60000;
     private SimpleCursorAdapter mAdapter;
     private DayBinder dayBinder;
     private Runnable onReload;
@@ -102,7 +148,21 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         final View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+
+        // Prepare list of days and set adapter on it.
         lv = (ListView) rootView.findViewById(R.id.listing);
+        dayBinder = new DayBinder();
+        dayBinder.setMode(getRealWorkedTime());
+        mAdapter = new SimpleCursorAdapter(getCtx(), R.layout.row, null,
+                new String[]{DATE_NAME, DAY_START_NAME, DAY_END_NAME, DAY_TOTAL_NAME, DAY_SALDO_NAME},
+                new int[]{R.id.date, R.id.from, R.id.to, R.id.total, R.id.saldo}, 0);
+        mAdapter.setViewBinder(dayBinder);
+        lv.setAdapter(mAdapter);
+
+        // reload data from DB.
+        getLoaderManager().initLoader(DAYS_LOADER, null, DAYS_LOADER_CALLBACK);
+
+        // set refresh action when swipe down list of days.
         refresh = (SwipeRefreshLayout) rootView.findViewById(R.id.refresh);
         refresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -116,27 +176,21 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
                 });
             }
         });
-        final LoaderManager lm = getLoaderManager();
-        mAdapter = new SimpleCursorAdapter(getCtx(), R.layout.row, null,
-                new String[]{DATE_NAME, DAY_START_NAME, DAY_END_NAME, DAY_TOTAL_NAME, DAY_SALDO_NAME},
-                new int[]{R.id.date, R.id.from, R.id.to, R.id.total, R.id.saldo}, 0);
-        dayBinder = new DayBinder();
-        dayBinder.setMode(getRealWorkedTime());
-        mAdapter.setViewBinder(dayBinder);
-        lv.setAdapter(mAdapter);
-
-        lm.initLoader(DAYS_LOADER, null, getDaysLoaderCallback());
 
         rootView.findViewById(R.id.counters).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 switchClosedDay();
-                Log.d("DashboardFragment", "Day is now " + (isDayClosed() ? "closed" : "open"));
             }
         });
 
-        updateCountersColor(rootView);
+        // Set timer to refresh data every minute.
+        setupRefreshTimer();
 
+        return rootView;
+    }
+
+    void setupRefreshTimer() {
         refreshTimer = new Timer();
         refreshTimer.schedule(new TimerTask() {
             @Override
@@ -144,39 +198,20 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
                 refresh();
             }
         }, MINUTE, MINUTE);
-
-        return rootView;
-    }
-
-    LoaderManager.LoaderCallbacks<Cursor> getReloadCallback() {
-        return new LoaderManager.LoaderCallbacks<Cursor>() {
-            @Override
-            public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-                LocalDate d = LocalDate.now();
-                String start = DATE_FORMAT.print(getPeriod().from(d));
-                String stop = DATE_FORMAT.print(getPeriod().to(d));
-                return new CursorLoader(getActivity(), RELOAD_URI, null, null, new String[]{start, stop}, null);
-            }
-
-            @Override
-            public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-                if (onReload != null) {
-                    onReload.run();
-                }
-            }
-
-            @Override
-            public void onLoaderReset(Loader<Cursor> loader) {
-                if (onReload != null) {
-                    onReload.run();
-                }
-            }
-        };
     }
 
     @Override
     public void onResume() {
         super.onResume();
+        dayBinder.setMode(getRealWorkedTime());
+        refresh();
+        setupRefreshTimer();
+    }
+
+    @Override
+    public void onPause() {
+        refreshTimer.cancel();
+        super.onPause();
     }
 
     @Override
@@ -195,56 +230,16 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
         } else {
             closeDay();
         }
+        Log.d("DashboardFragment", "Day is now " + (isDayClosed() ? "closed" : "open"));
         refresh();
     }
 
     private void closeDay() {
         getSharedPreferences().edit().putLong(DAY_CLOSED_TIMESTAMP, DateTime.now().withTimeAtStartOfDay().plus(Days.days(1)).getMillis()).apply();
-        updateCountersColor(getView());
     }
-
-    private void updateCountersColor(View view) {
-        //view.findViewById(R.id.counters).setBackgroundColor(getColor(isDayClosed() ? R.color.closed : R.color.open));
-    }
-
-    public int getColor(int colorId) {
-        if (Build.VERSION.SDK_INT >= 23) {
-            return getResources().getColor(colorId, getActivity().getTheme());
-        } else {
-            return getResources().getColor(colorId);
-        }
-    }
-
 
     private void openDay() {
         getSharedPreferences().edit().putLong(DAY_CLOSED_TIMESTAMP, 0).apply();
-        updateCountersColor(getView());
-    }
-
-    private AbstractDaysLoader getDaysLoaderCallback() {
-        return new AbstractDaysLoader(this) {
-            @Override
-            public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-
-                Cursor c = mAdapter.swapCursor(data);
-                if (c != null) {
-                    c.close();
-                }
-
-                refreshSaldo(data);
-                Log.d("LoaderCallbacks", "loader finished");
-                Log.d("LoaderCallbacks", "loaded " + data.getCount() + " items.");
-            }
-
-            @Override
-            public void onLoaderReset(Loader<Cursor> loader) {
-                Cursor c = mAdapter.swapCursor(null);
-                if (c != null) {
-                    //c.close();
-                }
-                Log.d("LoaderCallbacks", "loader reset");
-            }
-        };
     }
 
     private int getNumberColor(float currentSaldo) {
@@ -261,10 +256,18 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
         }
     }
 
+    /**
+     * Causes reloading data from backend.
+     */
     public void reload() {
-        getLoaderManager().restartLoader(DAYS_UPDATER, null, getReloadCallback());
+        getLoaderManager().restartLoader(DAYS_UPDATER, null, RELOAD_CALLBACK);
     }
 
+    /**
+     * Sets action to be executed when reload is finished.
+     *
+     * @param action Action to execute when reload is finished.
+     */
     public void onReload(Runnable action) {
         this.onReload = action;
     }
@@ -276,7 +279,7 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
             @Override
             public void run() {
                 getActivity().getContentResolver().notifyChange(TIMEENTRIES_URI, null);
-                getLoaderManager().restartLoader(DAYS_LOADER, null, getDaysLoaderCallback());
+                getLoaderManager().restartLoader(DAYS_LOADER, null, DAYS_LOADER_CALLBACK);
             }
         });
 
@@ -293,15 +296,31 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
 
         @Override
         public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
-            String value = null;
-            LocalTime stop = TIME_FORMAT.parseLocalTime(cursor.getString(3));
-            LocalDateTime day = DATE_FORMAT.parseLocalDate(cursor.getString(1)).toLocalDateTime(stop);
-            IWorkEstimator we = new StandardWorkEstimator(getPeriod(), day, Duration.standardHours(getTotalHours()));
-            boolean isToday = day.toLocalDate().isEqual(LocalDate.now());
 
-            final LocalTime to = getEndTime(stop, isToday);
+            TextView tv = (TextView) view;
+
             LocalTime time = TIME_FORMAT.parseLocalTime(cursor.getString(2));
-            if (getRealWorkedTime()) {
+            if (columnIndex == 2) { // time from
+                tv.setText(DateTimeFormat.shortTime().print(TIME_FORMAT.parseLocalTime(cursor.getString(2))));
+                return true;
+            }
+
+            final LocalDate day = DATE_FORMAT.parseLocalDate(cursor.getString(1));
+            if (columnIndex == 1) { // date
+                tv.setText(String.format("%s %s", WEEKDAY_FORMAT.print(day), DateTimeFormat.mediumDate().print(day)));
+                return true;
+            }
+
+            boolean isToday = day.isEqual(LocalDate.now());
+            final LocalTime to = getEndTime(TIME_FORMAT.parseLocalTime(cursor.getString(3)), isToday && !realHours);
+            if (columnIndex == 3) { // time to
+                tv.setText(to == null ? "Ø" : DateTimeFormat.shortTime().print(to));
+                return true;
+            }
+
+            // prepare work estimator for both remaining columns: worked and bilance.
+            IWorkEstimator we = new StandardWorkEstimator(getPeriod(), day.toLocalDateTime(to), Duration.standardHours(getTotalHours()));
+            if (realHours) {
                 long duration = cursor.getLong(4);
                 if (duration > 0) {
                     we.addHours(chunkOfWork(Duration.standardSeconds(duration), true));
@@ -309,46 +328,20 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
             } else {
                 we.addHours(chunkOfWork(time, to, Duration.standardMinutes(getPause()), true));
             }
-            Integer color = null;
-
-            String string = cursor.getString(columnIndex);
-
 
             switch (columnIndex) {
-                case 1:
-                    final LocalDate date = DATE_FORMAT.parseLocalDate(string);
-                    value = String.format("%s %s", WEEKDAY_FORMAT.print(date), DateTimeFormat.mediumDate().print(date));
-                    break;
 
-                case 3:
-                    time = to;
-                case 2:
-                    value = string == null ? "Ø" : DateTimeFormat.shortTime().print(time);
-                    break;
+                case 4: // worked
+                    tv.setText(PERIOD_FORMATTER.print(we.getWorkedHoursToday().toPeriod()));
+                    return true;
 
-                case 4:
-                    value = PERIOD_FORMATTER.print(we.getWorkedHoursToday().toPeriod());
-                    break;
-
-                case 5:
+                case 5: // balance
                     final Duration saldoToday = we.getSaldoToday();
-                    color = getNumberColor(saldoToday.getStandardSeconds());
-                    value = PERIOD_FORMATTER.print(saldoToday.toPeriod());
-                    break;
+                    tv.setText(PERIOD_FORMATTER.print(saldoToday.toPeriod()));
+                    tv.setTextColor(getNumberColor(saldoToday.getStandardSeconds()));
+                    return true;
             }
-
-            if (value != null) {
-                TextView tv = (TextView) view;
-                tv.setText(value);
-                if (color != null) {
-                    tv.setTextColor(color);
-                }
-                return true;
-            } else
-
-            {
-                return false;
-            }
+            return false;
         }
 
         public void setMode(boolean mode) {
@@ -357,17 +350,22 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
 
     }
 
-    LocalTime getEndTime(LocalTime stop, boolean isToday) {
+    private LocalTime getEndTime(LocalTime stop, boolean isToday) {
         final LocalTime now = LocalTime.now();
         return !isDayClosed() && isToday && now.isAfter(stop) ? now : stop;
     }
 
 
-    public boolean isDayClosed() {
+    private boolean isDayClosed() {
         return new DateTime(getSharedPreferences().getLong(DAY_CLOSED_TIMESTAMP, 0)).isAfter(DateTime.now());
     }
 
-    void refreshSaldo(Cursor data) {
+    private void refreshSaldo(Cursor data) {
+        View rootView = getView();
+        if (rootView == null || (rootView = getView().getRootView()) == null) {
+            return;
+        }
+
         StandardWorkEstimator we = getSaldoWorkEstimator(data);
 
         final Duration currentSaldo = we.getSaldo();
@@ -377,42 +375,35 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
             currentSaldo.plus(we.getSaldoToday());
         }
 
-        final View rootView = getView().getRootView();
-        if (rootView != null) {
-            TextView saldo = (TextView) rootView.findViewById(R.id.saldo);
-            TextView dailyAverage = (TextView) rootView.findViewById(R.id.dailyAverage);
-            TextView dailyTotal = (TextView) rootView.findViewById(R.id.dailyTotal);
-            AnalogClock clock = (AnalogClock) rootView.findViewById(R.id.clock);
-            ImageView gears = (SVGImageView) rootView.findViewById(R.id.gears);
+        TextView saldo = (TextView) rootView.findViewById(R.id.saldo);
+        saldo.setText(PERIOD_FORMATTER.print(currentSaldo.toPeriod()));
+        saldo.setTextColor(getNumberColor(currentSaldo.getStandardSeconds()));
 
-            if (isDayClosed()) {
-                clock.setVisibility(View.GONE);
-                saldo.setVisibility(View.VISIBLE);
-                gears.setVisibility(View.GONE);
-                gears.clearAnimation();
-            } else {
-                clock.setVisibility(View.VISIBLE);
-                saldo.setVisibility(View.GONE);
-                gears.setVisibility(View.VISIBLE);
-                gears.startAnimation(AnimationUtils.loadAnimation(getActivity(), R.anim.rotate_gear));
-            }
+        TextView dailyAverage = (TextView) rootView.findViewById(R.id.dailyAverage);
+        dailyAverage.setText(PERIOD_FORMATTER.print(saldoToday.toPeriod()));
+        dailyAverage.setTextColor(getNumberColor(saldoToday.getStandardSeconds()));
 
+        TextView dailyTotal = (TextView) rootView.findViewById(R.id.dailyTotal);
+        dailyTotal.setText(PERIOD_FORMATTER.print(remainingToday.toPeriod()));
+        dailyTotal.setTextColor(getNumberColor(remainingToday.getStandardSeconds()));
 
-            saldo.setText(PERIOD_FORMATTER.print(currentSaldo.toPeriod()));
-            saldo.setTextColor(getNumberColor(currentSaldo.getStandardSeconds()));
+        AnalogClock clock = (AnalogClock) rootView.findViewById(R.id.clock);
 
-            dailyAverage.setText(PERIOD_FORMATTER.print(saldoToday.toPeriod()));
-            dailyAverage.setTextColor(getNumberColor(saldoToday.getStandardSeconds()));
+        ImageView gears = (SVGImageView) rootView.findViewById(R.id.gears);
 
-            dailyTotal.setText(PERIOD_FORMATTER.print(remainingToday.toPeriod()));
-            dailyTotal.setTextColor(getNumberColor(remainingToday.getStandardSeconds()));
-
-            saldo.invalidate();
-            dailyAverage.invalidate();
-            dailyTotal.invalidate();
-
-            Log.d("DashboardFragment", "Saldo reloaded");
+        if (isDayClosed()) {
+            clock.setVisibility(View.GONE);
+            saldo.setVisibility(View.VISIBLE);
+            gears.setVisibility(View.GONE);
+            gears.clearAnimation();
+        } else {
+            clock.setVisibility(View.VISIBLE);
+            saldo.setVisibility(View.GONE);
+            gears.setVisibility(View.VISIBLE);
+            gears.startAnimation(AnimationUtils.loadAnimation(getActivity(), R.anim.rotate_gear));
         }
+
+        Log.d("DashboardFragment", "Saldo reloaded");
     }
 
     private StandardWorkEstimator getSaldoWorkEstimator(Cursor data) {
@@ -446,15 +437,25 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
         return getSharedPreferences().getBoolean("real_worked_time", false);
     }
 
+    /**
+     * Return value from shared preferences.
+     *
+     * @return duration of mandatory work pause in minutes.
+     */
     public int getPause() {
         return Integer.parseInt(getSharedPreferences().getString("pause", "30").toUpperCase());
     }
 
-    protected int getTotalHours() {
+    /**
+     * Return value from shared preferences.
+     *
+     * @return demanded worked hours per period.
+     */
+    public int getTotalHours() {
         return Integer.parseInt(getSharedPreferences().getString("total_hours", "40"));
     }
 
-    public abstract class AbstractDaysLoader implements LoaderManager.LoaderCallbacks<Cursor> {
+    private abstract class AbstractDaysLoader implements LoaderManager.LoaderCallbacks<Cursor> {
 
         protected ISharedPreferencesProviderWithContext ctx;
 
