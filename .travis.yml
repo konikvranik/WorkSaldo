@@ -19,12 +19,12 @@ android:
   - extra-android-m2repository
   - sys-img-${ANDROID_ABI}-${ANDROID_TARGET}
 script:
-  - ./gradlew build jacocoTestReport assembleAndroidTest
+  - ./gradlew -p android build jacocoTestReport assembleAndroidTest
   - echo no | android create avd --force -n test -t $ANDROID_TARGET --abi $ANDROID_ABI
   - emulator -avd test -no-skin -no-audio -no-window &
   - android-wait-for-emulator
   - adb shell setprop dalvik.vm.dexopt-flags v=n,o=v
-  - ./gradlew connectedCheck
+  - ./gradlew -p android connectedCheck
 after_success:
   - bash <(curl -s https://codecov.io/bash)
 
@@ -32,7 +32,7 @@ language: android
 
 test:
     post:
-        - if [ -e ./gradlew ]; then ./gradlew jacocoTestReport;else gradle jacocoTestReport;fi
+        - if [ -e ./gradlew ]; then ./gradlew -p android jacocoTestReport;else gradle -p android jacocoTestReport;fi
         - sudo pip install --user codecov && codecov:
   
 deploy:
