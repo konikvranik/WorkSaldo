@@ -26,6 +26,22 @@ repositories {
 
 }
 
+ext {
+  configCompileSdkVersion = 23
+  configTargetSdkVersion = 23
+  configBuildToolsVersion = '23.0.2'
+
+  supportVersion = '23.0.1'
+  support = [annotations: "com.android.support:support-annotations:$supportVersion",
+             appCompat  : "com.android.support:appcompat-v7:$supportVersion"]
+
+  assertJCore = 'org.assertj:assertj-core:1.7.1'
+  junit = 'junit:junit:4.12'
+
+  supportTest = [espressoCore: 'com.android.support.test.espresso:espresso-core:2.2.1',
+                 rules       : 'com.android.support.test:rules:0.4.1']
+}
+
 if (project.rootProject.file('local.properties').exists()) {
     Properties buildProps = new Properties()
     buildProps.load(project.rootProject.file('local.properties').newDataInputStream())
