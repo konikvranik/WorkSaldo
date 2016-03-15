@@ -15,3 +15,21 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+
+-dontwarn javax.activation.**
+-dontwarn javax.annotation.**
+-dontwarn javax.xml.**
+-dontwarn org.joda.convert.**
+-dontwarn java.beans.**
+-dontwarn org.osgi.framework.**
+-dontwarn org.apache.tools.ant.**
+-dontwarn java.applet.**
+-dontwarn com.sun.jdi.**
+-dontwarn sun.misc.**
+-dontwarn jersey.repackaged.**
+-dontwarn org.xml.**
+-dontwarn net.sf.cglib.**
+-dontwarn org.glassfish.jersey.server.**
+-dontwarn java.awt.**
+-dontwarn javax.imageio.**
+-dontwarn com.google.inject.**
