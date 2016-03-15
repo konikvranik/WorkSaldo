@@ -60,6 +60,7 @@ deploy:
     - android/build/outputs/mapping/release/mapping.txt
     - android/build/outputs/mapping/release/seeds.txt
     - android/build/outputs/mapping/release/usage.txt
+    - android/build/reports/androidTests/connected/index.html
 
   skip_cleanup: true
   on:
