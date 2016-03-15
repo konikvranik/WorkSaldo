@@ -2,7 +2,9 @@ secure: "VUdKu+f/nqjMlbn00nTqqRJHMNSY9VEkeFges1lwrnKHntsQu4Y4gHV8kJETT8WaVd2IcUa
 
 
 
-language: android
+language:
+  - android
+  - java
 jdk: oraclejdk8
 env:
   global:
@@ -19,7 +21,8 @@ android:
   - extra-android-m2repository
   - sys-img-${ANDROID_ABI}-${ANDROID_TARGET}
 script:
-  - ./gradlew -p android build jacocoTestReport assembleAndroidTest
+  - ./gradlew -p common build
+  - ./gradlew -p android assembleAndroidTest
   - echo no | android create avd --force -n test -t $ANDROID_TARGET --abi $ANDROID_ABI
   - emulator -avd test -no-skin -no-audio -no-window &
   - android-wait-for-emulator
@@ -28,11 +31,10 @@ script:
 after_success:
   - bash <(curl -s https://codecov.io/bash)
 
-language: android
-
 test:
     post:
-        - if [ -e ./gradlew ]; then ./gradlew -p android jacocoTestReport;else gradle -p android jacocoTestReport;fi
+        - ./gradlew -p android jacocoTestReport
+        - ./gradlew -p common jacocoTestReport
         - sudo pip install --user codecov && codecov:
   
 deploy:
