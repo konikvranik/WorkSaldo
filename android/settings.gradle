@@ -1,2 +1,1 @@
-includeFlat 'common', 'jtoggl-api', 'androidsvg'
-project(':jtoggl-api').projectDir = new File('../jtoggl/jtoggl-api')
+includeFlat 'common', 'jtoggl', 'androidsvg'

@@ -117,7 +117,7 @@ project.tasks.withType(com.android.build.gradle.tasks.Dex) {
 dependencies {
     compile project(':common')
     compile project(':androidsvg')
-    compile(project(':jtoggl-api')) {
+    compile(project(':jtoggl')) {
         exclude module: 'junit'
         exclude module: 'javax.inject'
         exclude module: 'jaxb-api'
