@@ -1,26 +1,105 @@
-language: android
+secure: "VUdKu+f/nqjMlbn00nTqqRJHMNSY9VEkeFges1lwrnKHntsQu4Y4gHV8kJETT8WaVd2IcUaBs9mCZUCODvtxeRHI/zRZThXMPpt3qG2pFjj1FXflqf9rO8p7dPEzMfkkvA84eT6FIWYgIF3W4j+IaK+laGXmNWABF7170skb3+OQBtqOoAsSimifToHfMs6FkemDz97nke4D28yHfMtGgFi/n4xVaqZxNxBhuW9W9uxP8yW8Nnp+tewhTAurf/DrGeScAgbQb5mSL1pZU1ANgy7D62vF14eIERMHJX7GOp3up1oS9F23QO/iJyD9cpZ9qF6fP+FvB8Kp3ESClsjJe+45rLCKWomRDk9izKB8AokNWxwoWYCN6ufkUiUkktn3oBvOycOSYRpPO/O9P/4rvCnmA2zFZFY4sY0Bi6wpYNiR1eV2wTMGYiByO+novtDRMhmtcoQOZzU51v/Bdlz6mV4jtyI71husIyzZGQ2aMfPYEi2trxqyEsfFe7f7GVRu67BJYOXoZv1jUaysIFjZtqyF5lChq+Z0Ec5+6tx9dYMsT6gHFPDzVg2xDOdg76rEn8Iej93RADdW8qm+7afswhRXPbsEmHzsxYxF5xY4wy6F9MfBK66V5zQ7JDTDzFbO2+Q//09yhLri4d5DJdvFOUOk6oPTuSSr3RVSWDYShdM="
+
+language:
+  - android
+  - java
+
+jdk: oraclejdk7
+
+env:
+  global:
+    - GRADLE_OPTS="-Xmx512m -XX:MaxPermSize=512m -Djava.net.preferIPv4Stack=true"
+    - ANDROID_TARGET=android-23
+    - ANDROID_ABI=armeabi-v7a
+install:
+  - sudo apt-get install -qq lynx
+
 android:
   components:
-    # Uncomment the lines below if you want to
-    # use the latest revision of Android SDK Tools
-    # - platform-tools
-    # - tools
+  - tools
+  - platform-tools
+  - build-tools-23.0.2
+  - ${ANDROID_TARGET}
+  - extra-android-m2repository
+  - sys-img-${ANDROID_ABI}-${ANDROID_TARGET}
 
-    # The BuildTools version used by your project
-    - build-tools-23.0.2
+before_script:
+  - echo no | android create avd --force -n test -t ${ANDROID_TARGET} --abi ${ANDROID_ABI}
+  - emulator -avd test -no-audio -no-window &
+  - ./gradlew -p jtoggl build -x test 
+  - ./gradlew -p androidsvg build -x test 
+  - android-wait-for-emulator
+  - adb shell input keyevent 82 &
 
-    # The SDK version used to compile your project
-    - android-23
-
-    # Additional components
-    #- extra-google-google_play_services
-    #- extra-google-m2repository
-    - extra-android-m2repository
-    #- addon-google_apis-google-19
-
-    # Specify at least one system image,
-    # if you need to run emulator(s) during your tests
-    - sys-img-armeabi-v7a-android-23
-    #- sys-img-x86-android-17
+script:
+  - adb shell setprop dalvik.vm.dexopt-flags v=n,o=v
+  - ./gradlew -p common build jacocoTestReport coveralls
+  - ./gradlew -p android assemble lint jacocoTestReport coveralls
+  - ./gradlew -p android connectedCheck
 after_success:
-  - bash <(curl -s https://codecov.io/bash)
+  - bash <(curl -s https://codecov.io/bash) -v
+after_script:
+  - echo "====================="
+  - lynx --dump android/build/outputs/lint-results.html
+  - echo "====================="
+  - lynx --dump android/build/outputs/lint-results-release-fatal.html
+  - echo "====================="
+  
+after_failure:
+  # Customize this line, 'android' is the specific app module name of this project. Shows log.
+  - export MY_MOD="android"
+  - export MY_LOG_DIR="$(pwd)/${MY_MOD}/build/outputs/reports/androidTests/connected/"
+  - pwd && cd "${MY_LOG_DIR:-.}" && pwd && ls -al
+  - lynx --dump index.html > myIndex.log
+  - lynx --dump com.android.builder.testing.ConnectedDevice.html > myConnectedDevice.log
+  - lynx --dump com.android.builder.testing.html > myTesting.log
+  - for file in *.log; do echo "$file"; echo "====================="; cat "$file"; done || true
+  # TODO: Solve issue (timeout api-21) https://code.google.com/p/android/issues/detail?id=69735
+
+before_deploy:
+  - sed "s/GPLAY_CLIENT_ID/$GPLAY_CLIENT_ID/g;s/GPLAY_PROJECT_ID/$GPLAY_PROJECT_ID/g;s/GPLAY_CLIENT_SECRET/$GPLAY_CLIENT_SECRET/g" .client_secret.apps.googleusercontent.com.json > android/keys.json
+
+deploy:
+  provider: releases
+  api_key: $GITHUB_TOKEN
+  file:
+    - android/build/outputs/apk/android-debug.apk
+    - android/build/outputs/apk/android-debug-unaligned.apk
+    - android/build/outputs/apk/android-release.apk
+    - android/build/outputs/apk/android-release-unaligned.apk
+  on:
+    tags: true
+  skip_cleanup: true
+
+after_deploy:
+  - ./gradlew -p android publishApkRelease
+
+addons:
+    code_climate:
+        repo_token: 49a9bf3e7f82566fba30e850d3435d69e35121c66bf9d2a46144e16f99b1764f
+#deploy:
+#  provider: releases
+#  api_key: $GITHUB_TOKEN
+#  file:
+#    - android/build/outputs/lint-results_files/hololike.css
+#    - android/build/outputs/lint-results_files/lint-error.png
+#    - android/build/outputs/lint-results_files/lint-run.png
+#    - android/build/outputs/lint-results_files/lint-warning.png
+#    - android/build/outputs/lint-results.html
+#    - android/build/outputs/lint-results.xml
+#    - android/build/outputs/logs/manifest-merger-debug-report.txt
+#    - android/build/outputs/logs/manifest-merger-release-report.txt
+#    - android/build/outputs/lint-results-release-fatal_files/hololike.css
+#    - android/build/outputs/lint-results-release-fatal.html
+#    - android/build/outputs/lint-results-release-fatal.xml
+#    - android/build/outputs/logs/manifest-merger-debug-report.txt
+#    - android/build/outputs/logs/manifest-merger-release-report.txt
+#    - android/build/outputs/mapping/release/dump.txt
+#    - android/build/outputs/mapping/release/mapping.txt
+#    - android/build/outputs/mapping/release/seeds.txt
+#    - android/build/outputs/mapping/release/usage.txt
+#    - android/build/reports/androidTests/connected/index.html
+#  on:
+#    failure: true
+#  skip_cleanup: true
+

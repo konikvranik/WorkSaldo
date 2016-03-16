@@ -32,8 +32,8 @@
 
             <com.caverock.androidsvg.SVGImageView
                 android:id="@+id/gears"
-                android:layout_height="60sp"
-                android:layout_width="60sp"
+                android:layout_height="60dp"
+                android:layout_width="60dp"
                 svgimageview:svg="@raw/high_resolution_gear"
                 android:layout_gravity="top|start"
                 />
@@ -60,6 +60,7 @@
                 android:gravity="end"
                 android:textAlignment="textEnd"
                 android:textSize="80dp"
+		tools:ignore="SpUsage,HardcodedText"
                 android:text="-26,5"
                 android:shadowRadius="5"
                 android:shadowColor="@android:color/white"
@@ -85,6 +86,7 @@
                 android:shadowColor="@android:color/black"
                 android:shadowDx="0"
                 android:shadowDy="0"
+		tools:ignore="HardcodedText"
                 android:text="-8,8"/>
 
             <net.suteren.worksaldo.android.ui.OutlinedTextView
@@ -97,6 +99,7 @@
                 android:shadowColor="@android:color/black"
                 android:shadowDx="0"
                 android:shadowDy="0"
+		tools:ignore="HardcodedText"
                 android:text="-18,8"/>
 
         </LinearLayout>
