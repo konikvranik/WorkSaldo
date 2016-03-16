@@ -34,7 +34,7 @@ before_script:
 script:
   - adb shell setprop dalvik.vm.dexopt-flags v=n,o=v
   - ./gradlew -p common build jacocoTestReport coveralls
-  - ./gradlew -p android assembleDebug lint jacocoTestReport coveralls
+  - ./gradlew -p android assemble lint jacocoTestReport coveralls
   - ./gradlew -p android connectedCheck
 after_success:
   - bash <(curl -s https://codecov.io/bash) -v
