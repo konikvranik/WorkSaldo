@@ -38,6 +38,14 @@ if (project.rootProject.file('local.properties').exists()) {
         project.ext.set(prop.key, prop.value)
     }
 }
+def key = System.getenv('SIGNINIG_KEYSTORE_PASSWORD')
+if (key != null) {
+	project.ext.set('pwd.keystore', key)
+}
+key = System.getenv('SIGNINIG_KEY_PASSWORD')
+if (key != null) {
+	project.ext.set('pwd.key', key)
+}
 
 android {
     compileSdkVersion 23
