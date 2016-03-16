@@ -15,6 +15,7 @@
         android:id="@+id/date"
         android:layout_height="wrap_content"
         android:textAlignment="textEnd"
+	tools:ignore="HardcodedText"
         android:text="po 02.04.16"/>
 
     <TextView
@@ -25,11 +26,13 @@
         android:layout_gravity="end"
         android:gravity="end"
         android:layout_height="wrap_content"
+	tools:ignore="HardcodedText"
         android:text="8:20"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+	tools:ignore="HardcodedText"
         android:text="-"
         android:layout_weight="1"
         android:layout_gravity="center_horizontal"
@@ -44,6 +47,7 @@
         android:textAlignment="textStart"
         android:gravity="start"
         android:layout_height="wrap_content"
+	tools:ignore="HardcodedText"
         android:text="17:40"/>
 
 
@@ -55,6 +59,7 @@
         android:textAlignment="textEnd"
         android:gravity="end"
         android:layout_gravity="end"
+	tools:ignore="HardcodedText"
         android:text="-8.8"/>
 
     <TextView
@@ -65,6 +70,7 @@
         android:textAlignment="textEnd"
         android:gravity="end"
         android:layout_gravity="end"
+	tools:ignore="HardcodedText"
         android:text="-8,8"/>
 
 

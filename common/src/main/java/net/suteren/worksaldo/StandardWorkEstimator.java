@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Created by hpa on 10.3.16.
+ * Common work estimator.
  */
 public class StandardWorkEstimator implements IWorkEstimator {
 
@@ -95,6 +95,13 @@ public class StandardWorkEstimator implements IWorkEstimator {
         return this;
     }
 
+    /**
+     * Helper for creating chunks of work for estimator.
+     *
+     * @param amount  Duration of work.
+     * @param isToday Determines if this work was done today.
+     * @return
+     */
     public static ChunkOfWork chunkOfWork(final Duration amount, final boolean isToday) {
         return new ChunkOfWork() {
             @Override
@@ -109,6 +116,14 @@ public class StandardWorkEstimator implements IWorkEstimator {
         };
     }
 
+    /**
+     * Helper for creating chunks of work for estimator.
+     *
+     * @param from    Time when work was started.
+     * @param to      Time when work was stopped.
+     * @param isToday Determines if this work was done today.
+     * @return
+     */
     public static ChunkOfWork chunkOfWork(final BaseLocal from, final BaseLocal to, final boolean isToday) {
         return new ChunkOfWork() {
             @Override
@@ -123,6 +138,15 @@ public class StandardWorkEstimator implements IWorkEstimator {
         };
     }
 
+    /**
+     * Helper for creating chunks of work for estimator.
+     *
+     * @param from    Time when work was started.
+     * @param to      Time when work was stopped.
+     * @param pause   Mandatory work pause which will be subtracted.
+     * @param isToday Determines if this work was done today.
+     * @return
+     */
     public static ChunkOfWork chunkOfWork(final BaseLocal from, final BaseLocal to, final Duration pause, final boolean isToday) {
         return new ChunkOfWork() {
             @Override
@@ -137,7 +161,7 @@ public class StandardWorkEstimator implements IWorkEstimator {
         };
     }
 
-    static DateTime toDateTime(BaseLocal from) {
+    private static DateTime toDateTime(BaseLocal from) {
         DateTime start;
         if (from instanceof LocalDateTime) {
             start = ((LocalDateTime) from).toDateTime();

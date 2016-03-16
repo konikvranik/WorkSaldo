@@ -221,7 +221,7 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
     }
 
     private Period getPeriod() {
-        return Period.valueOf(getSharedPreferences().getString("period", "week").toUpperCase());
+        return Period.valueOf(getSharedPreferences().getString("period", "week").toUpperCase(Locale.ENGLISH));
     }
 
     private void switchClosedDay() {
@@ -443,7 +443,7 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
      * @return duration of mandatory work pause in minutes.
      */
     public int getPause() {
-        return Integer.parseInt(getSharedPreferences().getString("pause", "30").toUpperCase());
+        return Integer.parseInt(getSharedPreferences().getString("pause", "30"));
     }
 
     /**
