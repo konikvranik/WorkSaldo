@@ -58,15 +58,17 @@ after_failure:
 
 before_deploy:
   - sed "s/GPLAY_CLIENT_ID/$GPLAY_CLIENT_ID/g;s/GPLAY_PROJECT_ID/$GPLAY_PROJECT_ID/g;s/GPLAY_CLIENT_SECRET/$GPLAY_CLIENT_SECRET/g" .client_secret.apps.googleusercontent.com.json > android/keys.json
+  - cd $TRAVIS_BUILD_DIR/android/build/outputs && zip -r $HOME/lint.zip lint-results*
 
 deploy:
   provider: releases
   api_key: $GITHUB_TOKEN
   file:
-    - android/build/outputs/apk/android-debug.apk
-    - android/build/outputs/apk/android-debug-unaligned.apk
-    - android/build/outputs/apk/android-release.apk
-    - android/build/outputs/apk/android-release-unaligned.apk
+    - $TRAVIS_BUILD_DIR/android/build/outputs/apk/android-debug.apk
+    - $TRAVIS_BUILD_DIR/android/build/outputs/apk/android-debug-unaligned.apk
+    - $TRAVIS_BUILD_DIR/android/build/outputs/apk/android-release.apk
+    - $TRAVIS_BUILD_DIR/android/build/outputs/apk/android-release-unaligned.apk
+    - $HOME/lint.zip
   on:
     tags: true
   skip_cleanup: true
