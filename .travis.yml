@@ -66,8 +66,6 @@ deploy:
   file:
     - $TRAVIS_BUILD_DIR/android/build/outputs/apk/android-debug.apk
     - $TRAVIS_BUILD_DIR/android/build/outputs/apk/android-debug-unaligned.apk
-    - $TRAVIS_BUILD_DIR/android/build/outputs/apk/android-release.apk
-    - $TRAVIS_BUILD_DIR/android/build/outputs/apk/android-release-unaligned.apk
     - $HOME/lint.zip
   on:
     tags: true
