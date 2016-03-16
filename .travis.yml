@@ -74,7 +74,9 @@ deploy:
 after_deploy:
   - ./gradlew -p android publishApkRelease
 
-
+addons:
+    code_climate:
+        repo_token: 49a9bf3e7f82566fba30e850d3435d69e35121c66bf9d2a46144e16f99b1764f
 #deploy:
 #  provider: releases
 #  api_key: $GITHUB_TOKEN
