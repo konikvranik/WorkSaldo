@@ -56,6 +56,9 @@ after_failure:
   - for file in *.log; do echo "$file"; echo "====================="; cat "$file"; done || true
   # TODO: Solve issue (timeout api-21) https://code.google.com/p/android/issues/detail?id=69735
 
+before_deploy:
+  - sed "s/GPLAY_CLIENT_ID/$GPLAY_CLIENT_ID/g;s/GPLAY_PROJECT_ID/$GPLAY_PROJECT_ID/g;s/GPLAY_CLIENT_SECRET/$GPLAY_CLIENT_SECRET/g" .client_secret.apps.googleusercontent.com.json > android/keys.json
+
 deploy:
   provider: releases
   api_key: $GITHUB_TOKEN
@@ -67,6 +70,9 @@ deploy:
   on:
     tags: true
   skip_cleanup: true
+
+after_deploy:
+  - ./gradlew -p android publishApkRelease
 
 
 #deploy:

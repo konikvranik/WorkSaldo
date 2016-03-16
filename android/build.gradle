@@ -11,14 +11,14 @@ buildscript {
         classpath 'com.android.tools.build:gradle:1.3.1'
 		classpath 'com.dicedmelon.gradle:jacoco-android:0.1.1'
 		classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.4.0'
-        
-
+        	classpath 'com.github.triplet.gradle:play-publisher:1.1.4'
     }
 }
 
 apply plugin: 'com.android.application'
 apply plugin: 'jacoco-android'
 apply plugin: 'com.github.kt3k.coveralls'
+apply plugin: 'com.github.triplet.play'
 
 repositories {
     jcenter()
@@ -28,7 +28,9 @@ repositories {
     }
 
 }
-
+play {
+    jsonFile = file('keys.json')
+}
 if (project.rootProject.file('local.properties').exists()) {
     Properties buildProps = new Properties()
     buildProps.load(project.rootProject.file('local.properties').newDataInputStream())
