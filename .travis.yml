@@ -46,18 +46,25 @@ before_deploy:
   - sed "s/GPLAY_CLIENT_ID/$GPLAY_CLIENT_ID/g;s/GPLAY_PROJECT_ID/$GPLAY_PROJECT_ID/g;s/GPLAY_CLIENT_SECRET/$GPLAY_CLIENT_SECRET/g" $TRAVIS_BUILD_DIR/.client_secret.apps.googleusercontent.com.json > $TRAVIS_BUILD_DIR/android/keys.json
 
 deploy:
-  provider: releases
-  skip_cleanup: true
-  overwrite: true
-  api_key: $GITHUB_TOKEN
-  file:
-  - $TRAVIS_BUILD_DIR/android/build/outputs/apk/android-debug.apk
-  - $TRAVIS_BUILD_DIR/android/build/outputs/apk/android-debug-unaligned.apk
-  - $TRAVIS_BUILD_DIR/android/build/outputs/apk/android-release.apk
-  - $TRAVIS_BUILD_DIR/android/build/outputs/apk/android-release-unaligned.apk
-  - $HOME/android-wait-for-emulator
-  on:
-    tags: true
+  - provider: releases
+    skip_cleanup: true
+    overwrite: true
+    api_key: $GITHUB_TOKEN
+    file:
+    - $TRAVIS_BUILD_DIR/android/build/outputs/apk/android-debug.apk
+    - $TRAVIS_BUILD_DIR/android/build/outputs/apk/android-debug-unaligned.apk
+    - $TRAVIS_BUILD_DIR/android/build/outputs/apk/android-.*.apk
+    - $HOME/android-wait-for-emulator
+    on:
+      tags: true
+  - provider: bintray
+    overwrite: true
+    skip_cleanup: true
+    file: "$TRAVIS_BUILD_DIR/.bintray.json"
+    user: "konikvranik"
+    key: "$BINTRAY_TOKEN"
+    on:
+        tags: true
 
 after_deploy:
   - cd $TRAVIS_BUILD_DIR && ./gradlew -p android publishApkRelease
