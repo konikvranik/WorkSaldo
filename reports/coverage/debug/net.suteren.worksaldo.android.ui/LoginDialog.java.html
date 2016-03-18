@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>LoginDialog.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debug</a> &gt; <a href="index.source.html" class="el_package">net.suteren.worksaldo.android.ui</a> &gt; <span class="el_source">LoginDialog.java</span></div><h1>LoginDialog.java</h1><pre class="source lang-java linenums">package net.suteren.worksaldo.android.ui;
+
+import android.app.Dialog;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+import ch.simas.jtoggl.JToggl;
+import net.suteren.worksaldo.android.R;
+
+import javax.ws.rs.client.Client;
+
+import static net.suteren.worksaldo.android.provider.TogglCachedProvider.API_KEY;
+
+/**
+ * Dialog which allow user to login, obtain api_token and stores it to shared preferences.
+ */
+public class LoginDialog extends Dialog {
+
+    private MainActivity mainActivity;
+    private AsyncTask&lt;String, Void, String&gt; togglLogin;
+
+    /**
+     * Constructs login dialog.
+     *
+     * @param mainActivity Main activity which nests login dialog.
+     */
+    public LoginDialog(MainActivity mainActivity) {
+<span class="nc" id="L34">        super(mainActivity);</span>
+<span class="nc" id="L35">        this.mainActivity = mainActivity;</span>
+<span class="nc" id="L36">    }</span>
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+<span class="nc" id="L40">        super.onCreate(savedInstanceState);</span>
+<span class="nc" id="L41">        setContentView(R.layout.login_dialog);</span>
+<span class="nc" id="L42">        final Button okButton = (Button) findViewById(R.id.okButton);</span>
+<span class="nc" id="L43">        final Button cancelButton = (Button) findViewById(R.id.cancelButton);</span>
+<span class="nc" id="L44">        final EditText usernameField = (EditText) findViewById(R.id.username);</span>
+<span class="nc" id="L45">        final EditText passwordField = (EditText) findViewById(R.id.password);</span>
+<span class="nc" id="L46">        final TextView errorMessage = (TextView) findViewById(R.id.error);</span>
+
+<span class="nc" id="L48">        setTitle(R.string.login);</span>
+
+        // This watcher hides error message when username or password changes.
+<span class="nc" id="L51">        TextWatcher watcher = new TextWatcher() {</span>
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+<span class="nc" id="L54">            }</span>
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+<span class="nc" id="L58">                errorMessage.setVisibility(View.GONE);</span>
+<span class="nc" id="L59">            }</span>
+
+            @Override
+            public void afterTextChanged(Editable s) {
+<span class="nc" id="L63">            }</span>
+        };
+<span class="nc" id="L65">        usernameField.addTextChangedListener(watcher);</span>
+<span class="nc" id="L66">        passwordField.addTextChangedListener(watcher);</span>
+
+<span class="nc" id="L68">        okButton.setOnClickListener(new View.OnClickListener() {</span>
+            @Override
+            public void onClick(View v) {
+<span class="nc" id="L71">                usernameField.setEnabled(false);</span>
+<span class="nc" id="L72">                passwordField.setEnabled(false);</span>
+<span class="nc" id="L73">                okButton.setEnabled(false);</span>
+
+<span class="nc" id="L75">                final String username = usernameField.getText().toString();</span>
+<span class="nc" id="L76">                final String password = passwordField.getText().toString();</span>
+<span class="nc bnc" id="L77" title="All 4 branches missed.">                if (togglLogin != null &amp;&amp; AsyncTask.Status.RUNNING == togglLogin.getStatus()) {</span>
+<span class="nc" id="L78">                    togglLogin.cancel(true);</span>
+                }
+<span class="nc" id="L80">                togglLogin = createLoginTask(okButton, usernameField, passwordField, errorMessage);</span>
+<span class="nc" id="L81">                togglLogin.execute(username, password);</span>
+
+<span class="nc" id="L83">            }</span>
+        });
+
+<span class="nc" id="L86">        cancelButton.setOnClickListener(new View.OnClickListener() {</span>
+            @Override
+            public void onClick(View v) {
+<span class="nc bnc" id="L89" title="All 2 branches missed.">                if (okButton.isEnabled()) {</span>
+<span class="nc" id="L90">                    LoginDialog.this.dismiss();</span>
+                } else {
+<span class="nc" id="L92">                    togglLogin.cancel(true);</span>
+                }
+<span class="nc" id="L94">            }</span>
+        });
+<span class="nc" id="L96">    }</span>
+
+    private AsyncTask&lt;String, Void, String&gt; createLoginTask(final Button okButton, final EditText usernameField, final EditText passwordField, final TextView errorMessage) {
+<span class="nc" id="L99">        return new AsyncTask&lt;String, Void, String&gt;() {</span>
+
+            @Override
+            protected String doInBackground(String... params) {
+<span class="nc" id="L103">                String apiToken = null;</span>
+
+                try {
+<span class="nc" id="L106">                    apiToken = new JToggl(params[0], params[1]) {</span>
+                        @Override
+                        protected Client prepareApiClient() {
+<span class="nc" id="L109">                            return super.prepareApiClient().register(AndroidFriendlyFeature.class);</span>
+                        }
+                    }.getCurrentUser().getApiToken();
+<span class="nc" id="L112">                } catch (Exception e) {</span>
+<span class="nc" id="L113">                    Log.e(&quot;LoginDialog&quot;, &quot;login failed&quot;, e);</span>
+<span class="nc" id="L114">                }</span>
+<span class="nc" id="L115">                return apiToken;</span>
+            }
+
+            @Override
+            protected void onCancelled(String s) {
+<span class="nc" id="L120">                usernameField.setEnabled(true);</span>
+<span class="nc" id="L121">                passwordField.setEnabled(true);</span>
+<span class="nc" id="L122">                okButton.setEnabled(true);</span>
+<span class="nc" id="L123">                super.onCancelled(s);</span>
+<span class="nc" id="L124">            }</span>
+
+            @Override
+            protected void onPostExecute(String apiToken) {
+
+<span class="nc" id="L129">                super.onPostExecute(apiToken);</span>
+
+<span class="nc" id="L131">                usernameField.setEnabled(true);</span>
+<span class="nc" id="L132">                passwordField.setEnabled(true);</span>
+<span class="nc" id="L133">                okButton.setEnabled(true);</span>
+
+<span class="nc bnc" id="L135" title="All 2 branches missed.">                if (apiToken == null) {</span>
+<span class="nc" id="L136">                    errorMessage.setVisibility(View.VISIBLE);</span>
+                } else {
+<span class="nc" id="L138">                    errorMessage.setVisibility(View.GONE);</span>
+<span class="nc" id="L139">                    mainActivity.getSharedPreferences().edit().putString(API_KEY, apiToken).apply();</span>
+<span class="nc" id="L140">                    LoginDialog.this.dismiss();</span>
+                }
+<span class="nc" id="L142">            }</span>
+        };
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.4.201502262128</span></div></body></html>

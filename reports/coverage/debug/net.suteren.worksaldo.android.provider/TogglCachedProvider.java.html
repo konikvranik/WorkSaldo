@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>TogglCachedProvider.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debug</a> &gt; <a href="index.source.html" class="el_package">net.suteren.worksaldo.android.provider</a> &gt; <span class="el_source">TogglCachedProvider.java</span></div><h1>TogglCachedProvider.java</h1><pre class="source lang-java linenums">package net.suteren.worksaldo.android.provider;
+
+import android.content.ContentProvider;
+import android.content.ContentValues;
+import android.content.SharedPreferences;
+import android.content.UriMatcher;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
+import android.os.Bundle;
+import android.text.TextUtils;
+import android.util.Log;
+import ch.simas.jtoggl.JToggl;
+import ch.simas.jtoggl.domain.TimeEntry;
+import net.suteren.worksaldo.android.DbHelper;
+import net.suteren.worksaldo.android.ui.ISharedPreferencesProvider;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
+
+import javax.ws.rs.client.Client;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import static android.content.Context.MODE_PRIVATE;
+import static net.suteren.worksaldo.android.DbHelper.*;
+import static net.suteren.worksaldo.android.ui.MainActivity.MAIN;
+
+/**
+ * Provider which is responsible for providing and manipulating data from Toggl.
+ * It server record from local offline database and ensures updating data from Toggl server on demand.
+ *
+ * @author vranikp
+ */
+<span class="fc" id="L37">public class TogglCachedProvider extends ContentProvider implements ISharedPreferencesProvider {</span>
+
+    /**
+     * Order by start time.
+     */
+    public static final String ORDER_BY = &quot;datetime(&quot; + START_COL + &quot;)&quot;;
+    /**
+     * Group by day.
+     */
+    public static final String GROUP_BY = &quot;date(&quot; + START_COL + &quot;)&quot;;
+    /**
+     * Select by date from and date to.
+     */
+    public static final String SELECT_WHERE = &quot;date(&quot; + START_COL + &quot;) &gt;= date(?)&quot; +
+            &quot; and date(&quot; + START_COL + &quot;) &lt;= date(?)&quot;;
+    /**
+     * Delete records which will be requested from Toggl server.
+     */
+    public static final String DELETE_WHERE = &quot;date(&quot; + START_COL + &quot;) &gt;= date(?)&quot; +
+            &quot; and date(&quot; + START_COL + &quot;) &lt;= date(?)&quot;;
+
+    /**
+     * Name of start time column.
+     */
+    public static final String DAY_START_NAME = &quot;start&quot;;
+    /**
+     * Name of date column.
+     */
+    public static final String DATE_NAME = &quot;date&quot;;
+    /**
+     * Name of end time column.
+     */
+    public static final String DAY_END_NAME = &quot;stop&quot;;
+    /**
+     * Name of worked time column.
+     */
+    public static final String DAY_TOTAL_NAME = &quot;total&quot;;
+    /**
+     * Name of balance column.
+     */
+    public static final String DAY_SALDO_NAME = &quot;saldo&quot;;
+
+    /**
+     * Date query clause.
+     */
+    public static final String DATE_COMPOSITE = &quot;date(start) &quot; + DATE_NAME;
+    /**
+     * Start time query clause.
+     */
+    public static final String DAY_START_COMPOSITE = &quot;min(time(&quot; + START_COL + &quot;, 'localtime')) &quot; + DAY_START_NAME;
+    /**
+     * End time query clause.
+     */
+    public static final String DAY_END_COMPOSITE = &quot;max(time(&quot; + STOP_COL + &quot;, 'localtime')) &quot; + DAY_END_NAME;
+    /**
+     * Worked time query clause.
+     */
+    public static final String DAY_TOTAL_COMPOSITE = &quot;sum(&quot; + DURATION_COL + &quot;) &quot; + DAY_TOTAL_NAME;
+    /**
+     * Balance query clause.
+     */
+    public static final String DAY_SALDO_COMPOSITE = &quot;sum(&quot; + DURATION_COL + &quot;) &quot; + DAY_SALDO_NAME;
+
+    // Creates a UriMatcher object.
+<span class="fc" id="L101">    private static final UriMatcher sUriMatcher = new UriMatcher(0);</span>
+
+    /**
+     * Toggl provider uri base.
+     */
+    public static final String URI_BASE = &quot;net.suteren.toggl.provider&quot;;
+    /**
+     * Path for user query.
+     */
+    public static final String USER_PATH = &quot;user&quot;;
+    /**
+     * Path for timeentries query.
+     */
+    public static final String TIMEENTRY_PATH = &quot;timeentry&quot;;
+    /**
+     * Timeentries uri.
+     */
+<span class="fc" id="L118">    public static final Uri TIMEENTRIES_URI = new Uri.Builder().scheme(&quot;content&quot;)</span>
+            .authority(TogglCachedProvider.URI_BASE)
+            .appendPath(TogglCachedProvider.TIMEENTRY_PATH).build();
+    /**
+     * Path for reload from Toggl.
+     */
+    public static final String RELOAD_PATH = &quot;reload&quot;;
+    /**
+     * Uri for reload from Toggl.
+     */
+<span class="fc" id="L128">    public static final Uri RELOAD_URI = new Uri.Builder().scheme(&quot;content&quot;)</span>
+            .authority(TogglCachedProvider.URI_BASE)
+            .appendPath(TogglCachedProvider.RELOAD_PATH).build();
+
+    private static final int MATCHED_RELOAD = 3;
+    private static final int MATCHED_USER = 1;
+    private static final int MATCHED_TIMEENTRY = 2;
+
+    /**
+     * Api token constant - used instead of password when using token.
+     */
+    public static final String API_KEY = &quot;api_token&quot;;
+
+    /**
+     * Database date format for plain date without time.
+     */
+<span class="fc" id="L144">    public static final DateTimeFormatter DATE_FORMAT = DateTimeFormat.forPattern(&quot;yyyy-MM-dd&quot;).withZoneUTC();</span>
+    /**
+     * Database time format for plain time without date.
+     */
+<span class="fc" id="L148">    public static final DateTimeFormatter TIME_FORMAT = DateTimeFormat.forPattern(&quot;HH:mm:ss&quot;).withZoneUTC();</span>
+    /**
+     * Database datetime format for date with time.
+     */
+<span class="fc" id="L152">    public static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormat.forPattern(&quot;yyyy-MM-dd HH:mm:ss.SSS&quot;).withZoneUTC();</span>
+
+    public static final int UNAUTHORIZED = 401;
+    public static final String RESULT_CODE = &quot;resultCode&quot;;
+
+    @Override
+    public boolean onCreate() {
+<span class="fc" id="L159">        sUriMatcher.addURI(URI_BASE, USER_PATH, MATCHED_USER);</span>
+<span class="fc" id="L160">        sUriMatcher.addURI(URI_BASE, TIMEENTRY_PATH, MATCHED_TIMEENTRY);</span>
+<span class="fc" id="L161">        sUriMatcher.addURI(URI_BASE, RELOAD_PATH, MATCHED_RELOAD);</span>
+<span class="fc" id="L162">        return true;</span>
+    }
+
+    @Override
+    public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+<span class="nc" id="L167">        Log.d(&quot;TogglCachedProvider&quot;, &quot;Querying data for uri &quot; + uri.toString());</span>
+
+<span class="nc bnc" id="L169" title="All 3 branches missed.">        switch (sUriMatcher.match(uri)) {</span>
+
+            // If the incoming URI was for user
+            case MATCHED_RELOAD:
+<span class="nc" id="L173">                Log.d(&quot;TogglCachedProvider&quot;, &quot;Querying Toggl&quot;);</span>
+                try {
+<span class="nc" id="L175">                    reloadTimeentriesFromToggl(selectionArgs);</span>
+<span class="nc" id="L176">                    Log.d(&quot;TogglCachedProvider&quot;, &quot;Notifying uri &quot; + TIMEENTRIES_URI.toString());</span>
+<span class="nc" id="L177">                    getContext().getContentResolver().notifyChange(TIMEENTRIES_URI, null);</span>
+<span class="nc" id="L178">                    return null;</span>
+<span class="nc" id="L179">                } catch (Exception e) {</span>
+<span class="nc" id="L180">                    Log.e(&quot;TogglCachedProvider&quot;, &quot;unable to get time entries&quot;, e);</span>
+                }
+
+                // If the incoming URI was for time sheet entries
+            case MATCHED_TIMEENTRY:
+<span class="nc" id="L185">                Log.d(&quot;TogglCachedProvider&quot;, &quot;Querying DB&quot;);</span>
+<span class="nc" id="L186">                final Cursor cursor = reloadTimeentiresFromDb(projection, selection, selectionArgs, sortOrder);</span>
+<span class="nc" id="L187">                cursor.setNotificationUri(getContext().getContentResolver(), TIMEENTRIES_URI);</span>
+<span class="nc" id="L188">                return cursor;</span>
+
+            default:
+                // If the URI is not recognized.
+<span class="nc" id="L192">                return null;</span>
+
+        }
+
+    }
+
+    private Cursor reloadTimeentiresFromDb(String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+        // Check if there is required field &quot;_id&quot;. If not, add it to projection.
+<span class="nc" id="L200">        List&lt;String&gt; proj = Arrays.asList(projection);</span>
+<span class="nc bnc" id="L201" title="All 2 branches missed.">        if (!proj.contains(ID_COLUMN_NAME)) {</span>
+<span class="nc" id="L202">            proj = new ArrayList&lt;&gt;(Arrays.asList(projection));</span>
+<span class="nc" id="L203">            proj.add(0, ID_COLUMN_NAME);</span>
+<span class="nc" id="L204">            projection = proj.toArray(new String[proj.size()]);</span>
+        }
+<span class="nc" id="L206">        SQLiteDatabase readableDatabase = getDbHelper(getContext()).getReadableDatabase();</span>
+<span class="nc" id="L207">        return readableDatabase.query(TIME_ENTRY, projection, selection, selectionArgs, GROUP_BY, null, sortOrder);</span>
+    }
+
+    private void reloadTimeentriesFromToggl(String[] selectionArgs) {
+
+        Bundle report;
+<span class="nc" id="L213">        String key = getContext().getSharedPreferences(MAIN, MODE_PRIVATE).getString(API_KEY, null);</span>
+<span class="nc bnc" id="L214" title="All 4 branches missed.">        if (key == null || &quot;&quot;.equals(key.trim())) {</span>
+<span class="nc" id="L215">            report = new Bundle();</span>
+<span class="nc" id="L216">            report.putInt(RESULT_CODE, UNAUTHORIZED);</span>
+        } else {
+<span class="nc" id="L218">            JToggl jt = new JToggl(key, API_KEY) {</span>
+                @Override
+                protected Client prepareApiClient() {
+<span class="nc" id="L221">                    return super.prepareApiClient().register(AndroidFriendlyFeature.class);</span>
+                }
+            };
+
+<span class="nc" id="L225">            Log.d(&quot;TogglCachedProvider&quot;, String.format(&quot;Get TEs from %s to %s&quot;, selectionArgs[0], selectionArgs[1]));</span>
+<span class="nc" id="L226">            List&lt;TimeEntry&gt; te = jt.getTimeEntries(ISODateTimeFormat.date().parseLocalDate(selectionArgs[0]), ISODateTimeFormat.date().parseLocalDate(selectionArgs[1]));</span>
+
+<span class="nc" id="L228">            Log.d(&quot;TogglCachedProvider&quot;, &quot;Loaded from toggl: &quot; + te.size());</span>
+<span class="nc" id="L229">            SQLiteDatabase db = getDbHelper(getContext()).getWritableDatabase();</span>
+            try {
+
+<span class="nc" id="L232">                db.beginTransaction();</span>
+<span class="nc" id="L233">                db.delete(TIME_ENTRY, DELETE_WHERE, selectionArgs);</span>
+
+<span class="nc bnc" id="L235" title="All 2 branches missed.">                for (TimeEntry e : te) {</span>
+<span class="nc" id="L236">                    Log.d(&quot;TogglCachedProvider&quot;, String.format(&quot;Persisting: %s&quot;, te));</span>
+<span class="nc" id="L237">                    ContentValues values = new ContentValues(12);</span>
+<span class="nc bnc" id="L238" title="All 2 branches missed.">                    values.put(DbHelper.DESCRIPTION_COL, e.getDescription() == null ? &quot;&quot; : e.getDescription());</span>
+<span class="nc" id="L239">                    values.put(DbHelper.WID_COL, e.getWorkspaceId());</span>
+<span class="nc" id="L240">                    values.put(DbHelper.PID_COL, e.getProjectId());</span>
+<span class="nc" id="L241">                    values.put(DbHelper.TID_COL, e.getTaskId());</span>
+
+<span class="nc" id="L243">                    final DateTimeFormatter dateTimeFormat = DATE_TIME_FORMAT;</span>
+
+<span class="nc" id="L245">                    values.put(DbHelper.START_COL, dateTimeFormat.print(e.getStart()));</span>
+
+<span class="nc" id="L247">                    DateTime teStop = e.getStop();</span>
+<span class="nc" id="L248">                    values.put(DbHelper.STOP_COL, dateTimeFormat.print(teStop));</span>
+
+<span class="nc" id="L250">                    values.put(DbHelper.DURATION_COL, e.getDuration());</span>
+                    //values.put(DbHelper.BILLABLE_COL, null);
+<span class="nc" id="L252">                    values.put(DbHelper.CREATED_WITH_COL, e.getCreatedWith());</span>
+<span class="nc bnc" id="L253" title="All 2 branches missed.">                    if (e.getTags() != null)</span>
+<span class="nc" id="L254">                        values.put(DbHelper.TAGS_COL, TextUtils.join(&quot;;&quot;, e.getTags()));</span>
+<span class="nc" id="L255">                    values.put(DbHelper.DURONLY_COL, e.getDurationOnly());</span>
+<span class="nc" id="L256">                    long id = db.insertWithOnConflict(TIME_ENTRY, null, values, SQLiteDatabase.CONFLICT_IGNORE);</span>
+<span class="nc" id="L257">                    Log.d(&quot;TogglCachedProvider&quot;, String.format(&quot;Inserted timeentry with id: %d&quot;, id));</span>
+<span class="nc" id="L258">                }</span>
+<span class="nc" id="L259">                db.setTransactionSuccessful();</span>
+<span class="nc" id="L260">            } catch (Throwable t) {</span>
+<span class="nc" id="L261">                Log.e(&quot;TogglCachedProvider&quot;, &quot;Failed to load data from toggl.&quot;, t);</span>
+            } finally {
+<span class="nc" id="L263">                db.endTransaction();</span>
+<span class="nc" id="L264">                db.close();</span>
+<span class="nc" id="L265">            }</span>
+        }
+
+<span class="nc" id="L268">    }</span>
+
+    @Override
+    public String getType(Uri uri) {
+<span class="nc" id="L272">        return null;</span>
+    }
+
+    @Override
+    public Uri insert(Uri uri, ContentValues values) {
+<span class="nc" id="L277">        return null;</span>
+    }
+
+    @Override
+    public int delete(Uri uri, String selection, String[] selectionArgs) {
+<span class="nc" id="L282">        return 0;</span>
+    }
+
+    @Override
+    public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+<span class="nc" id="L287">        return 0;</span>
+    }
+
+
+    @Override
+    public SharedPreferences getSharedPreferences() {
+<span class="nc" id="L293">        return getContext().getSharedPreferences(MAIN, MODE_PRIVATE);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.4.201502262128</span></div></body></html>

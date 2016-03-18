@@ -18,7 +18,7 @@ document.getElementById(id+'Link').style.display = 'none';
 <body>
 <h1>Lint Report</h1>
 <div class="titleSeparator"></div>
-Check performed at Fri Mar 18 17:40:08 UTC 2016.<br/>
+Check performed at Fri Mar 18 17:46:33 UTC 2016.<br/>
 0 errors and 28 warnings found:<br/><br/>
 <table class="overview">
 <tr><td></td><td class="categoryColumn"><a href="#Correctness">Correctness</a>
@@ -149,13 +149,13 @@ This check scans through library jars and looks for references to API packages t
 <div class="id"><a href="#" title="Return to top">GradleDependency: Obsolete Gradle Dependency</a><div class="issueSeparator"></div>
 </div>
 <div class="warningslist">
-<span class="location"><a href="../../build.gradle">../../build.gradle</a>:48</span>: <span class="message">A newer version of com.android.support:support-v4 than 23.1.1 is available: 23.2.1</span><br /><pre class="errorlines">
-<span class="lineno">  45</span>     compile('com.google.inject:guice:3.0') {
-<span class="lineno">  46</span>         exclude module: 'aopalliance'
-<span class="lineno">  47</span>     }
-<span class="lineno">  48</span>     <span class="errorspan">compile 'com.android.support:support-v4:23.1.1'</span>
-<span class="lineno">  49</span> 
-<span class="lineno">  50</span>     testCompile 'junit:junit:4.12'
+<span class="location"><a href="../../build.gradle">../../build.gradle</a>:47</span>: <span class="message">A newer version of com.android.support:support-v4 than 23.1.1 is available: 23.2.1</span><br /><pre class="errorlines">
+<span class="lineno">  44</span>     compile('com.google.inject:guice:3.0') {
+<span class="lineno">  45</span>         exclude module: 'aopalliance'
+<span class="lineno">  46</span>     }
+<span class="lineno">  47</span>     <span class="errorspan">compile 'com.android.support:support-v4:23.1.1'</span>
+<span class="lineno">  48</span> 
+<span class="lineno">  49</span>     testCompile 'junit:junit:4.12'
 </pre>
 </div>
 <div class="metadata">Note: This issue has an associated quickfix operation in Android Studio/IntelliJ&nbsp;<img alt="Fix" border="0" align="top" src="lint-results-debug_files/lint-run.png" />
@@ -174,13 +174,13 @@ This detector looks for usages of libraries where the version you are using is n
 <div class="id"><a href="#" title="Return to top">GradleDynamicVersion: Gradle Dynamic Version</a><div class="issueSeparator"></div>
 </div>
 <div class="warningslist">
-<span class="location"><a href="../../build.gradle">../../build.gradle</a>:6</span>: <span class="message">Avoid using + in version numbers; can lead to unpredictable and unrepeatable builds (com.dicedmelon.gradle:jacoco-android:+)</span><br /><pre class="errorlines">
+<span class="location"><a href="../../build.gradle">../../build.gradle</a>:5</span>: <span class="message">Avoid using + in version numbers; can lead to unpredictable and unrepeatable builds (com.dicedmelon.gradle:jacoco-android:+)</span><br /><pre class="errorlines">
+<span class="lineno">   2</span>     dependencies {
 <span class="lineno">   3</span>         classpath 'com.github.triplet.gradle:play-publisher:1.1.4'
-<span class="lineno">   4</span>         //classpath 'com.android.tools.build:gradle:1.5.0'
-<span class="lineno">   5</span>         classpath 'com.android.tools.build:gradle:2.0.0-beta7'
-<span class="lineno">   6</span>         <span class="errorspan">classpath 'com.dicedmelon.gradle:jacoco-android:+'</span>
-<span class="lineno">   7</span>     }
-<span class="lineno">   8</span> }
+<span class="lineno">   4</span>         classpath 'com.android.tools.build:gradle:2.0.0-beta7'
+<span class="lineno">   5</span>         <span class="errorspan">classpath 'com.dicedmelon.gradle:jacoco-android:+'</span>
+<span class="lineno">   6</span>     }
+<span class="lineno">   7</span> }
 </pre>
 </div>
 <div class="metadata">Note: This issue has an associated quickfix operation in Android Studio/IntelliJ&nbsp;<img alt="Fix" border="0" align="top" src="lint-results-debug_files/lint-run.png" />

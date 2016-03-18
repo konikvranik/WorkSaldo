@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>DbHelper.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debug</a> &gt; <a href="index.source.html" class="el_package">net.suteren.worksaldo.android</a> &gt; <span class="el_source">DbHelper.java</span></div><h1>DbHelper.java</h1><pre class="source lang-java linenums">package net.suteren.worksaldo.android;
+
+import android.content.Context;
+import android.content.pm.PackageManager;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
+
+/**
+ * Database helper which creates, updates database tables and provides database instance.
+ *
+ * @author vranikp
+ */
+public class DbHelper extends SQLiteOpenHelper {
+
+    /**
+     * Name of time entries table.
+     */
+    public static final String TIME_ENTRY = &quot;TIME_ENTRY&quot;;
+    /**
+     * Name of clients table.
+     */
+    public static final String CLIENT_TABLE = &quot;CLIENT&quot;;
+    /**
+     * Name of column with start time.
+     */
+    public static final String START_COL = &quot;start&quot;;
+    /**
+     * Name of column with end time.
+     */
+    public static final String STOP_COL = &quot;stop&quot;;
+    public static final String AT_COL = &quot;at&quot;;
+    /**
+     * Name of column work duration.
+     */
+    public static final String DURATION_COL = &quot;duration&quot;;
+    /**
+     * Name of default column with row id.
+     */
+    public static final String ID_COLUMN_NAME = &quot;ROWID _id&quot;;
+    /**
+     * Name of column with time entry description.
+     */
+    public static final String DESCRIPTION_COL = &quot;description&quot;;
+    /**
+     * Name of column with workspace id.
+     */
+    public static final String WID_COL = &quot;wid&quot;;
+    /**
+     * Name of column with project id.
+     */
+    public static final String PID_COL = &quot;pid&quot;;
+    /**
+     * Name of column with task id.
+     */
+    public static final String TID_COL = &quot;tid&quot;;
+    /**
+     * Name of column with billable flag.
+     */
+    public static final String BILLABLE_COL = &quot;billable&quot;;
+    /**
+     * Name of column with &quot;agent&quot; name.
+     */
+    public static final String CREATED_WITH_COL = &quot;created_with&quot;;
+    /**
+     * Name of column with tags.
+     */
+    public static final String TAGS_COL = &quot;tags&quot;;
+    /**
+     * Name of column with duration only flag.
+     */
+    public static final String DURONLY_COL = &quot;duronly&quot;;
+    /**
+     * Integer type.
+     */
+    public static final String INTEGER_TYPE = &quot;INTEGER&quot;;
+
+    /**
+     * Text type.
+     */
+    public static final String TEXT_TYPE = &quot;TEXT&quot;;
+
+    private static final String TIME_ENTRIES_TABLE_CREATE = &quot;CREATE TABLE &quot; + TIME_ENTRY + &quot; (&quot; +
+            DESCRIPTION_COL + &quot; &quot; + TEXT_TYPE + &quot; NOT NULL,&quot; +
+            WID_COL + &quot; &quot; + INTEGER_TYPE + &quot; DEFAULT -1,&quot; +
+            PID_COL + &quot; &quot; + INTEGER_TYPE + &quot; DEFAULT -1,&quot; +
+            TID_COL + &quot; &quot; + INTEGER_TYPE + &quot; DEFAULT -1,&quot; +
+            BILLABLE_COL + &quot; &quot; + INTEGER_TYPE + &quot;,&quot; +
+            START_COL + &quot; &quot; + TEXT_TYPE + &quot; NOT NULL,&quot; +
+            STOP_COL + &quot; &quot; + TEXT_TYPE + &quot; NOT NULL,&quot; +
+            DURATION_COL + &quot; &quot; + INTEGER_TYPE + &quot; NOT NULL,&quot; +
+            CREATED_WITH_COL + &quot; &quot; + TEXT_TYPE + &quot;, &quot; +
+            TAGS_COL + &quot; &quot; + TEXT_TYPE + &quot;,&quot; +
+            DURONLY_COL + &quot; &quot; + INTEGER_TYPE + &quot;,&quot; +
+            AT_COL + &quot; &quot; + TEXT_TYPE + &quot;,&quot; +
+            &quot;UNIQUE (&quot; +
+            START_COL + &quot;,&quot; +
+            STOP_COL + &quot;,&quot; +
+            DESCRIPTION_COL + &quot;,&quot; +
+            WID_COL + &quot;,&quot; +
+            TID_COL + &quot;,&quot; +
+            PID_COL + &quot;)&quot; +
+            &quot;);&quot;;
+    private static final String CLIENTS_TABLE_CREATE = &quot;CREATE TABLE &quot; + CLIENT_TABLE + &quot; (&quot; +
+            &quot;name &quot; + TEXT_TYPE + &quot;,&quot; +
+            &quot;default_hourly &quot; + INTEGER_TYPE + &quot;,&quot; +
+            &quot;currency &quot; + TEXT_TYPE + &quot;,&quot; +
+            WID_COL + &quot; &quot; + INTEGER_TYPE + &quot;,&quot; +
+            &quot;notes &quot; + TEXT_TYPE +
+            &quot;);&quot;;
+    private static DbHelper dbHelper;
+
+    private DbHelper(Context context) throws PackageManager.NameNotFoundException {
+<span class="nc" id="L114">        super(context, &quot;main&quot;, null, context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionCode);</span>
+<span class="nc" id="L115">    }</span>
+
+    public synchronized static DbHelper getDbHelper(Context context) {
+<span class="nc bnc" id="L118" title="All 2 branches missed.">        if (dbHelper == null) {</span>
+            try {
+<span class="nc" id="L120">                dbHelper = new DbHelper(context);</span>
+<span class="nc" id="L121">            } catch (PackageManager.NameNotFoundException e) {</span>
+<span class="nc" id="L122">                Log.e(&quot;DbHelper&quot;, &quot;Unable to create DB helper&quot;, e);</span>
+<span class="nc" id="L123">                throw new RuntimeException(e);</span>
+<span class="nc" id="L124">            }</span>
+        }
+<span class="nc" id="L126">        return dbHelper;</span>
+    }
+
+    @Override
+    public void onCreate(SQLiteDatabase db) {
+<span class="nc" id="L131">        db.compileStatement(TIME_ENTRIES_TABLE_CREATE).execute();</span>
+<span class="nc" id="L132">        db.compileStatement(CLIENTS_TABLE_CREATE).execute();</span>
+<span class="nc" id="L133">    }</span>
+
+    @Override
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+
+<span class="nc" id="L138">    }</span>
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.4.201502262128</span></div></body></html>

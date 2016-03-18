@@ -98,7 +98,7 @@ This check scans through library jars and looks for references to API packages t
         quickfix="studio">
         <location
             file="/home/travis/build/konikvranik/worksaldo/android/build.gradle"
-            line="48"
+            line="47"
             column="5"/>
     </issue>
 
@@ -115,7 +115,7 @@ This check scans through library jars and looks for references to API packages t
         quickfix="studio">
         <location
             file="/home/travis/build/konikvranik/worksaldo/android/build.gradle"
-            line="6"
+            line="5"
             column="9"/>
     </issue>
 
