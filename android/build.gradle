@@ -1,8 +1,25 @@
 buildscript {
     dependencies {
         classpath 'com.github.triplet.gradle:play-publisher:1.1.4'
-        classpath 'com.android.tools.build:gradle:1.3.+'
+        classpath 'com.android.tools.build:gradle:1.2.3'
         classpath 'com.dicedmelon.gradle:jacoco-android:+'
+    }
+}
+
+
+allprojects {
+
+    repositories {
+        jcenter()
+        maven {
+            url "https://dl.bintray.com/konikvranik/maven"
+        }
+    }
+
+    buildscript {
+        repositories {
+            jcenter()
+        }
     }
 }
 
@@ -31,15 +48,6 @@ dependencies {
 
     testCompile 'junit:junit:4.12'
 
-}
-
-def key = System.getenv('SIGNINIG_KEYSTORE_PASSWORD')
-if (key != null) {
-    project.ext.set('pwd.keystore', key)
-}
-key = System.getenv('SIGNINIG_KEY_PASSWORD')
-if (key != null) {
-    project.ext.set('pwd.key', key)
 }
 
 android {
@@ -107,4 +115,27 @@ project.tasks.withType(com.android.build.gradle.tasks.Dex) {
 
 play {
     jsonFile = file('keys.json')
+}
+
+if (project.rootProject.file('local.properties').exists()) {
+    Properties buildProps = new Properties()
+    buildProps.load(project.rootProject.file('local.properties').newDataInputStream())
+    buildProps.each { prop -> project.ext.set(prop.key, prop.value) }
+} else if (project.rootProject.file('../local.properties').exists()) {
+    Properties buildProps = new Properties()
+    buildProps.load(project.rootProject.file('../local.properties').newDataInputStream())
+    buildProps.each { prop -> project.ext.set(prop.key, prop.value) }
+}
+
+repositories {
+    jcenter()
+    maven {
+        url "https://dl.bintray.com/konikvranik/maven"
+    }
+}
+
+buildscript {
+    repositories {
+        jcenter()
+    }
 }

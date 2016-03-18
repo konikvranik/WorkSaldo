@@ -5,4 +5,7 @@
 
     <!-- Change the severity of hardcoded strings to "error" -->
     <issue id="HardcodedText" severity="error" />
+
+    <issue id="Deprecation" severity="warning" />
+
 </lint>

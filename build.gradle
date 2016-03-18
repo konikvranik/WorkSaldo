@@ -10,11 +10,19 @@ allprojects {
         buildProps.each { prop -> project.ext.set(prop.key, prop.value) }
     }
 
+
+    def key = System.getenv('SIGNINIG_KEYSTORE_PASSWORD')
+    if (key != null) {
+        project.ext.set('pwd.keystore', key)
+    }
+    key = System.getenv('SIGNINIG_KEY_PASSWORD')
+    if (key != null) {
+        project.ext.set('pwd.key', key)
+    }
+
+
     repositories {
         jcenter()
-        maven {
-            url "http://pandora.comerge.net:8081/nexus/content/repositories/public_snapshots/"
-        }
         maven {
             url "https://dl.bintray.com/konikvranik/maven"
         }

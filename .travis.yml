@@ -1,4 +1,6 @@
-secure: "VUdKu+f/nqjMlbn00nTqqRJHMNSY9VEkeFges1lwrnKHntsQu4Y4gHV8kJETT8WaVd2IcUaBs9mCZUCODvtxeRHI/zRZThXMPpt3qG2pFjj1FXflqf9rO8p7dPEzMfkkvA84eT6FIWYgIF3W4j+IaK+laGXmNWABF7170skb3+OQBtqOoAsSimifToHfMs6FkemDz97nke4D28yHfMtGgFi/n4xVaqZxNxBhuW9W9uxP8yW8Nnp+tewhTAurf/DrGeScAgbQb5mSL1pZU1ANgy7D62vF14eIERMHJX7GOp3up1oS9F23QO/iJyD9cpZ9qF6fP+FvB8Kp3ESClsjJe+45rLCKWomRDk9izKB8AokNWxwoWYCN6ufkUiUkktn3oBvOycOSYRpPO/O9P/4rvCnmA2zFZFY4sY0Bi6wpYNiR1eV2wTMGYiByO+novtDRMhmtcoQOZzU51v/Bdlz6mV4jtyI71husIyzZGQ2aMfPYEi2trxqyEsfFe7f7GVRu67BJYOXoZv1jUaysIFjZtqyF5lChq+Z0Ec5+6tx9dYMsT6gHFPDzVg2xDOdg76rEn8Iej93RADdW8qm+7afswhRXPbsEmHzsxYxF5xY4wy6F9MfBK66V5zQ7JDTDzFbO2+Q//09yhLri4d5DJdvFOUOk6oPTuSSr3RVSWDYShdM="
+secure:
+  - "VUdKu+f/nqjMlbn00nTqqRJHMNSY9VEkeFges1lwrnKHntsQu4Y4gHV8kJETT8WaVd2IcUaBs9mCZUCODvtxeRHI/zRZThXMPpt3qG2pFjj1FXflqf9rO8p7dPEzMfkkvA84eT6FIWYgIF3W4j+IaK+laGXmNWABF7170skb3+OQBtqOoAsSimifToHfMs6FkemDz97nke4D28yHfMtGgFi/n4xVaqZxNxBhuW9W9uxP8yW8Nnp+tewhTAurf/DrGeScAgbQb5mSL1pZU1ANgy7D62vF14eIERMHJX7GOp3up1oS9F23QO/iJyD9cpZ9qF6fP+FvB8Kp3ESClsjJe+45rLCKWomRDk9izKB8AokNWxwoWYCN6ufkUiUkktn3oBvOycOSYRpPO/O9P/4rvCnmA2zFZFY4sY0Bi6wpYNiR1eV2wTMGYiByO+novtDRMhmtcoQOZzU51v/Bdlz6mV4jtyI71husIyzZGQ2aMfPYEi2trxqyEsfFe7f7GVRu67BJYOXoZv1jUaysIFjZtqyF5lChq+Z0Ec5+6tx9dYMsT6gHFPDzVg2xDOdg76rEn8Iej93RADdW8qm+7afswhRXPbsEmHzsxYxF5xY4wy6F9MfBK66V5zQ7JDTDzFbO2+Q//09yhLri4d5DJdvFOUOk6oPTuSSr3RVSWDYShdM=" # GH
+  - "UYejZruI58CANxUj+Ykv6KAMvGhEUKz8RbQgIxcmlp6Hh76U66fKMPdhTs3sS/a2zQ2XBpTbad6Ymof0jzGtJUAKgxQu/HWkerTy7gn1Ul5W8NXs6K/Wr8ootZlxAJfysLesVU2QYsQtiklBzwynynCspAWT7s0QwOjdcdpz2Ypq26VtDhLcmJlDfWHcsUyWx4ZaMCEx+jl9EbUeqUpuizD97q0ofZNNCRdNFxBXKdCd9h01FUUasIHRFtF8fkl94sWonsC3jHtF1Ii9JBgIV1wcV9VlUoutXOO7IyXZohLD2lhJpvc42gEiR3b2ZKFTRjX3Th2kvssL6gU48lM19FfRnf1j9T76k2djHBf8u7SiOeuljuuOejvnET+q7I4NhZezxokjZs4FmC0OrX9xsl8+hed8fV8fYs63H2KkRb3QR1yPQyjuIC0g10/BOCiNUZnxK8xNfjKIGG/B0Vb3GV+F4vs81UmgUgyl3u3PczfGmRSBQWNYyHff225albzvonep9gVH5cSDFKkinzjOjOP53eC3bmO1JZxLMPW/GyROceJ8W3SSG37alMvFIcn/JwlWKfNBYxeClAR9EqX3sLWT0vm2wl8pIwsEjgaAW6gCp2VWLyLYEEhOszE0vRZEmVWnz4BP/KDs+Y5qVXtJjKsv4VvKcmnlNLdhhD08+mI=" # CodeClimate
 
 language:
   - android
@@ -7,12 +9,12 @@ language:
 jdk: oraclejdk7
 
 env:
-  global:
+    global:
     - GRADLE_OPTS="-Xmx512m -XX:MaxPermSize=512m -Djava.net.preferIPv4Stack=true"
     - ANDROID_TARGET=android-23
     - ANDROID_ABI=armeabi-v7a
-install:
-  - sudo apt-get install -qq lynx
+    - ADB_INSTALL_TIMEOUT=8
+    - AVD_DEBUG='init,avd_config,nand_limits,keys,adb,adbserver,adbclient'
 
 android:
   components:
@@ -26,80 +28,42 @@ android:
 before_script:
   - echo no | android create avd --force -n test -t ${ANDROID_TARGET} --abi ${ANDROID_ABI}
   - emulator -avd test -no-audio -no-window &
-  - ./gradlew -p jtoggl build -x test 
-  - ./gradlew -p androidsvg build -x test 
-  - android-wait-for-emulator
-  - adb shell input keyevent 82 &
 
 script:
+  - ./gradlew assemble lint
+  - android-wait-for-emulator
+  - adb shell input keyevent 82 &
   - adb shell setprop dalvik.vm.dexopt-flags v=n,o=v
-  - ./gradlew -p common build jacocoTestReport coveralls
-  - ./gradlew -p android assemble lint jacocoTestReport coveralls
-  - ./gradlew -p android connectedCheck
-after_success:
-  - bash <(curl -s https://codecov.io/bash) -v
+  - adb shell stop installd
+  - adb shell start installd
+  - ./gradlew -p android connectedCheck jacocoTestReport
+
 after_script:
-  - echo "====================="
-  - lynx --dump android/build/outputs/lint-results.html
-  - echo "====================="
-  - lynx --dump android/build/outputs/lint-results-release-fatal.html
-  - echo "====================="
-  
-after_failure:
-  # Customize this line, 'android' is the specific app module name of this project. Shows log.
-  - export MY_MOD="android"
-  - export MY_LOG_DIR="$(pwd)/${MY_MOD}/build/outputs/reports/androidTests/connected/"
-  - pwd && cd "${MY_LOG_DIR:-.}" && pwd && ls -al
-  - lynx --dump index.html > myIndex.log
-  - lynx --dump com.android.builder.testing.ConnectedDevice.html > myConnectedDevice.log
-  - lynx --dump com.android.builder.testing.html > myTesting.log
-  - for file in *.log; do echo "$file"; echo "====================="; cat "$file"; done || true
-  # TODO: Solve issue (timeout api-21) https://code.google.com/p/android/issues/detail?id=69735
+  - bash <(curl -s https://codecov.io/bash) -v
+  - $TRAVIS_BUILD_DIR/scripts/pubreports.sh
+  - cp `which android-wait-for-emulator` $HOME
+  - find $TRAVIS_BUILD_DIR/android/build -type f -not -iname "*.java" -and -not -iname "*.class" -and -not -iname "*.dex" -and -not -iname "*.png" -and -not -iname "*.aidl"
 
 before_deploy:
-  - sed "s/GPLAY_CLIENT_ID/$GPLAY_CLIENT_ID/g;s/GPLAY_PROJECT_ID/$GPLAY_PROJECT_ID/g;s/GPLAY_CLIENT_SECRET/$GPLAY_CLIENT_SECRET/g" .client_secret.apps.googleusercontent.com.json > android/keys.json
-  - cd $TRAVIS_BUILD_DIR/android/build/outputs && zip -r $HOME/lint.zip lint-results*
+  - sed "s/GPLAY_CLIENT_ID/$GPLAY_CLIENT_ID/g;s/GPLAY_PROJECT_ID/$GPLAY_PROJECT_ID/g;s/GPLAY_CLIENT_SECRET/$GPLAY_CLIENT_SECRET/g" $TRAVIS_BUILD_DIR/.client_secret.apps.googleusercontent.com.json > $TRAVIS_BUILD_DIR/android/keys.json
 
 deploy:
   provider: releases
+  skip_cleanup: true
+  overwrite: true
   api_key: $GITHUB_TOKEN
   file:
-    - $TRAVIS_BUILD_DIR/android/build/outputs/apk/android-debug.apk
-    - $TRAVIS_BUILD_DIR/android/build/outputs/apk/android-debug-unaligned.apk
-    - $HOME/lint.zip
+  - $TRAVIS_BUILD_DIR/android/build/outputs/apk/android-debug.apk
+  - $TRAVIS_BUILD_DIR/android/build/outputs/apk/android-debug-unaligned.apk
+  - $TRAVIS_BUILD_DIR/android/build/outputs/apk/android-release.apk
+  - $TRAVIS_BUILD_DIR/android/build/outputs/apk/android-release-unaligned.apk
+  - $HOME/android-wait-for-emulator
   on:
     tags: true
-  skip_cleanup: true
 
 after_deploy:
-  - ./gradlew -p android publishApkRelease
+  - cd $TRAVIS_BUILD_DIR && ./gradlew -p android publishApkRelease
 
 addons:
-    code_climate:
-        repo_token: 49a9bf3e7f82566fba30e850d3435d69e35121c66bf9d2a46144e16f99b1764f
-#deploy:
-#  provider: releases
-#  api_key: $GITHUB_TOKEN
-#  file:
-#    - android/build/outputs/lint-results_files/hololike.css
-#    - android/build/outputs/lint-results_files/lint-error.png
-#    - android/build/outputs/lint-results_files/lint-run.png
-#    - android/build/outputs/lint-results_files/lint-warning.png
-#    - android/build/outputs/lint-results.html
-#    - android/build/outputs/lint-results.xml
-#    - android/build/outputs/logs/manifest-merger-debug-report.txt
-#    - android/build/outputs/logs/manifest-merger-release-report.txt
-#    - android/build/outputs/lint-results-release-fatal_files/hololike.css
-#    - android/build/outputs/lint-results-release-fatal.html
-#    - android/build/outputs/lint-results-release-fatal.xml
-#    - android/build/outputs/logs/manifest-merger-debug-report.txt
-#    - android/build/outputs/logs/manifest-merger-release-report.txt
-#    - android/build/outputs/mapping/release/dump.txt
-#    - android/build/outputs/mapping/release/mapping.txt
-#    - android/build/outputs/mapping/release/seeds.txt
-#    - android/build/outputs/mapping/release/usage.txt
-#    - android/build/reports/androidTests/connected/index.html
-#  on:
-#    failure: true
-#  skip_cleanup: true
-
+  code_climate:
+    repo_token: $CODECLIMATE_TOKEN
