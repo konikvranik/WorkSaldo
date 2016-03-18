@@ -1,15 +1,9 @@
-version 'unspecified'
-
 apply plugin: 'java'
 apply plugin: 'jacoco'
-apply plugin: 'com.github.kt3k.coveralls'
 
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+sourceCompatibility = JavaVersion.VERSION_1_7
+targetCompatibility = JavaVersion.VERSION_1_7
 
-repositories {
-    mavenCentral()
-}
 dependencies {
 
     compile 'joda-time:joda-time:2.9.2'
@@ -17,17 +11,10 @@ dependencies {
     testCompile 'org.testng:testng:6.9.10'
 
 }
+
 jacocoTestReport {
     reports {
         xml.enabled true
         html.enabled false
     }
-}
-coveralls {
-    jacocoReportPath = "${buildDir}/reports/coverage/debug/report.xml"
-}
-
-tasks.coveralls {
-    dependsOn 'build'
-    onlyIf { System.env.'CI' }
 }

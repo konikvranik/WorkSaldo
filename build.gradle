@@ -1,18 +1,5 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
-buildscript {
-    repositories {
-        jcenter()
-    }
-    dependencies {
-        //classpath 'com.android.tools.build:gradle:1.1.1'
-		classpath 'com.android.tools.build:gradle:1.5.0'
-		classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.4.0'
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
-    }
-}
-
 //org.gradle.jvmargs="-Xmx1024m -XX:MaxPermSize=512m -Xms512m"
 
 allprojects {
@@ -20,18 +7,33 @@ allprojects {
     if (project.rootProject.file('local.properties').exists()) {
         Properties buildProps = new Properties()
         buildProps.load(project.rootProject.file('local.properties').newDataInputStream())
-        buildProps.each { prop ->
-            project.ext.set(prop.key, prop.value)
-        }
+        buildProps.each { prop -> project.ext.set(prop.key, prop.value) }
     }
+
+
+    def key = System.getenv('SIGNINIG_KEYSTORE_PASSWORD')
+    if (key != null) {
+        project.ext.set('pwd.keystore', key)
+    }
+    key = System.getenv('SIGNINIG_KEY_PASSWORD')
+    if (key != null) {
+        project.ext.set('pwd.key', key)
+    }
+
 
     repositories {
         jcenter()
         maven {
-            url "http://pandora.comerge.net:8081/nexus/content/repositories/public_snapshots/"
+            url "https://dl.bintray.com/konikvranik/maven"
         }
-        maven {
-            url "https://github.com/konikvranik/repository"
+    }
+
+    buildscript {
+        repositories {
+            jcenter()
+        }
+        dependencies {
+            classpath "org.jacoco:org.jacoco.core:0.7.4.201502262128"
         }
     }
 }

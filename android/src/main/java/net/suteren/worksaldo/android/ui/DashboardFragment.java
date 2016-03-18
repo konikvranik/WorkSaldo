@@ -275,14 +275,15 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
     @Override
     public void refresh() {
         Log.d("DashboardFragment", "Refreshing");
-        getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                getActivity().getContentResolver().notifyChange(TIMEENTRIES_URI, null);
-                getLoaderManager().restartLoader(DAYS_LOADER, null, DAYS_LOADER_CALLBACK);
-            }
-        });
-
+        if (getActivity() != null) {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    getActivity().getContentResolver().notifyChange(TIMEENTRIES_URI, null);
+                    getLoaderManager().restartLoader(DAYS_LOADER, null, DAYS_LOADER_CALLBACK);
+                }
+            });
+        }
     }
 
     @Override
