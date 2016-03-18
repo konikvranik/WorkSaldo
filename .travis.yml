@@ -54,6 +54,8 @@ deploy:
     - $TRAVIS_BUILD_DIR/android/build/outputs/apk/android-debug.apk
     - $TRAVIS_BUILD_DIR/android/build/outputs/apk/android-debug-unaligned.apk
     - $HOME/android-wait-for-emulator
+    on:
+      condition: true
   - provider: releases
     skip_cleanup: true
     overwrite: true
@@ -70,6 +72,8 @@ deploy:
     file: "$TRAVIS_BUILD_DIR/.bintray.json"
     user: "konikvranik"
     key: "$BINTRAY_TOKEN"
+    on:
+      condition: true
 
 after_deploy:
   - cd $TRAVIS_BUILD_DIR && ./gradlew -p android publishApkRelease
