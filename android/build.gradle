@@ -4,6 +4,9 @@ buildscript {
         classpath 'com.android.tools.build:gradle:2.0.0-beta7'
         classpath 'com.dicedmelon.gradle:jacoco-android:+'
     }
+    repositories {
+        jcenter()
+    }
 }
 
 subprojects {
@@ -48,6 +51,15 @@ dependencies {
 
     testCompile 'junit:junit:4.12'
 
+}
+
+def key = System.getenv('SIGNINIG_KEYSTORE_PASSWORD')
+if (key != null) {
+    project.ext.set('pwd.keystore', key)
+}
+key = System.getenv('SIGNINIG_KEY_PASSWORD')
+if (key != null) {
+    project.ext.set('pwd.key', key)
 }
 
 android {

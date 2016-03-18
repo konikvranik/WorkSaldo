@@ -10,7 +10,6 @@ allprojects {
         buildProps.each { prop -> project.ext.set(prop.key, prop.value) }
     }
 
-
     def key = System.getenv('SIGNINIG_KEYSTORE_PASSWORD')
     if (key != null) {
         project.ext.set('pwd.keystore', key)
@@ -19,7 +18,6 @@ allprojects {
     if (key != null) {
         project.ext.set('pwd.key', key)
     }
-
 
     repositories {
         jcenter()
