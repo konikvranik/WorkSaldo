@@ -1,1 +1,1 @@
-include ':android', ':jtoggl', ':common', ':androidsvg'
+include ':android', ':common', ':androidsvg'

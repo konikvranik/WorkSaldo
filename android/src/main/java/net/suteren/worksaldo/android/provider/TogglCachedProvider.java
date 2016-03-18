@@ -217,8 +217,8 @@ public class TogglCachedProvider extends ContentProvider implements ISharedPrefe
         } else {
             JToggl jt = new JToggl(key, API_KEY) {
                 @Override
-                protected Client prepareClient() {
-                    return super.prepareClient().register(AndroidFriendlyFeature.class);
+                protected Client prepareApiClient() {
+                    return super.prepareApiClient().register(AndroidFriendlyFeature.class);
                 }
             };
 

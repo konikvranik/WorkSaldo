@@ -105,8 +105,8 @@ public class LoginDialog extends Dialog {
                 try {
                     apiToken = new JToggl(params[0], params[1]) {
                         @Override
-                        protected Client prepareClient() {
-                            return super.prepareClient().register(AndroidFriendlyFeature.class);
+                        protected Client prepareApiClient() {
+                            return super.prepareApiClient().register(AndroidFriendlyFeature.class);
                         }
                     }.getCurrentUser().getApiToken();
                 } catch (Exception e) {
