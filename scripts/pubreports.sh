@@ -2,7 +2,7 @@
 cd $HOME
 git clone -b gh-pages "https://$GITHUB_TOKEN@github.com/konikvranik/worksaldo.git" gh-pages || exit 1
 echo Copying lint
-cp -r $TRAVIS_BUILD_DIR/android/build/outputs/lint-results*
+cp -r $TRAVIS_BUILD_DIR/android/build/outputs/lint-results* gh-pages
 STAT=$?
 echo Copying report
 cp -r $TRAVIS_BUILD_DIR/android/build/outputs/report* gh-pages
