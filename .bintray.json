@@ -36,8 +36,8 @@
   "version": {
     "name": "1.0-beta",
     "desc": "First release candidate.",
-    "released": "2016-03-15",
-    "vcs_tag": "v1.0-beta",
+    "released": "2016-03-18",
+    "vcs_tag": "v00002",
     "gpgSign": false
   },
   /* Configure the files you would like to upload to Bintray and their upload path.
