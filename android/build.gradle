@@ -1,7 +1,8 @@
 buildscript {
     dependencies {
         classpath 'com.github.triplet.gradle:play-publisher:1.1.4'
-        classpath 'com.android.tools.build:gradle:1.5.0'
+        //classpath 'com.android.tools.build:gradle:1.5.0'
+        classpath 'com.android.tools.build:gradle:2.0.0-beta7'
         classpath 'com.dicedmelon.gradle:jacoco-android:+'
     }
 }
@@ -41,15 +42,9 @@ dependencies {
         exclude module: 'javax.inject'
         exclude module: 'jaxb-api'
     }
-    // compile files('libs/android-ws-combine.jar')
     compile('com.google.inject:guice:3.0') {
         exclude module: 'aopalliance'
     }
-    /* compile('org.simpleframework:simple-xml:2.7.1') {
-        exclude module: 'stax'
-        exclude module: 'stax-api'
-        exclude module: 'xpp3'
-    } */
     compile 'com.android.support:support-v4:23.1.1'
 
     testCompile 'junit:junit:4.12'
