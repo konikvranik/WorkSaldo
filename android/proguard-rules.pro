@@ -33,3 +33,6 @@
 -dontwarn java.awt.**
 -dontwarn javax.imageio.**
 -dontwarn com.google.inject.**
+-dontwarn org.w3c.dom.bootstrap.**
+#-dontwarn com.fasterxml.jackson.databind.**
+#-libraryjars mylibrary.jar(!someunusedpackage/**)

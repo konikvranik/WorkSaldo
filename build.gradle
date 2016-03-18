@@ -32,5 +32,8 @@ allprojects {
         repositories {
             jcenter()
         }
+        dependencies {
+            classpath "org.jacoco:org.jacoco.core:0.7.4.201502262128"
+        }
     }
 }
