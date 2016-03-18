@@ -41,6 +41,7 @@ after_script:
   - $TRAVIS_BUILD_DIR/scripts/pubreports.sh
   - cp `which android-wait-for-emulator` $HOME
   - find $TRAVIS_BUILD_DIR/android/build -type f -not -iname "*.java" -and -not -iname "*.class" -and -not -iname "*.dex" -and -not -iname "*.png" -and -not -iname "*.aidl"
+  - curl https://www.quantifiedcode.com/api/v1/project/4ec4d485b6884f76a74d5799c08d14dc/analyze
 
 before_deploy:
   - sed "s/GPLAY_CLIENT_ID/$GPLAY_CLIENT_ID/g;s/GPLAY_PROJECT_ID/$GPLAY_PROJECT_ID/g;s/GPLAY_CLIENT_SECRET/$GPLAY_CLIENT_SECRET/g" $TRAVIS_BUILD_DIR/.client_secret.apps.googleusercontent.com.json > $TRAVIS_BUILD_DIR/android/keys.json
