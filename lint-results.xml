@@ -1,0 +1,434 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues format="4" by="lint 24.4.1">
+
+    <issue
+        id="InvalidPackage"
+        severity="Warning"
+        message="Invalid package reference in library; not included in Android: `javax.activation`. Referenced from `com.fasterxml.jackson.module.jaxb.deser.DataHandlerJsonDeserializer`."
+        category="Correctness"
+        priority="6"
+        summary="Package not included in Android"
+        explanation="This check scans through libraries looking for calls to APIs that are not included in Android.
+
+When you create Android projects, the classpath is set up such that you can only access classes in the API packages that are included in Android. However, if you add other projects to your libs/ folder, there is no guarantee that those .jar files were built with an Android specific classpath, and in particular, they could be accessing unsupported APIs such as java.applet.
+
+This check scans through library jars and looks for references to API packages that are not included in Android and flags these. This is only an error if your code calls one of the library classes which wind up referencing the unsupported package.">
+        <location
+            file="/home/travis/.gradle/caches/modules-2/files-2.1/com.fasterxml.jackson.module/jackson-module-jaxb-annotations/2.5.4/52c516db26a89b726a1351f7f24347c640204343/jackson-module-jaxb-annotations-2.5.4.jar"/>
+    </issue>
+
+    <issue
+        id="InvalidPackage"
+        severity="Warning"
+        message="Invalid package reference in library; not included in Android: `javax.xml.bind.annotation.adapters`. Referenced from `com.fasterxml.jackson.module.jaxb.AdapterConverter`."
+        category="Correctness"
+        priority="6"
+        summary="Package not included in Android"
+        explanation="This check scans through libraries looking for calls to APIs that are not included in Android.
+
+When you create Android projects, the classpath is set up such that you can only access classes in the API packages that are included in Android. However, if you add other projects to your libs/ folder, there is no guarantee that those .jar files were built with an Android specific classpath, and in particular, they could be accessing unsupported APIs such as java.applet.
+
+This check scans through library jars and looks for references to API packages that are not included in Android and flags these. This is only an error if your code calls one of the library classes which wind up referencing the unsupported package.">
+        <location
+            file="/home/travis/.gradle/caches/modules-2/files-2.1/com.fasterxml.jackson.module/jackson-module-jaxb-annotations/2.5.4/52c516db26a89b726a1351f7f24347c640204343/jackson-module-jaxb-annotations-2.5.4.jar"/>
+    </issue>
+
+    <issue
+        id="InvalidPackage"
+        severity="Warning"
+        message="Invalid package reference in library; not included in Android: `javax.xml.bind.annotation`. Referenced from `com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector`."
+        category="Correctness"
+        priority="6"
+        summary="Package not included in Android"
+        explanation="This check scans through libraries looking for calls to APIs that are not included in Android.
+
+When you create Android projects, the classpath is set up such that you can only access classes in the API packages that are included in Android. However, if you add other projects to your libs/ folder, there is no guarantee that those .jar files were built with an Android specific classpath, and in particular, they could be accessing unsupported APIs such as java.applet.
+
+This check scans through library jars and looks for references to API packages that are not included in Android and flags these. This is only an error if your code calls one of the library classes which wind up referencing the unsupported package.">
+        <location
+            file="/home/travis/.gradle/caches/modules-2/files-2.1/com.fasterxml.jackson.module/jackson-module-jaxb-annotations/2.5.4/52c516db26a89b726a1351f7f24347c640204343/jackson-module-jaxb-annotations-2.5.4.jar"/>
+    </issue>
+
+    <issue
+        id="InvalidPackage"
+        severity="Warning"
+        message="Invalid package reference in library; not included in Android: `javax.xml.bind`. Referenced from `com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector`."
+        category="Correctness"
+        priority="6"
+        summary="Package not included in Android"
+        explanation="This check scans through libraries looking for calls to APIs that are not included in Android.
+
+When you create Android projects, the classpath is set up such that you can only access classes in the API packages that are included in Android. However, if you add other projects to your libs/ folder, there is no guarantee that those .jar files were built with an Android specific classpath, and in particular, they could be accessing unsupported APIs such as java.applet.
+
+This check scans through library jars and looks for references to API packages that are not included in Android and flags these. This is only an error if your code calls one of the library classes which wind up referencing the unsupported package.">
+        <location
+            file="/home/travis/.gradle/caches/modules-2/files-2.1/com.fasterxml.jackson.module/jackson-module-jaxb-annotations/2.5.4/52c516db26a89b726a1351f7f24347c640204343/jackson-module-jaxb-annotations-2.5.4.jar"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        severity="Warning"
+        message="A newer version of com.android.support:support-v4 than 23.1.1 is available: 24.0.0-alpha1"
+        category="Correctness"
+        priority="4"
+        summary="Obsolete Gradle Dependency"
+        explanation="This detector looks for usages of libraries where the version you are using is not the current stable release. Using older versions is fine, and there are cases where you deliberately want to stick with an older version. However, you may simply not be aware that a more recent version is available, and that is what this lint check helps find."
+        errorLine1="    compile &apos;com.android.support:support-v4:23.1.1&apos;"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+        quickfix="studio">
+        <location
+            file="/home/travis/build/konikvranik/worksaldo/android/build.gradle"
+            line="53"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="GradleDynamicVersion"
+        severity="Warning"
+        message="Avoid using + in version numbers; can lead to unpredictable and unrepeatable builds (com.dicedmelon.gradle:jacoco-android:+)"
+        category="Correctness"
+        priority="4"
+        summary="Gradle Dynamic Version"
+        explanation="Using `+` in dependencies lets you automatically pick up the latest available version rather than a specific, named version. However, this is not recommended; your builds are not repeatable; you may have tested with a slightly different version than what the build server used. (Using a dynamic version as the major version number is more problematic than using it in the minor version position.)"
+        errorLine1="        classpath &apos;com.dicedmelon.gradle:jacoco-android:+&apos;"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+        quickfix="studio">
+        <location
+            file="/home/travis/build/konikvranik/worksaldo/android/build.gradle"
+            line="5"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="ExportedContentProvider"
+        severity="Warning"
+        message="Exported content providers can provide access to potentially sensitive data"
+        category="Security"
+        priority="5"
+        summary="Content provider does not require permission"
+        explanation="Content providers are exported by default and any application on the system can potentially use them to read and write data. If the content provider provides access to sensitive data, it should be protected by specifying `export=false` in the manifest or by protecting it with a permission that can be granted to other applications."
+        errorLine1="        &lt;provider"
+        errorLine2="        ^">
+        <location
+            file="/home/travis/build/konikvranik/worksaldo/android/src/main/AndroidManifest.xml"
+            line="10"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="AllowBackup"
+        severity="Warning"
+        message="On SDK version 23 and up, your app data will be automatically backed up and restored on app install. Consider adding the attribute `android:fullBackupContent` to specify an `@xml` resource which configures which files to backup. More info: https://developer.android.com/preview/backup/index.html"
+        category="Security"
+        priority="3"
+        summary="AllowBackup/FullBackupContent Problems"
+        explanation="The `allowBackup` attribute determines if an application&apos;s data can be backed up and restored. It is documented at http://developer.android.com/reference/android/R.attr.html#allowBackup
+
+By default, this flag is set to `true`. When this flag is set to `true`, application data can be backed up and restored by the user using `adb backup` and `adb restore`.
+
+This may have security consequences for an application. `adb backup` allows users who have enabled USB debugging to copy application data off of the device. Once backed up, all application data can be read by the user. `adb restore` allows creation of application data from a source specified by the user. Following a restore, applications should not assume that the data, file permissions, and directory permissions were created by the application itself.
+
+Setting `allowBackup=&quot;false&quot;` opts an application out of both backup and restore.
+
+To fix this warning, decide whether your application should support backup, and explicitly set `android:allowBackup=(true|false)&quot;`.
+
+If not set to false, and if targeting API 23 or later, lint will also warn that you should set `android:fullBackupContent` to configure auto backup."
+        url="https://developer.android.com/preview/backup/index.html"
+        urls="https://developer.android.com/preview/backup/index.html,http://developer.android.com/reference/android/R.attr.html#allowBackup"
+        errorLine1="    &lt;application"
+        errorLine2="    ^"
+        quickfix="studio,adt">
+        <location
+            file="/home/travis/build/konikvranik/worksaldo/android/src/main/AndroidManifest.xml"
+            line="6"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="DisableBaselineAlignment"
+        severity="Warning"
+        message="Set `android:baselineAligned=&quot;false&quot;` on this element for better performance"
+        category="Performance"
+        priority="3"
+        summary="Missing `baselineAligned` attribute"
+        explanation="When a LinearLayout is used to distribute the space proportionally between nested layouts, the baseline alignment property should be turned off to make the layout computation faster."
+        errorLine1="    &lt;LinearLayout"
+        errorLine2="    ^"
+        quickfix="studio,adt">
+        <location
+            file="/home/travis/build/konikvranik/worksaldo/android/src/main/res/layout/fragment_main.xml"
+            line="11"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="NestedWeights"
+        severity="Warning"
+        message="Nested weights are bad for performance"
+        category="Performance"
+        priority="3"
+        summary="Nested layout weights"
+        explanation="Layout weights require a widget to be measured twice. When a LinearLayout with non-zero weights is nested inside another LinearLayout with non-zero weights, then the number of measurements increase exponentially."
+        errorLine1="                android:layout_weight=&quot;1&quot;"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/travis/build/konikvranik/worksaldo/android/src/main/res/layout/fragment_main.xml"
+            line="82"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        severity="Warning"
+        message="The resource `R.color.closed` appears to be unused"
+        category="Performance"
+        priority="3"
+        summary="Unused resources"
+        explanation="Unused resources make applications larger and slow down builds."
+        errorLine1="    &lt;item name=&quot;closed&quot; type=&quot;color&quot;>#521822&lt;/item>"
+        errorLine2="          ~~~~~~~~~~~~~">
+        <location
+            file="/home/travis/build/konikvranik/worksaldo/android/src/main/res/values/colors.xml"
+            line="4"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        severity="Warning"
+        message="The resource `R.color.open` appears to be unused"
+        category="Performance"
+        priority="3"
+        summary="Unused resources"
+        explanation="Unused resources make applications larger and slow down builds."
+        errorLine1="    &lt;item name=&quot;open&quot; type=&quot;color&quot;>#2e4227&lt;/item>"
+        errorLine2="          ~~~~~~~~~~~">
+        <location
+            file="/home/travis/build/konikvranik/worksaldo/android/src/main/res/values/colors.xml"
+            line="5"
+            column="11"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        severity="Warning"
+        message="The resource `R.raw.gear_512px` appears to be unused"
+        category="Performance"
+        priority="3"
+        summary="Unused resources"
+        explanation="Unused resources make applications larger and slow down builds.">
+        <location
+            file="/home/travis/build/konikvranik/worksaldo/android/src/main/res/raw/gear_512px.svg"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        severity="Warning"
+        message="The resource `R.layout.iv_refresh` appears to be unused"
+        category="Performance"
+        priority="3"
+        summary="Unused resources"
+        explanation="Unused resources make applications larger and slow down builds.">
+        <location
+            file="/home/travis/build/konikvranik/worksaldo/android/src/main/res/layout/iv_refresh.xml"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        severity="Warning"
+        message="The resource `R.raw.outline_gear` appears to be unused"
+        category="Performance"
+        priority="3"
+        summary="Unused resources"
+        explanation="Unused resources make applications larger and slow down builds.">
+        <location
+            file="/home/travis/build/konikvranik/worksaldo/android/src/main/res/raw/outline_gear.svg"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        severity="Warning"
+        message="The resource `R.anim.rotate_refresh` appears to be unused"
+        category="Performance"
+        priority="3"
+        summary="Unused resources"
+        explanation="Unused resources make applications larger and slow down builds.">
+        <location
+            file="/home/travis/build/konikvranik/worksaldo/android/src/main/res/anim/rotate_refresh.xml"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        severity="Warning"
+        message="The resource `R.string.dissmiss` appears to be unused"
+        category="Performance"
+        priority="3"
+        summary="Unused resources"
+        explanation="Unused resources make applications larger and slow down builds."
+        errorLine1="    &lt;string name=&quot;dissmiss&quot;>dissmiss&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~">
+        <location
+            file="/home/travis/build/konikvranik/worksaldo/android/src/main/res/values/strings.xml"
+            line="7"
+            column="13"/>
+        <location
+            file="/home/travis/build/konikvranik/worksaldo/android/src/main/res/values-cs/strings.xml"
+            line="9"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        severity="Warning"
+        message="The resource `R.string.action_refresh` appears to be unused"
+        category="Performance"
+        priority="3"
+        summary="Unused resources"
+        explanation="Unused resources make applications larger and slow down builds."
+        errorLine1="    &lt;string name=&quot;action_refresh&quot;>Refresh&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="/home/travis/build/konikvranik/worksaldo/android/src/main/res/values/strings.xml"
+            line="15"
+            column="13"/>
+        <location
+            file="/home/travis/build/konikvranik/worksaldo/android/src/main/res/values-cs/strings.xml"
+            line="5"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        severity="Warning"
+        message="The resource `R.plurals.hour` appears to be unused"
+        category="Performance"
+        priority="3"
+        summary="Unused resources"
+        explanation="Unused resources make applications larger and slow down builds."
+        errorLine1="    &lt;plurals name=&quot;hour&quot;>"
+        errorLine2="             ~~~~~~~~~~~">
+        <location
+            file="/home/travis/build/konikvranik/worksaldo/android/src/main/res/values/strings.xml"
+            line="20"
+            column="14"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        severity="Warning"
+        message="The resource `R.layout.timespinner` appears to be unused"
+        category="Performance"
+        priority="3"
+        summary="Unused resources"
+        explanation="Unused resources make applications larger and slow down builds.">
+        <location
+            file="/home/travis/build/konikvranik/worksaldo/android/src/main/res/layout/timespinner.xml"/>
+    </issue>
+
+    <issue
+        id="IconMissingDensityFolder"
+        severity="Warning"
+        message="Missing density variation folders in `src/main/res`: drawable-xxxhdpi"
+        category="Usability:Icons"
+        priority="3"
+        summary="Missing density folder"
+        explanation="Icons will look best if a custom version is provided for each of the major screen density classes (low, medium, high, extra-high, extra-extra-high). This lint check identifies folders which are missing, such as `drawable-hdpi`.
+
+Low density is not really used much anymore, so this check ignores the ldpi density. To force lint to include it, set the environment variable `ANDROID_LINT_INCLUDE_LDPI=true`. For more information on current density usage, see http://developer.android.com/resources/dashboard/screens.html"
+        url="http://developer.android.com/guide/practices/screens_support.html"
+        urls="http://developer.android.com/guide/practices/screens_support.html">
+        <location
+            file="/home/travis/build/konikvranik/worksaldo/android/src/main/res"/>
+    </issue>
+
+    <issue
+        id="ButtonOrder"
+        severity="Warning"
+        message="OK button should be on the right (was &quot;OK | Cancel&quot;, should be &quot;Cancel | OK&quot;)"
+        category="Usability"
+        priority="8"
+        summary="Button order"
+        explanation="According to the Android Design Guide,
+
+&quot;Action buttons are typically Cancel and/or OK, with OK indicating the preferred or most likely action. However, if the options consist of specific actions such as Close or Wait rather than a confirmation or cancellation of the action described in the content, then all the buttons should be active verbs. As a rule, the dismissive action of a dialog is always on the left whereas the affirmative actions are on the right.&quot;
+
+This check looks for button bars and buttons which look like cancel buttons, and makes sure that these are on the left."
+        url="http://developer.android.com/design/building-blocks/dialogs.html"
+        urls="http://developer.android.com/design/building-blocks/dialogs.html"
+        errorLine1="        &lt;Button"
+        errorLine2="        ^">
+        <location
+            file="/home/travis/build/konikvranik/worksaldo/android/src/main/res/layout/login_dialog.xml"
+            line="41"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="ButtonStyle"
+        severity="Warning"
+        message="Buttons in button bars should be borderless; use `style=&quot;?android:attr/buttonBarButtonStyle&quot;` (and `?android:attr/buttonBarStyle` on the parent)"
+        category="Usability"
+        priority="5"
+        summary="Button should be borderless"
+        explanation="Button bars typically use a borderless style for the buttons. Set the `style=&quot;?android:attr/buttonBarButtonStyle&quot;` attribute on each of the buttons, and set `style=&quot;?android:attr/buttonBarStyle&quot;` on the parent layout"
+        url="http://developer.android.com/design/building-blocks/buttons.html"
+        urls="http://developer.android.com/design/building-blocks/buttons.html"
+        errorLine1="        &lt;Button"
+        errorLine2="        ^">
+        <location
+            file="/home/travis/build/konikvranik/worksaldo/android/src/main/res/layout/login_dialog.xml"
+            line="41"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="ButtonStyle"
+        severity="Warning"
+        message="Buttons in button bars should be borderless; use `style=&quot;?android:attr/buttonBarButtonStyle&quot;` (and `?android:attr/buttonBarStyle` on the parent)"
+        category="Usability"
+        priority="5"
+        summary="Button should be borderless"
+        explanation="Button bars typically use a borderless style for the buttons. Set the `style=&quot;?android:attr/buttonBarButtonStyle&quot;` attribute on each of the buttons, and set `style=&quot;?android:attr/buttonBarStyle&quot;` on the parent layout"
+        url="http://developer.android.com/design/building-blocks/buttons.html"
+        urls="http://developer.android.com/design/building-blocks/buttons.html"
+        errorLine1="        &lt;Button"
+        errorLine2="        ^">
+        <location
+            file="/home/travis/build/konikvranik/worksaldo/android/src/main/res/layout/login_dialog.xml"
+            line="48"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="GoogleAppIndexingWarning"
+        severity="Warning"
+        message="App is not indexable by Google Search; consider adding at least one Activity with an ACTION-VIEW intent-filler. See issue explanation for more details."
+        category="Usability"
+        priority="5"
+        summary="Missing support for Google App Indexing"
+        explanation="Adds deep links to get your app into the Google index, to get installs and traffic to your app from Google Search."
+        url="https://g.co/AppIndexing/AndroidStudio"
+        urls="https://g.co/AppIndexing/AndroidStudio"
+        errorLine1="    &lt;application"
+        errorLine2="    ^">
+        <location
+            file="/home/travis/build/konikvranik/worksaldo/android/src/main/AndroidManifest.xml"
+            line="6"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="RtlEnabled"
+        severity="Warning"
+        message="The project references RTL attributes, but does not explicitly enable or disable RTL support with `android:supportsRtl` in the manifest"
+        category="Bi-directional Text"
+        priority="3"
+        summary="Using RTL attributes without enabling RTL support"
+        explanation="To enable right-to-left support, when running on API 17 and higher, you must set the `android:supportsRtl` attribute in the manifest `&lt;application>` element.
+
+If you have started adding RTL attributes, but have not yet finished the migration, you can set the attribute to false to satisfy this lint check.">
+        <location
+            file="/home/travis/build/konikvranik/worksaldo/android/src/main/AndroidManifest.xml"/>
+    </issue>
+
+</issues>
