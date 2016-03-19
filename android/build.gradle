@@ -67,13 +67,55 @@ android {
     compileSdkVersion 23
     buildToolsVersion "23.0.2"
 
-    defaultConfig {
-        applicationId "net.suteren.worksaldo.android"
-        minSdkVersion 21
-        targetSdkVersion 23
-        versionCode 2
-        versionName "1.0-beta"
+    def versionPropsFile = file('../version.properties')
+    if (versionPropsFile.canRead()) {
+        def Properties versionProps = new Properties()
+
+        versionProps.load(new FileInputStream(versionPropsFile))
+
+        def value = 0
+
+        def runTasks = gradle.startParameter.taskNames
+        if ('assemble' in runTasks || 'assembleRelease' in runTasks || 'aR' in runTasks) {
+            value = 1;
+        }
+
+        def versionMajor = 1
+        def versionMinor = 0
+        def versionPatch = versionProps['VERSION_PATCH'].toInteger() + value
+        def versionBuild = versionProps['VERSION_BUILD'].toInteger() + 1
+        def versionNumber = versionProps['VERSION_NUMBER'].toInteger() + value
+
+        versionProps['VERSION_PATCH'] = versionPatch.toString()
+        versionProps['VERSION_BUILD'] = versionBuild.toString()
+        versionProps['VERSION_NUMBER'] = versionNumber.toString()
+
+        versionProps.store(versionPropsFile.newWriter(), null)
+
+        defaultConfig {
+            applicationId "net.suteren.worksaldo.android"
+            minSdkVersion 21
+            targetSdkVersion 23
+            versionCode versionNumber
+            versionName "${versionMajor}.${versionMinor}.${versionPatch} (${versionBuild}) Release"
+        }
+
+        applicationVariants.all { variant ->
+            variant.outputs.each { output ->
+                def fileNaming = "apk/RELEASES"
+                variant.outputs.each { out ->
+                    def outputFile = out.outputFile
+                    if (outputFile != null && outputFile.name.endsWith('.apk')) {
+                        out.outputFile = new File(getProject().getRootDir(), "${fileNaming}-${versionMajor}.${versionMinor}.${versionPatch}-${outputFile.name}")
+                    }
+                }
+            }
+        }
+
+    } else {
+        throw new GradleException("Could not read version.properties!")
     }
+
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_7
@@ -120,8 +162,7 @@ android {
 }
 
 play {
-    serviceAccountEmail = '250689796079-compute@developer.gserviceaccount.com'
-    pk12File = file('../GooglePlayAndroidDeveloper-0f273fbdda47.p12')
+    jsonFile = file('../GooglePlayAndroidDeveloper-d20ecef57b83.json')
 }
 
 if (project.rootProject.file('local.properties').exists()) {

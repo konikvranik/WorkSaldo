@@ -28,6 +28,8 @@ android:
 before_script:
   - echo no | android create avd --force -n test -t ${ANDROID_TARGET} --abi ${ANDROID_ABI}
   - emulator -avd test -no-audio -no-window &
+  - git config --global user.email builds@travis-ci.org
+  - git config --global user.name "Trsvis CI"
 
 script:
   - ./gradlew build jacocoTestReport
@@ -43,8 +45,10 @@ after_script:
   - find $TRAVIS_BUILD_DIR/android/build -type f -not -iname "*.java" -and -not -iname "*.class" -and -not -iname "*.dex" -and -not -iname "*.png" -and -not -iname "*.aidl"
   - curl https://www.quantifiedcode.com/api/v1/project/4ec4d485b6884f76a74d5799c08d14dc/analyze
 
+after_success: git add version.properties && git commit -m "Buildversion increase" && git push
+
 before_deploy:
-  - gpg --no-use-agent --passphrase $GPG_PASSPHRASE -d secrets.gpg | tar x
+  - gpg --no-use-agent --passphrase "$GPG_PASSPHRASE" -d secrets.gpg | tar x
 
 deploy:
   - provider: releases
