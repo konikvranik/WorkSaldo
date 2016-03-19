@@ -47,8 +47,7 @@ after_script:
 
 after_success: git add version.properties && git commit -m "Buildversion increase" && git push
 
-before_deploy:
-  - gpg --no-use-agent --passphrase "$GPG_PASSPHRASE" -d secrets.gpg | tar x
+before_deploy: gpg --no-use-agent --passphrase "$GPG_PASSPHRASE" -d secrets.gpg | tar x
 
 deploy:
   - provider: releases
