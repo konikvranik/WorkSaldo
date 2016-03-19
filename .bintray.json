@@ -58,6 +58,9 @@
 
   "files": [
     {
+      "matrixParams": {
+        "override": 1
+      },
       "includePattern": "/home/travis/build/konikvranik/worksaldo/android/build/outputs/apk/(.*\\.apk)",
       "excludePattern": ".*/do-not-deploy/.*",
       "uploadPattern": "$1"
