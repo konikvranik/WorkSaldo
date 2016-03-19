@@ -120,7 +120,7 @@ android {
 }
 
 play {
-    serviceAccountEmail = 'worksaldo-deployer@api-6256898555918994107-899835.iam.gserviceaccount.com'
+    serviceAccountEmail = '250689796079-compute@developer.gserviceaccount.com'
     pk12File = file('../GooglePlayAndroidDeveloper-0f273fbdda47.p12')
 }
 
