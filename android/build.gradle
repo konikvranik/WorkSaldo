@@ -79,10 +79,11 @@ android {
         targetCompatibility JavaVersion.VERSION_1_7
     }
 
-    def boolean sign = project.ext.has('pwd.keystore') && project.ext.has('pwd.key') && project.rootProject.file('local.properties').exists()
+    def boolean sign = project.ext.has('pwd.keystore') && project.ext.has('pwd.key')
     signingConfigs {
-        release {
-            if (sign) {
+        if (sign) {
+            release {
+
                 storeFile file("release.keystore")
                 keyAlias "worksaldo"
 
