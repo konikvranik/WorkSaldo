@@ -47,7 +47,7 @@ after_script:
 
 after_success: git remote set-url origin "https://$GITHUB_TOKEN@github.com/konikvranik/worksaldo.git" && git add version.properties && git commit -m "Buildversion increase" && git push
 
-before_deploy: gpg --no-use-agent --passphrase "$GPG_PASSPHRASE" -d secrets.gpg | tar x
+before_deploy: echo "$GPG_PASSPHRASE"; gpg --no-use-agent --passphrase "$GPG_PASSPHRASE" -d secrets.gpg | tar x
 
 deploy:
   - provider: releases
