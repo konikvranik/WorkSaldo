@@ -99,7 +99,7 @@ android {
             versionCode versionNumber
             versionName "${versionMajor}.${versionMinor}.${versionPatch} (${versionBuild}) Release"
         }
-
+/*
         applicationVariants.all { variant ->
             variant.outputs.each { output ->
                 def fileNaming = "apk/RELEASES"
@@ -111,7 +111,7 @@ android {
                 }
             }
         }
-
+*/
     } else {
         throw new GradleException("Could not read version.properties!")
     }
