@@ -61,6 +61,7 @@ key = System.getenv('SIGNINIG_KEY_PASSWORD')
 if (key != null) {
     project.ext.set('pwd.key', key)
 }
+def boolean sign = project.ext.has('pwd.keystore') && project.ext.has('pwd.key')
 
 android {
     compileSdkVersion 23
@@ -79,7 +80,6 @@ android {
         targetCompatibility JavaVersion.VERSION_1_7
     }
 
-    def boolean sign = project.ext.has('pwd.keystore') && project.ext.has('pwd.key')
     signingConfigs {
         if (sign) {
             release {
@@ -120,7 +120,8 @@ android {
 }
 
 play {
-    jsonFile = file('keys.json')
+    serviceAccountEmail = 'worksaldo-deployer@api-6256898555918994107-899835.iam.gserviceaccount.com'
+    pk12File = file('../GooglePlayAndroidDeveloper-0f273fbdda47.p12')
 }
 
 if (project.rootProject.file('local.properties').exists()) {
