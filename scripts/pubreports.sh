@@ -11,9 +11,6 @@ cp -ru $TRAVIS_BUILD_DIR/android/build/report* gh-pages
 [ $? -gt 0 -a $STAT -gt 0 ] && exit 1
 echo CD to gh-pages
 cd $HOME/gh-pages || exit 1
-echo config git
-git config user.email builds@travis-ci.org
-git config user.name "Trsvis CI"
 echo Adding lint
 git add lint*
 STAT=$?
