@@ -23,11 +23,11 @@ android:
   - build-tools-23.0.2
   - ${ANDROID_TARGET}
   - extra-android-m2repository
-#  - sys-img-${ANDROID_ABI}-${ANDROID_TARGET}
+  - sys-img-${ANDROID_ABI}-${ANDROID_TARGET}
 
 before_script:
-#  - echo no | android create avd --force -n test -t ${ANDROID_TARGET} --abi ${ANDROID_ABI}
-#  - emulator -avd test -no-audio -no-window &
+  - echo no | android create avd --force -n test -t ${ANDROID_TARGET} --abi ${ANDROID_ABI}
+  - emulator -avd test -no-audio -no-window &
   - git config --global user.email builds@travis-ci.org
   - git config --global user.name "Trsvis CI"
   - gpg --no-use-agent --passphrase "$GPG_PASSPHRASE" -d secrets.gpg | tar x
@@ -35,10 +35,10 @@ before_script:
 script:
   - ./gradlew build jacocoTestReport
   - find $TRAVIS_BUILD_DIR/android/build -type f -not -iname "*.java" -and -not -iname "*.class" -and -not -iname "*.dex" -and -not -iname "*.png" -and -not -iname "*.aidl"
-#  - android-wait-for-emulator
-#  - adb shell input keyevent 82 &
-#  - adb shell setprop dalvik.vm.dexopt-flags v=n,o=v
-#  - ./gradlew connectedCheck jacocoTestReport --stacktrace --info
+  - android-wait-for-emulator
+  - adb shell input keyevent 82 &
+  - adb shell setprop dalvik.vm.dexopt-flags v=n,o=v
+  - ./gradlew connectedCheck jacocoTestReport --stacktrace --info
 
 after_script:
   - bash <(curl -s https://codecov.io/bash) -v
@@ -46,17 +46,16 @@ after_script:
   - cp `which android-wait-for-emulator` $HOME
   - curl https://www.quantifiedcode.com/api/v1/project/4ec4d485b6884f76a74d5799c08d14dc/analyze
 
-after_success:
-  - git stash
-  - git remote set-url origin "https://$GITHUB_TOKEN@github.com/konikvranik/worksaldo.git"
-  - git checkout -b master
-  - git update-ref HEAD master
-  - git push --set-upstream origin master
-  - git pull
-  - git stash pop
-  - git add version.properties 
-  - git commit -m "Buildversion increase [skip ci]"
-  - git push
+after_success: >
+  ./gradlew -p android publishApkRelease &&
+  git remote set-url origin "https://$GITHUB_TOKEN@github.com/konikvranik/worksaldo.git" &&
+  git checkout -b master &&
+  git update-ref HEAD master &&
+  git push --set-upstream origin master &&
+  git pull &&
+  git add version.properties  &&
+  git commit -m "Buildversion increase [skip ci]" &&
+  git push
 
 deploy:
   - provider: releases
@@ -79,8 +78,7 @@ deploy:
     on:
       tags: true
 
-#after_deploy:
-  #- cd $TRAVIS_BUILD_DIR && ./gradlew -p android publishApkRelease
+after_deploy:
 
 addons:
   code_climate:
