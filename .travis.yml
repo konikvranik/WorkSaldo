@@ -49,13 +49,13 @@ after_script:
 after_success: >
     pwd;
     cd $TRAVIS_BUILD_DIR
-    git remote set-url origin "https://$GITHUB_TOKEN@github.com/konikvranik/worksaldo.git";
-    git status;
-    git remote set show;
-    git remote show origin;
     cp -f version.properties $HOME &&
-    git fetch &&
-    git checkout -f origin/master &&
+    git remote set-url origin "https://$GITHUB_TOKEN@github.com/konikvranik/worksaldo.git";
+    git fetch origin;
+    git status;
+    git remote show;
+    git remote show origin;
+    git checkout -f master &&
     cp -f $HOME/version.properties . &&
     git add version.properties &&
     git commit -m "Buildversion increase [skip ci]" &&
