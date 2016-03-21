@@ -52,7 +52,7 @@ after_success: >
     cp -f $HOME/version.properties . &&
     git remote set-url --push origin "https://$GITHUB_TOKEN@github.com/konikvranik/worksaldo.git" &&
     git add version.properties &&
-    git commit -m "Buildversion increase" &&
+    git commit -m "Buildversion increase [skip ci]" &&
     git push
 
 deploy:
