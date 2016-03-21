@@ -48,10 +48,10 @@ after_script:
 
 after_success: >
     cp -f version.properties $HOME &&
+    git remote set-url origin "https://$GITHUB_TOKEN@github.com/konikvranik/worksaldo.git" &&
     git fetch &&
     git checkout -f master &&
     cp -f $HOME/version.properties . &&
-    git remote set-url --push origin "https://$GITHUB_TOKEN@github.com/konikvranik/worksaldo.git" &&
     git add version.properties &&
     git commit -m "Buildversion increase [skip ci]" &&
     git push
