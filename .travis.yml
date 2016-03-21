@@ -47,13 +47,16 @@ after_script:
   - curl https://www.quantifiedcode.com/api/v1/project/4ec4d485b6884f76a74d5799c08d14dc/analyze
 
 after_success:
-  - git stash
+  - git stash &&
   - git remote set-url origin "https://$GITHUB_TOKEN@github.com/konikvranik/worksaldo.git"
   - git checkout -b master
   - git update-ref HEAD master
-  - git pull
-  - git stath pop
   - git push --set-upstream origin master
+  - git pull
+  - git stash pop
+  - git add version.properties 
+  - git commit -m "Buildversion increase [skip ci]"
+  - git push
 
 # - pwd;
 # - cd $TRAVIS_BUILD_DIR
@@ -63,8 +66,6 @@ after_success:
 # - git remote set-url origin "https://$GITHUB_TOKEN@github.com/konikvranik/worksaldo.git"
 # - cd worksaldo
 # - cp -f $HOME/version.properties .
-# - git add version.properties 
-# - git commit -m "Buildversion increase [skip ci]"
 # - git push
 
 deploy:
