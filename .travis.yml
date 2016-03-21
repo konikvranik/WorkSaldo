@@ -47,6 +47,7 @@ after_script:
   - curl https://www.quantifiedcode.com/api/v1/project/4ec4d485b6884f76a74d5799c08d14dc/analyze
 
 after_success: >
+  [ -n "$TRAVIS_TAG" ] &&
   ./gradlew -p android publishApkRelease &&
   git remote set-url origin "https://$GITHUB_TOKEN@github.com/konikvranik/worksaldo.git" &&
   git checkout -b master &&
