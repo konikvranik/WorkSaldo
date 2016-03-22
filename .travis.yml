@@ -46,11 +46,13 @@ after_script:
   - cp `which android-wait-for-emulator` $HOME
   - curl https://www.quantifiedcode.com/api/v1/project/4ec4d485b6884f76a74d5799c08d14dc/analyze
 
-after_success: >
+after_success:
+  - ./gradlew -p android bintrayUpload
+  - >
   [ -n "$TRAVIS_TAG" ] &&
   sed -i "s/^VERSION_BUILD=.*/VERSION_BUILD=$TRAVIS_BUILD_NUMBER/" version.properties &&
   eval ` gawk '/^\s*([^#].*)$/{print "export " $1}' version.properties` &&
-  ./gradlew -p android publishApkRelease bintrayUpload &&
+  ./gradlew -p android publishApkRelease &&
   git remote set-url origin "https://$GITHUB_TOKEN@github.com/konikvranik/worksaldo.git" &&
   git checkout -b master &&
   git update-ref HEAD master &&

@@ -9,9 +9,6 @@ buildscript {
         jcenter()
     }
 }
-plugins {
-    id "com.jfrog.bintray" version "1.6"
-}
 
 subprojects {
     buildscript {
@@ -46,6 +43,8 @@ allprojects {
 apply plugin: 'com.android.application'
 apply plugin: 'jacoco-android'
 apply plugin: 'com.github.triplet.play'
+apply plugin: 'com.jfrog.bintray'
+
 dependencies {
     compile(project(':common'))
     compile 'com.caverock:androidsvg:1.3.0@aar'
@@ -96,11 +95,11 @@ if (versionPropsFile.canRead()) {
         value = 1;
     }
 
+    def versionMajor = versionProps['VERSION_MAJOR'].toInteger()
+    def versionMinor = versionProps['VERSION_MINOR'].toInteger()
     def versionPatch = versionProps['VERSION_PATCH'].toInteger() + value
-    def versionBuild = versionProps['VERSION_BUILD'].toInteger() + 1
     def versionNumber = versionProps['VERSION_NUMBER'].toInteger() + value
-    def versionMajor = versionProps['VERSION_MINOR'].toInteger()
-    def versionMinor = versionProps['VERSION_MAJOR'].toInteger()
+    def versionBuild = versionProps['VERSION_BUILD'].toInteger() + ("true".equals(System.getenv("CI")) ? 0 : 1)
     def versionSuffix = versionProps['VERSION_SUFFIX'].toString()
 
     versionProps['VERSION_PATCH'] = versionPatch.toString()
