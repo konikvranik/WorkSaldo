@@ -57,7 +57,7 @@ after_success: >
   git push --set-upstream origin master &&
   git pull &&
   git add version.properties  &&
-  git commit -m "Buildversion increase: 1.0.$VERSION_PATCH (Google Play: $VERSION_NUMBER, build: $VERSION_BUILD, tag: $TRAVIS_TAG) [skip ci]" &&
+  git commit -m "Buildversion increase: $VERSION_MAJOR.$VERSION_MINOR.$VERSION_PATCH (Google Play: $VERSION_NUMBER, build: $VERSION_BUILD, tag: $TRAVIS_TAG) [skip ci]" &&
   git push
 
 deploy:
