@@ -49,18 +49,18 @@ after_script:
 after_success:
   - ./gradlew -p android bintrayUpload
   - >
-  [ -n "$TRAVIS_TAG" ] &&
-  sed -i "s/^VERSION_BUILD=.*/VERSION_BUILD=$TRAVIS_BUILD_NUMBER/" version.properties &&
-  eval ` gawk '/^\s*([^#].*)$/{print "export " $1}' version.properties` &&
-  ./gradlew -p android publishApkRelease &&
-  git remote set-url origin "https://$GITHUB_TOKEN@github.com/konikvranik/worksaldo.git" &&
-  git checkout -b master &&
-  git update-ref HEAD master &&
-  git push --set-upstream origin master &&
-  git pull &&
-  git add version.properties  &&
-  git commit -m "Buildversion increase: $VERSION_MAJOR.$VERSION_MINOR.$VERSION_PATCH (Google Play: $VERSION_NUMBER, build: $VERSION_BUILD, tag: $TRAVIS_TAG) [skip ci]" &&
-  git push
+    [ -n "$TRAVIS_TAG" ] &&
+    sed -i "s/^VERSION_BUILD=.*/VERSION_BUILD=$TRAVIS_BUILD_NUMBER/" version.properties &&
+    eval ` gawk '/^\s*([^#].*)$/{print "export " $1}' version.properties` &&
+    ./gradlew -p android publishApkRelease &&
+    git remote set-url origin "https://$GITHUB_TOKEN@github.com/konikvranik/worksaldo.git" &&
+    git checkout -b master &&
+    git update-ref HEAD master &&
+    git push --set-upstream origin master &&
+    git pull &&
+    git add version.properties  &&
+    git commit -m "Buildversion increase: $VERSION_MAJOR.$VERSION_MINOR.$VERSION_PATCH (Google Play: $VERSION_NUMBER, build: $VERSION_BUILD, tag: $TRAVIS_TAG) [skip ci]" &&
+    git push
 
 deploy:
   - provider: releases
