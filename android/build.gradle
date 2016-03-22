@@ -3,10 +3,14 @@ buildscript {
         classpath 'com.github.triplet.gradle:play-publisher:1.1.4'
         classpath 'com.android.tools.build:gradle:2.0.0-beta7'
         classpath 'com.dicedmelon.gradle:jacoco-android:+'
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.6'
     }
     repositories {
         jcenter()
     }
+}
+plugins {
+    id "com.jfrog.bintray" version "1.6"
 }
 
 subprojects {
@@ -42,7 +46,6 @@ allprojects {
 apply plugin: 'com.android.application'
 apply plugin: 'jacoco-android'
 apply plugin: 'com.github.triplet.play'
-
 dependencies {
     compile(project(':common'))
     compile 'com.caverock:androidsvg:1.3.0@aar'
@@ -68,47 +71,54 @@ key = System.getenv('SIGNINIG_KEY_PASSWORD')
 if (key != null) {
     project.ext.set('pwd.key', key)
 }
+def bintray_user = System.getenv('BINTRAY_USER')
+if (bintray_user != null) {
+    project.ext.set('bintray.user', bintray_user)
+}
+def bintray_api_key = System.getenv('BINTRAY_TOKEN')
+if (bintray_api_key != null) {
+    project.ext.set('bintray.apiKey', bintray_api_key)
+    System.getProperties().put('bintray.apiKey', bintray_api_key)
+    System.getProperties().put('apiKey', bintray_api_key)
+}
 def boolean sign = project.ext.has('pwd.keystore') && project.ext.has('pwd.key')
 
-android {
-    compileSdkVersion 23
-    buildToolsVersion "23.0.2"
+def versionPropsFile = file('../version.properties')
+if (versionPropsFile.canRead()) {
+    def Properties versionProps = new Properties()
 
-    def versionPropsFile = file('../version.properties')
-    if (versionPropsFile.canRead()) {
-        def Properties versionProps = new Properties()
+    versionProps.load(new FileInputStream(versionPropsFile))
 
-        versionProps.load(new FileInputStream(versionPropsFile))
+    def value = 0
 
-        def value = 0
+    def runTasks = gradle.startParameter.taskNames
+    if ('assemble' in runTasks || 'assembleRelease' in runTasks || 'aR' in runTasks || 'publishApkRelease' in runTasks) {
+        value = 1;
+    }
 
-        def runTasks = gradle.startParameter.taskNames
-        if ('assemble' in runTasks || 'assembleRelease' in runTasks || 'aR' in runTasks || 'publishApkRelease' in runTasks) {
-            value = 1;
-        }
+    def versionPatch = versionProps['VERSION_PATCH'].toInteger() + value
+    def versionBuild = versionProps['VERSION_BUILD'].toInteger() + 1
+    def versionNumber = versionProps['VERSION_NUMBER'].toInteger() + value
+    def versionMajor = versionProps['VERSION_MINOR'].toInteger()
+    def versionMinor = versionProps['VERSION_MAJOR'].toInteger()
+    def versionSuffix = versionProps['VERSION_SUFFIX'].toString()
 
-        def versionPatch = versionProps['VERSION_PATCH'].toInteger() + value
-        def versionBuild = versionProps['VERSION_BUILD'].toInteger() + 1
-        def versionNumber = versionProps['VERSION_NUMBER'].toInteger() + value
-        def versionMajor = versionProps['VERSION_MINOR'].toInteger()
-        def versionMinor = versionProps['VERSION_MAJOR'].toInteger()
-        def versionSuffix = versionProps['VERSION_SUFFIX'].toString()
+    versionProps['VERSION_PATCH'] = versionPatch.toString()
+    versionProps['VERSION_BUILD'] = versionBuild.toString()
+    versionProps['VERSION_NUMBER'] = versionNumber.toString()
+    versionProps['VERSION_MAJOR'] = versionMajor.toString()
+    versionProps['VERSION_MINOR'] = versionMinor.toString()
 
-        versionProps['VERSION_PATCH'] = versionPatch.toString()
-        versionProps['VERSION_BUILD'] = versionBuild.toString()
-        versionProps['VERSION_NUMBER'] = versionNumber.toString()
-        versionProps['VERSION_MAJOR'] = versionMajor.toString()
-        versionProps['VERSION_MINOR'] = versionMinor.toString()
+    versionProps.store(versionPropsFile.newWriter(), null)
 
-        versionProps.store(versionPropsFile.newWriter(), null)
+    android.defaultConfig {
+        applicationId "net.suteren.worksaldo.android"
+        minSdkVersion 21
+        targetSdkVersion 23
+        versionCode versionNumber
+        versionName "${versionMajor}.${versionMinor}.${versionPatch}-${versionSuffix}@b${versionBuild}"
+    }
 
-        defaultConfig {
-            applicationId "net.suteren.worksaldo.android"
-            minSdkVersion 21
-            targetSdkVersion 23
-            versionCode versionNumber
-            versionName "${versionMajor}.${versionMinor}.${versionPatch} (${versionBuild}) ${versionSuffix}"
-        }
 /*
         applicationVariants.all { variant ->
             variant.outputs.each { output ->
@@ -122,9 +132,16 @@ android {
             }
         }
 */
-    } else {
-        throw new GradleException("Could not read version.properties!")
-    }
+} else {
+    throw new GradleException("Could not read version.properties!")
+}
+
+version = android.defaultConfig.versionName
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion "23.0.2"
+
 
 
     compileOptions {
@@ -175,12 +192,43 @@ play {
     jsonFile = file('../GooglePlayAndroidDeveloper-d20ecef57b83.json')
 }
 
+bintray.key = System.getenv('BINTRAY_TOKEN')
+bintray.user = System.getenv('BINTRAY_USER')
+
+bintray {
+    user = System.getenv('BINTRAY_USER')
+    key = System.getenv('BINTRAY_TOKEN')
+    filesSpec { //When uploading any arbitrary files ('filesSpec' is a standard Gradle CopySpec)
+        from 'build/outputs/apk'
+        into '.'
+        rename 'android(-.+)\\.apk', String.format('worksaldo-%s-%05d$1.apk', android.defaultConfig.versionName, android.defaultConfig.versionCode)
+    }
+    dryRun = false //Whether to run this as dry-run, without deploying
+    publish = true //If version should be auto published after an upload
+    pkg {
+        repo = 'android'
+        name = "worksaldo"
+        desc = 'Application which displays worked hours and balance over specified period.'
+        websiteUrl = 'https://github.com/konikvranik/worksaldo'
+        issueTrackerUrl = 'https://github.com/konikvranik/worksaldo/issues'
+        vcsUrl = 'https://github.com/konikvranik/worksaldo.git'
+        licenses = ['Apache-2.0']
+        labels = ["toggl", "client", "work", "android", "report", "apk"]
+        publicDownloadNumbers = true
+        version {
+            name = android.defaultConfig.versionName
+            desc = 'optional, version-specific description'
+//                vcsTag = '1.3.0'
+        }
+    }
+}
+
 if (project.rootProject.file('local.properties').exists()) {
-    Properties buildProps = new Properties()
+    Properties buildProps = System.getProperties()
     buildProps.load(project.rootProject.file('local.properties').newDataInputStream())
     buildProps.each { prop -> project.ext.set(prop.key, prop.value) }
 } else if (project.rootProject.file('../local.properties').exists()) {
-    Properties buildProps = new Properties()
+    Properties buildProps = System.getProperties()
     buildProps.load(project.rootProject.file('../local.properties').newDataInputStream())
     buildProps.each { prop -> project.ext.set(prop.key, prop.value) }
 }

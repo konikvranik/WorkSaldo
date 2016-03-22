@@ -50,7 +50,7 @@ after_success: >
   [ -n "$TRAVIS_TAG" ] &&
   sed -i "s/^VERSION_BUILD=.*/VERSION_BUILD=$TRAVIS_BUILD_NUMBER/" version.properties &&
   eval ` gawk '/^\s*([^#].*)$/{print "export " $1}' version.properties` &&
-  ./gradlew -p android publishApkRelease &&
+  ./gradlew -p android publishApkRelease bintrayUpload &&
   git remote set-url origin "https://$GITHUB_TOKEN@github.com/konikvranik/worksaldo.git" &&
   git checkout -b master &&
   git update-ref HEAD master &&
@@ -70,14 +70,6 @@ deploy:
     - $TRAVIS_BUILD_DIR/android/build/outputs/apk/android-debug-unaligned.apk
     - $TRAVIS_BUILD_DIR/android/build/outputs/apk/android-release.apk
     - $TRAVIS_BUILD_DIR/android/build/outputs/apk/android-release-unaligned.apk
-    on:
-      tags: true
-  - provider: bintray
-    overwrite: true
-    skip_cleanup: true
-    file: "$TRAVIS_BUILD_DIR/.bintray.json"
-    user: "konikvranik"
-    key: "$BINTRAY_TOKEN"
     on:
       tags: true
 
