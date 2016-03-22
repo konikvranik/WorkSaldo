@@ -369,7 +369,10 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
 
         StandardWorkEstimator we = getSaldoWorkEstimator(data);
 
-        final Duration currentSaldo = we.getSaldo();
+        Duration currentSaldo = we.getSaldo();
+        if (isDayClosed()) {
+            currentSaldo = currentSaldo.plus(we.getSaldoToday());
+        }
         final Duration saldoToday = we.getSaldoToday();
         final Duration remainingToday = we.getRemainingToday();
         if (isDayClosed()) {
