@@ -33,12 +33,12 @@ before_script:
   - gpg --no-use-agent --passphrase "$GPG_PASSPHRASE" -d secrets.gpg | tar x
 
 script:
-  - ./gradlew build jacocoTestReport
+  - ./gradlew --daemon build jacocoTestReport
   - find $TRAVIS_BUILD_DIR/android/build -type f -not -iname "*.java" -and -not -iname "*.class" -and -not -iname "*.dex" -and -not -iname "*.png" -and -not -iname "*.aidl"
   - ./android-wait-for-emulator
   - adb shell input keyevent 82 &
   - adb shell setprop dalvik.vm.dexopt-flags v=n,o=v
-  - ./gradlew connectedCheck jacocoTestReport --stacktrace --info
+  - ./gradlew --daemon connectedCheck jacocoTestReport --stacktrace --info
 
 after_script:
   - bash <(curl -s https://codecov.io/bash) -v
@@ -60,12 +60,12 @@ after_script:
   - curl https://www.quantifiedcode.com/api/v1/project/4ec4d485b6884f76a74d5799c08d14dc/analyze
 
 after_success:
-  - ./gradlew -p android bintrayUpload
+  - ./gradlew --daemon -p android bintrayUpload
   - >
     [ -n "$TRAVIS_TAG" ] &&
-    ./gradlew generateChangelog &&
+    ./gradlew --daemon generateChangelog &&
     eval ` gawk '/^\s*([^#].*)$/{print "export " $1}' version.properties` &&
-    ./gradlew -p android publishRelease &&
+    ./gradlew --daemon -p android publishRelease &&
     git remote set-url origin "https://$GITHUB_TOKEN@github.com/konikvranik/worksaldo.git" &&
     git checkout -b master &&
     git update-ref HEAD master &&
