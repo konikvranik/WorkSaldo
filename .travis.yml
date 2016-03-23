@@ -53,7 +53,7 @@ after_success:
     (./gradlew generateChangelog; cp android/CHANGELOG.md android/src/main/play/cs-CZ/whatsnew; cp android/CHANGELOG.md android/src/main/play/en-US/whatsnew; true) &&
     sed -i "s/^VERSION_BUILD=.*/VERSION_BUILD=$TRAVIS_BUILD_NUMBER/" version.properties &&
     eval ` gawk '/^\s*([^#].*)$/{print "export " $1}' version.properties` &&
-    ./gradlew -p android publishApkRelease &&
+    ./gradlew -p android publishRelease &&
     git remote set-url origin "https://$GITHUB_TOKEN@github.com/konikvranik/worksaldo.git" &&
     git checkout -b master &&
     git update-ref HEAD master &&
