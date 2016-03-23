@@ -33,35 +33,49 @@ before_script:
   - gpg --no-use-agent --passphrase "$GPG_PASSPHRASE" -d secrets.gpg | tar x
 
 script:
-  - ./gradlew build jacocoTestReport
+  - ./gradlew -q build jacocoTestReport
   - find $TRAVIS_BUILD_DIR/android/build -type f -not -iname "*.java" -and -not -iname "*.class" -and -not -iname "*.dex" -and -not -iname "*.png" -and -not -iname "*.aidl"
   - android-wait-for-emulator
   - adb shell input keyevent 82 &
   - adb shell setprop dalvik.vm.dexopt-flags v=n,o=v
-  - ./gradlew connectedCheck jacocoTestReport --stacktrace --info
+  - ./gradlew -q connectedCheck jacocoTestReport --stacktrace --info
 
 after_script:
   - bash <(curl -s https://codecov.io/bash) -v
-  - $TRAVIS_BUILD_DIR/scripts/pubreports.sh
-  - cp `which android-wait-for-emulator` $HOME
+  - >
+    git remote set-url origin "https://$GITHUB_TOKEN@github.com/konikvranik/worksaldo.git" &&
+    git update-ref HEAD master &&
+    git push --set-upstream origin master &&
+    git fetch &&
+    git checkout -b gh-pages &&
+    ( cp -ru $TRAVIS_BUILD_DIR/android/build/outputs/lint-results* . || true ) &&
+    ( cp -ru $TRAVIS_BUILD_DIR/android/build/outputs/report* . || true ) &&
+    ( cp -ru $TRAVIS_BUILD_DIR/android/build/report* . || true ) &&
+    ( cp -ru $TRAVIS_BUILD_DIR/android/CHANGELOG.html . || true ) &&
+    ( cp `which android-wait-for-emulator` . ) &&
+    git add lint* report* CHANGELOG.html android-wait-for-emulator &&
+    git commit -m "travis => build reports [skip ci]" &&
+    git push
+  - cat `which android-wait-for-emulator`
   - curl https://www.quantifiedcode.com/api/v1/project/4ec4d485b6884f76a74d5799c08d14dc/analyze
 
 after_success:
-  - ./gradlew -p android bintrayUpload
+  - ./gradlew -q -p android bintrayUpload
   - >
     [ -n "$TRAVIS_TAG" ] &&
-    (./gradlew generateChangelog; cp android/CHANGELOG.md android/src/main/play/cs-CZ/whatsnew; cp android/CHANGELOG.md android/src/main/play/en-US/whatsnew; true) &&
-    sed -i "s/^VERSION_BUILD=.*/VERSION_BUILD=$TRAVIS_BUILD_NUMBER/" version.properties &&
+    ./gradlew -q generateChangelog &&
     eval ` gawk '/^\s*([^#].*)$/{print "export " $1}' version.properties` &&
-    ./gradlew -p android publishRelease &&
+    ./gradlew -q -p android publishRelease &&
     git remote set-url origin "https://$GITHUB_TOKEN@github.com/konikvranik/worksaldo.git" &&
     git checkout -b master &&
     git update-ref HEAD master &&
     git push --set-upstream origin master &&
-    git pull &&
-    git add version.properties android/CHANGELOG.* android/changelog.*   &&
+    git fetch &&
+    ( cp android/CHANGELOG.md android/src/main/play/cs-CZ/whatsnew; cp android/CHANGELOG.md android/src/main/play/en-US/whatsnew; true ) &&
+    git add version.properties android/CHANGELOG.* &&
     git commit -m "Buildversion increase: $VERSION_MAJOR.$VERSION_MINOR.$VERSION_PATCH (Google Play: $VERSION_NUMBER, build: $VERSION_BUILD, tag: $TRAVIS_TAG) [skip ci]" &&
-    git push
+    git push;
+
 
 deploy:
   - provider: releases

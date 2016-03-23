@@ -101,7 +101,8 @@ if (versionPropsFile.canRead()) {
     def versionMinor = versionProps['VERSION_MINOR'].toInteger()
     def versionPatch = versionProps['VERSION_PATCH'].toInteger() + value
     def versionNumber = versionProps['VERSION_NUMBER'].toInteger() + value
-    def versionBuild = versionProps['VERSION_BUILD'].toInteger() + (System.getenv("CI") == null ? 0 : 1)
+    def versionBuild = System.getenv("TRAVIS_BUILD_NUMBER") == null ?
+            System.getenv("TRAVIS_BUILD_NUMBER") : (versionProps['VERSION_BUILD'].toInteger() + (System.getenv("CI") == null ? 0 : 1))
     def versionSuffix = versionProps['VERSION_SUFFIX'].toString()
 
     versionProps['VERSION_PATCH'] = versionPatch.toString()
