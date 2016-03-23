@@ -1,8 +1,9 @@
 android - Changelog
 ===================
 
-v00010 (2016-03-23 22:07:28 +0100)
+v00010 (2016-03-23 22:43:07 +0100)
 ----------------------------------
+* buildscrip optimizations (Petr Vranik)
 * buildscrip optimizations (Petr Vranik)
 * update build script: publishilg build logs from .travis.yml, altered adding filed to git (Petr Vranik)
 * case insensitive changelog (Petr Vranik)
