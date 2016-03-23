@@ -13,6 +13,7 @@ echo CD to gh-pages
 cd $HOME/gh-pages || exit 1
 echo Adding lint
 cp -ru $TRAVIS_BUILD_DIR/android/CHANGELOG.html gh-pages
+cp -ru $TRAVIS_BUILD_DIR/android/changelog.html gh-pages
 git add lint*
 STAT=$?
 echo Adding report

@@ -59,7 +59,7 @@ after_success:
     git update-ref HEAD master &&
     git push --set-upstream origin master &&
     git pull &&
-    git add version.properties android/CHANGELOG.*  &&
+    git add version.properties android/CHANGELOG.* android/changelog.*   &&
     git commit -m "Buildversion increase: $VERSION_MAJOR.$VERSION_MINOR.$VERSION_PATCH (Google Play: $VERSION_NUMBER, build: $VERSION_BUILD, tag: $TRAVIS_TAG) [skip ci]" &&
     git push
 
