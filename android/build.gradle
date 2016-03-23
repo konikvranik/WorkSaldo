@@ -102,7 +102,7 @@ if (versionPropsFile.canRead()) {
     def versionPatch = versionProps['VERSION_PATCH'].toInteger() + value
     def versionNumber = versionProps['VERSION_NUMBER'].toInteger() + value
     def versionBuild = System.getenv("TRAVIS_BUILD_NUMBER") == null ?
-            System.getenv("TRAVIS_BUILD_NUMBER") : (versionProps['VERSION_BUILD'].toInteger() + (System.getenv("CI") == null ? 0 : 1))
+            (versionProps['VERSION_BUILD'].toInteger() + (System.getenv("CI") == null ? 0 : 1)) : System.getenv("TRAVIS_BUILD_NUMBER")
     def versionSuffix = versionProps['VERSION_SUFFIX'].toString()
 
     versionProps['VERSION_PATCH'] = versionPatch.toString()
@@ -292,6 +292,13 @@ changelog {
             input = input.minus('[ci skip] ')
         }
         input
+    }
+}
+
+preBuild {
+    doFirst {
+        JavaCompile jc = android.applicationVariants.find { it.name == 'debug' }.javaCompile
+        jc.options.compilerArgs = ["-Xlint:unchecked", "-Xlint:deprecation"]
     }
 }
 if (project.rootProject.file('local.properties').exists()) {

@@ -1,6 +1,14 @@
 android - Changelog
 ===================
 
+v00010 (2016-03-23 21:43:41 +0100)
+----------------------------------
+* update build script: publishilg build logs from .travis.yml, altered adding filed to git (Petr Vranik)
+* case insensitive changelog (Petr Vranik)
+* publish also descriptions into google play (Petr Vranik)
+* faster gear rotation (Petr Vranik)
+* changelog update by travis (Petr Vranik)
+
 v00009 (2016-03-23 16:08:47 +0100)
 ----------------------------------
 * no fail if google play fields exceeds limit. (Petr Vranik)

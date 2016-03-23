@@ -34,3 +34,4 @@
 -dontwarn javax.imageio.**
 -dontwarn com.google.inject.**
 -dontwarn org.w3c.dom.bootstrap.**
+-keepattributes InnerClasses
