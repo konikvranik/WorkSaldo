@@ -46,7 +46,6 @@ after_script:
     git remote set-url origin "https://$GITHUB_TOKEN@github.com/konikvranik/worksaldo.git" &&
     git checkout -b gh-pages &&
     git update-ref HEAD gh-pages &&
-    git push --set-upstream origin gh-pages &&
     git fetch &&
     ( cp -ru $TRAVIS_BUILD_DIR/android/build/outputs/lint-results* . || true ) &&
     ( cp -ru $TRAVIS_BUILD_DIR/android/build/outputs/report* . || true ) &&
@@ -56,7 +55,7 @@ after_script:
     ( git add report* || true ) &&
     ( git add CHANGELOG.html || true ) &&
     git commit -m "travis => build reports [skip ci]" &&
-    git push
+    git push --set-upstream origin gh-pages
   - cat `which android-wait-for-emulator`
   - curl https://www.quantifiedcode.com/api/v1/project/4ec4d485b6884f76a74d5799c08d14dc/analyze
 
@@ -70,14 +69,12 @@ after_success:
     git remote set-url origin "https://$GITHUB_TOKEN@github.com/konikvranik/worksaldo.git" &&
     git checkout -b master &&
     git update-ref HEAD master &&
-    git push --set-upstream origin master &&
     git fetch &&
     ( cp android/CHANGELOG.md android/src/main/play/cs-CZ/whatsnew; cp android/CHANGELOG.md android/src/main/play/en-US/whatsnew; true ) &&
     ( git add version.properties || true ) &&
     ( git add android/CHANGELOG.* || true ) &&
     git commit -m "Buildversion increase: $VERSION_MAJOR.$VERSION_MINOR.$VERSION_PATCH (Google Play: $VERSION_NUMBER, build: $VERSION_BUILD, tag: $TRAVIS_TAG) [skip ci]" &&
-    git push;
-
+    git push --set-upstream origin master
 
 deploy:
   - provider: releases
