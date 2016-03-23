@@ -21,6 +21,7 @@ import net.suteren.worksaldo.IWorkEstimator;
 import net.suteren.worksaldo.Period;
 import net.suteren.worksaldo.StandardWorkEstimator;
 import net.suteren.worksaldo.android.IRefreshable;
+import net.suteren.worksaldo.android.IReloadable;
 import net.suteren.worksaldo.android.R;
 import org.joda.time.*;
 import org.joda.time.format.*;
@@ -39,7 +40,8 @@ import static net.suteren.worksaldo.android.ui.MainActivity.*;
 /**
  * Fragment of main dashboard. Contains counters of work progress and list of days of work in actual period.
  */
-public class DashboardFragment extends Fragment implements ISharedPreferencesProviderWithContext, IRefreshable {
+public class DashboardFragment extends Fragment implements ISharedPreferencesProviderWithContext, IRefreshable,
+        IReloadable {
 
     /**
      * formatting duration of work in H:mm format with possible sign before hours.
