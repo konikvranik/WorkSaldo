@@ -191,6 +191,7 @@ android {
 
 play {
     jsonFile = file('../GooglePlayAndroidDeveloper-d20ecef57b83.json')
+    errorOnSizeLimit = false
 }
 
 bintray.key = System.getenv('BINTRAY_TOKEN')
