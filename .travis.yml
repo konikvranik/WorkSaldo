@@ -50,6 +50,7 @@ after_success:
   - ./gradlew -p android bintrayUpload
   - >
     [ -n "$TRAVIS_TAG" ] &&
+    (./gradlew generateChangelog; cp android/build/CHANGELOG.html android/src/main/play/cs-CZ/whatsnew; cp android/build/CHANGELOG.html android/src/main/play/en-US/whatsnew; true) &&
     sed -i "s/^VERSION_BUILD=.*/VERSION_BUILD=$TRAVIS_BUILD_NUMBER/" version.properties &&
     eval ` gawk '/^\s*([^#].*)$/{print "export " $1}' version.properties` &&
     ./gradlew -p android publishApkRelease &&
