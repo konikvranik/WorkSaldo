@@ -50,7 +50,7 @@ after_success:
   - ./gradlew -p android bintrayUpload
   - >
     [ -n "$TRAVIS_TAG" ] &&
-    (./gradlew generateChangelog; cp android/build/CHANGELOG.html android/src/main/play/cs-CZ/whatsnew; cp android/build/CHANGELOG.html android/src/main/play/en-US/whatsnew; true) &&
+    (./gradlew generateChangelog; cp android/CHANGELOG.md android/src/main/play/cs-CZ/whatsnew; cp android/CHANGELOG.md android/src/main/play/en-US/whatsnew; true) &&
     sed -i "s/^VERSION_BUILD=.*/VERSION_BUILD=$TRAVIS_BUILD_NUMBER/" version.properties &&
     eval ` gawk '/^\s*([^#].*)$/{print "export " $1}' version.properties` &&
     ./gradlew -p android publishApkRelease &&
@@ -59,7 +59,7 @@ after_success:
     git update-ref HEAD master &&
     git push --set-upstream origin master &&
     git pull &&
-    git add version.properties  &&
+    git add version.properties android/CHANGELOG.*  &&
     git commit -m "Buildversion increase: $VERSION_MAJOR.$VERSION_MINOR.$VERSION_PATCH (Google Play: $VERSION_NUMBER, build: $VERSION_BUILD, tag: $TRAVIS_TAG) [skip ci]" &&
     git push
 
