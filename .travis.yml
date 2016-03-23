@@ -44,16 +44,19 @@ after_script:
   - bash <(curl -s https://codecov.io/bash) -v
   - >
     git remote set-url origin "https://$GITHUB_TOKEN@github.com/konikvranik/worksaldo.git" &&
-    git update-ref HEAD master &&
-    git push --set-upstream origin master &&
-    git fetch &&
     git checkout -b gh-pages &&
+    git update-ref HEAD gh-pages &&
+    git push --set-upstream origin gh-pages &&
+    git fetch &&
     ( cp -ru $TRAVIS_BUILD_DIR/android/build/outputs/lint-results* . || true ) &&
     ( cp -ru $TRAVIS_BUILD_DIR/android/build/outputs/report* . || true ) &&
     ( cp -ru $TRAVIS_BUILD_DIR/android/build/report* . || true ) &&
     ( cp -ru $TRAVIS_BUILD_DIR/android/CHANGELOG.html . || true ) &&
     ( cp `which android-wait-for-emulator` . ) &&
-    git add lint* report* CHANGELOG.html android-wait-for-emulator &&
+    ( git add lint* || true ) &&
+    ( git add report* || true ) &&
+    ( git add CHANGELOG.html || true ) &&
+    ( git add android-wait-for-emulator || true ) &&
     git commit -m "travis => build reports [skip ci]" &&
     git push
   - cat `which android-wait-for-emulator`
@@ -72,7 +75,8 @@ after_success:
     git push --set-upstream origin master &&
     git fetch &&
     ( cp android/CHANGELOG.md android/src/main/play/cs-CZ/whatsnew; cp android/CHANGELOG.md android/src/main/play/en-US/whatsnew; true ) &&
-    git add version.properties android/CHANGELOG.* &&
+    ( git add version.properties || true ) &&
+    ( git add android/CHANGELOG.* || true ) &&
     git commit -m "Buildversion increase: $VERSION_MAJOR.$VERSION_MINOR.$VERSION_PATCH (Google Play: $VERSION_NUMBER, build: $VERSION_BUILD, tag: $TRAVIS_TAG) [skip ci]" &&
     git push;
 

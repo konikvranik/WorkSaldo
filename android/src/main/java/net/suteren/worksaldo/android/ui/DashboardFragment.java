@@ -81,7 +81,7 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
             })
             .toFormatter();
 
-    private LoaderManager.LoaderCallbacks DAYS_LOADER_CALLBACK = new AbstractDaysLoader(this) {
+    private LoaderManager.LoaderCallbacks<Cursor> DAYS_LOADER_CALLBACK = new AbstractDaysLoader(this) {
         @Override
         public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
 
@@ -100,7 +100,7 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
         }
     };
 
-    private LoaderManager.LoaderCallbacks RELOAD_CALLBACK = new AbstractDaysLoader(this) {
+    private LoaderManager.LoaderCallbacks<Cursor> RELOAD_CALLBACK = new AbstractDaysLoader(this) {
         @Override
         public Loader<Cursor> onCreateLoader(int id, Bundle args) {
             LocalDate d = LocalDate.now();
@@ -393,6 +393,7 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
         dailyTotal.setText(PERIOD_FORMATTER.print(remainingToday.toPeriod()));
         dailyTotal.setTextColor(getNumberColor(remainingToday.getStandardSeconds()));
 
+        @SuppressWarnings("deprecation")
         AnalogClock clock = (AnalogClock) rootView.findViewById(R.id.clock);
 
         ImageView gears = (SVGImageView) rootView.findViewById(R.id.gears);
