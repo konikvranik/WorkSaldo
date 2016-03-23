@@ -52,11 +52,9 @@ after_script:
     ( cp -ru $TRAVIS_BUILD_DIR/android/build/outputs/report* . || true ) &&
     ( cp -ru $TRAVIS_BUILD_DIR/android/build/report* . || true ) &&
     ( cp -ru $TRAVIS_BUILD_DIR/android/CHANGELOG.html . || true ) &&
-    ( cp `which android-wait-for-emulator` . ) &&
     ( git add lint* || true ) &&
     ( git add report* || true ) &&
     ( git add CHANGELOG.html || true ) &&
-    ( git add android-wait-for-emulator || true ) &&
     git commit -m "travis => build reports [skip ci]" &&
     git push
   - cat `which android-wait-for-emulator`
