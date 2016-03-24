@@ -1,6 +1,11 @@
 android - Changelog
 ===================
 
+v00014 (2016-03-24 10:28:46 +0100)
+----------------------------------
+* changed counters values for open/close day (Petr Vranik)
+* Buildversion increase: 1.0.9 (Google Play: 13, build: 410, tag: v00013) [skip ci] (Trsvis CI)
+
 v00013 (2016-03-24 09:29:53 +0100)
 ----------------------------------
 * whatsnew generation (Petr Vranik)
@@ -81,5 +86,3 @@ v00003 (2016-03-22 00:02:22 +0100)
 * Buildversion increase [skip ci] (Trsvis CI)
 * push test (Petr Vranik)
 * Buildversion increase [skip ci] (Trsvis CI)
-* push test (Petr Vranik)
-* push test (Petr Vranik)
