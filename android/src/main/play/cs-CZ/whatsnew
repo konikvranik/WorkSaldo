@@ -1,6 +1,12 @@
 android - Changelog
 ===================
 
+v00015 (2016-03-24 11:46:19 +0100)
+----------------------------------
+* display time of finish instead of number of hours. (Petr Vranik)
+* typo fix (Petr Vranik)
+* Buildversion increase: 1.0.10 (Google Play: 14, build: 412, tag: v00014) [skip ci] (Trsvis CI)
+
 v00014 (2016-03-24 10:28:46 +0100)
 ----------------------------------
 * changed counters values for open/close day (Petr Vranik)
@@ -83,6 +89,3 @@ v00003 (2016-03-22 00:02:22 +0100)
 * travis build number (Petr Vranik)
 * publish on tags (Petr Vranik)
 * git stash (Petr Vranik)
-* Buildversion increase [skip ci] (Trsvis CI)
-* push test (Petr Vranik)
-* Buildversion increase [skip ci] (Trsvis CI)
