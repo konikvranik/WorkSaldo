@@ -421,13 +421,11 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
             gears.startAnimation(AnimationUtils.loadAnimation(getActivity(), R.anim.rotate_gear));
 
             // upper counter
-            upperCounter.setTextColor(getNumberColor(we.getSaldoToday().getStandardSeconds()));
-            upperCounter.setText(PERIOD_FORMATTER.print(we.getSaldoToday().toPeriod()));
+            upperCounter.setText(TIME_FORMAT.print(LocalTime.now().plus(we.getSaldoToday().toPeriod())));
 
             // lower counter
-            Duration lowerCounterValue = we.getSaldo().plus(we.getSaldoToday());
-            upperCounter.setTextColor(getNumberColor(lowerCounterValue.getStandardSeconds()));
-            lowerCounter.setText(PERIOD_FORMATTER.print(lowerCounterValue.toPeriod()));
+            lowerCounter.setText(
+                    TIME_FORMAT.print(LocalTime.now().plus(we.getSaldo().plus(we.getSaldoToday()).toPeriod())));
         }
 
         Log.d("DashboardFragment", "Saldo reloaded");
