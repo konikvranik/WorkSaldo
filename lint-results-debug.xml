@@ -17,7 +17,7 @@ If you want the methods to just perform ASCII replacement, for example to conver
         errorLine2="                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="/home/travis/build/konikvranik/worksaldo/android/src/main/java/net/suteren/worksaldo/android/ui/DashboardFragment.java"
-            line="67"
+            line="84"
             column="32"/>
     </issue>
 

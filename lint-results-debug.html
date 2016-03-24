@@ -18,7 +18,7 @@ document.getElementById(id+'Link').style.display = 'none';
 <body>
 <h1>Lint Report</h1>
 <div class="titleSeparator"></div>
-Check performed at Thu Mar 24 08:36:49 UTC 2016.<br/>
+Check performed at Thu Mar 24 09:35:41 UTC 2016.<br/>
 0 errors and 26 warnings found:<br/><br/>
 <table class="overview">
 <tr><td></td><td class="categoryColumn"><a href="#Correctness">Correctness</a>
@@ -92,13 +92,13 @@ Check performed at Thu Mar 24 08:36:49 UTC 2016.<br/>
 <div class="id"><a href="#" title="Return to top">DefaultLocale: Implied default locale in case conversion</a><div class="issueSeparator"></div>
 </div>
 <div class="warningslist">
-<span class="location"><a href="../../src/main/java/net/suteren/worksaldo/android/ui/DashboardFragment.java">../../src/main/java/net/suteren/worksaldo/android/ui/DashboardFragment.java</a>:67</span>: <span class="message">Implicitly using the default locale is a common source of bugs: Use <code>String.format(Locale, ...)</code> instead</span><br /><pre class="errorlines">
-<span class="lineno">  64</span> 
-<span class="lineno">  65</span>                 @Override
-<span class="lineno">  66</span>                 public void printTo(StringBuffer buf, ReadablePeriod period, Locale locale) {
-<span class="lineno">  67</span>                     buf.append(<span class="errorspan">String.format("%02d", Math.abs(period.get(DurationFieldType.minutes()))));</span>
-<span class="lineno">  68</span>                 }
-<span class="lineno">  69</span> 
+<span class="location"><a href="../../src/main/java/net/suteren/worksaldo/android/ui/DashboardFragment.java">../../src/main/java/net/suteren/worksaldo/android/ui/DashboardFragment.java</a>:84</span>: <span class="message">Implicitly using the default locale is a common source of bugs: Use <code>String.format(Locale, ...)</code> instead</span><br /><pre class="errorlines">
+<span class="lineno">  81</span> 
+<span class="lineno">  82</span>                 @Override
+<span class="lineno">  83</span>                 public void printTo(StringBuffer buf, ReadablePeriod period, Locale locale) {
+<span class="lineno">  84</span>                     buf.append(<span class="errorspan">String.format("%02d", Math.abs(period.get(DurationFieldType.minutes()))));</span>
+<span class="lineno">  85</span>                 }
+<span class="lineno">  86</span> 
 </pre>
 </div>
 <div class="metadata">Priority: 6 / 10<br/>
@@ -236,7 +236,7 @@ When a LinearLayout is used to distribute the space proportionally between neste
 <div class="warningslist">
 <span class="location"><a href="../../src/main/res/layout/fragment_main.xml">../../src/main/res/layout/fragment_main.xml</a>:82</span>: <span class="message">Nested weights are bad for performance</span><br /><pre class="errorlines">
 <span class="lineno">  79</span>             &lt;net.suteren.worksaldo.android.ui.OutlinedTextView
-<span class="lineno">  80</span>                 android:id="@+id/dailyAverage"
+<span class="lineno">  80</span>                 android:id="@+id/upperCounter"
 <span class="lineno">  81</span>                 android:layout_width="match_parent"
 <span class="lineno">  82</span>                 <span class="errorspan">android:layout_weight="1"</span>
 <span class="lineno">  83</span>                 android:gravity="end"
