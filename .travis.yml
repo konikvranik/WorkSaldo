@@ -44,10 +44,9 @@ after_script:
   - bash <(curl -s https://codecov.io/bash) -v
   - >
     git remote set-url origin "https://$GITHUB_TOKEN@github.com/konikvranik/worksaldo.git" &&
-    git checkout -b gh-pages &&
-    git update-ref HEAD gh-pages &&
-    git fetch &&
-    git push --set-upstream origin gh-pages &&
+    git fetch origin gh-pages:gh-pages &&
+    git symbolic-ref HEAD refs/heads/gh-pages &&
+    git reset HEAD &&
     ( cp -ru $TRAVIS_BUILD_DIR/android/build/outputs/lint-results* . || true ) &&
     ( cp -ru $TRAVIS_BUILD_DIR/android/build/outputs/report* . || true ) &&
     ( cp -ru $TRAVIS_BUILD_DIR/android/build/report* . || true ) &&
@@ -68,10 +67,9 @@ after_success:
     eval ` gawk '/^\s*([^#].*)$/{print "export " $1}' version.properties` &&
     ./gradlew --daemon -p android publishRelease &&
     git remote set-url origin "https://$GITHUB_TOKEN@github.com/konikvranik/worksaldo.git" &&
-    git checkout -b master &&
-    git update-ref HEAD master &&
-    git fetch &&
-    git push --set-upstream origin master &&
+    git fetch origin master:master &&
+    git symbolic-ref HEAD refs/heads/master &&
+    git reset HEAD &&
     ( cp android/CHANGELOG.md android/src/main/play/cs-CZ/whatsnew; cp android/CHANGELOG.md android/src/main/play/en-US/whatsnew; true ) &&
     ( git add version.properties || true ) &&
     ( git add android/CHANGELOG.* || true ) &&
