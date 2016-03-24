@@ -1,6 +1,11 @@
 android - Changelog
 ===================
 
+v00013 (2016-03-24 09:29:53 +0100)
+----------------------------------
+* whatsnew generation (Petr Vranik)
+* Buildversion increase: 1.0.7 (Google Play: 11, build: 408, tag: v00012) [skip ci] (Trsvis CI)
+
 v00012 (2016-03-24 09:05:29 +0100)
 ----------------------------------
 * version increase (Petr Vranik)
@@ -76,7 +81,5 @@ v00003 (2016-03-22 00:02:22 +0100)
 * Buildversion increase [skip ci] (Trsvis CI)
 * push test (Petr Vranik)
 * Buildversion increase [skip ci] (Trsvis CI)
-* push test (Petr Vranik)
-* push test (Petr Vranik)
 * push test (Petr Vranik)
 * push test (Petr Vranik)
