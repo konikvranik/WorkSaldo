@@ -421,55 +421,53 @@ import static net.suteren.worksaldo.android.ui.MainActivity.*;
 <span class="nc" id="L421">            gears.startAnimation(AnimationUtils.loadAnimation(getActivity(), R.anim.rotate_gear));</span>
 
             // upper counter
-<span class="nc" id="L424">            upperCounter.setTextColor(getNumberColor(we.getSaldoToday().getStandardSeconds()));</span>
-<span class="nc" id="L425">            upperCounter.setText(PERIOD_FORMATTER.print(we.getSaldoToday().toPeriod()));</span>
+<span class="nc" id="L424">            upperCounter.setText(TIME_FORMAT.print(LocalTime.now().plus(we.getSaldoToday().toPeriod())));</span>
 
             // lower counter
-<span class="nc" id="L428">            Duration lowerCounterValue = we.getSaldo().plus(we.getSaldoToday());</span>
-<span class="nc" id="L429">            upperCounter.setTextColor(getNumberColor(lowerCounterValue.getStandardSeconds()));</span>
-<span class="nc" id="L430">            lowerCounter.setText(PERIOD_FORMATTER.print(lowerCounterValue.toPeriod()));</span>
+<span class="nc" id="L427">            lowerCounter.setText(</span>
+                    TIME_FORMAT.print(LocalTime.now().plus(we.getSaldo().plus(we.getSaldoToday()).toPeriod())));
         }
 
-<span class="nc" id="L433">        Log.d(&quot;DashboardFragment&quot;, &quot;Saldo reloaded&quot;);</span>
-<span class="nc" id="L434">    }</span>
+<span class="nc" id="L431">        Log.d(&quot;DashboardFragment&quot;, &quot;Saldo reloaded&quot;);</span>
+<span class="nc" id="L432">    }</span>
 
     private void resetColor(TextView lowerCounter) {
-<span class="nc bnc" id="L437" title="All 2 branches missed.">        if (Build.VERSION.SDK_INT &lt; 23) {</span>
-<span class="nc" id="L438">            lowerCounter.setTextColor(getResources().getColor(android.R.color.primary_text_dark));</span>
+<span class="nc bnc" id="L435" title="All 2 branches missed.">        if (Build.VERSION.SDK_INT &lt; 23) {</span>
+<span class="nc" id="L436">            lowerCounter.setTextColor(getResources().getColor(android.R.color.primary_text_dark));</span>
         } else {
-<span class="nc" id="L440">            lowerCounter.setTextColor(getCtx().getColor(android.R.color.primary_text_dark));</span>
+<span class="nc" id="L438">            lowerCounter.setTextColor(getCtx().getColor(android.R.color.primary_text_dark));</span>
         }
-<span class="nc" id="L442">    }</span>
+<span class="nc" id="L440">    }</span>
 
     private StandardWorkEstimator getSaldoWorkEstimator(Cursor data) {
 
-<span class="nc" id="L446">        LocalDateTime now = LocalDateTime.now();</span>
-<span class="nc" id="L447">        StandardWorkEstimator we = new StandardWorkEstimator(getPeriod(), now, Duration.standardHours(getTotalHours()));</span>
+<span class="nc" id="L444">        LocalDateTime now = LocalDateTime.now();</span>
+<span class="nc" id="L445">        StandardWorkEstimator we = new StandardWorkEstimator(getPeriod(), now, Duration.standardHours(getTotalHours()));</span>
 
-<span class="nc" id="L449">        data.moveToFirst();</span>
+<span class="nc" id="L447">        data.moveToFirst();</span>
 
-<span class="nc bnc" id="L451" title="All 2 branches missed.">        while (!data.isAfterLast()) {</span>
-<span class="nc" id="L452">            final boolean isToday = LocalDate.now().isEqual(DATE_FORMAT.parseLocalDate(data.getString(1)));</span>
+<span class="nc bnc" id="L449" title="All 2 branches missed.">        while (!data.isAfterLast()) {</span>
+<span class="nc" id="L450">            final boolean isToday = LocalDate.now().isEqual(DATE_FORMAT.parseLocalDate(data.getString(1)));</span>
 
-<span class="nc bnc" id="L454" title="All 2 branches missed.">            if (getRealWorkedTime()) {</span>
-<span class="nc" id="L455">                long duration = data.getLong(4);</span>
-<span class="nc bnc" id="L456" title="All 2 branches missed.">                if (duration &gt; 0) {</span>
-<span class="nc" id="L457">                    we.addHours(chunkOfWork(Duration.standardSeconds(duration), isToday));</span>
+<span class="nc bnc" id="L452" title="All 2 branches missed.">            if (getRealWorkedTime()) {</span>
+<span class="nc" id="L453">                long duration = data.getLong(4);</span>
+<span class="nc bnc" id="L454" title="All 2 branches missed.">                if (duration &gt; 0) {</span>
+<span class="nc" id="L455">                    we.addHours(chunkOfWork(Duration.standardSeconds(duration), isToday));</span>
                 }
-<span class="nc" id="L459">            } else {</span>
-<span class="nc" id="L460">                we.addHours(chunkOfWork(</span>
+<span class="nc" id="L457">            } else {</span>
+<span class="nc" id="L458">                we.addHours(chunkOfWork(</span>
                         TIME_FORMAT.parseLocalTime(data.getString(2)),
                         getEndTime(TIME_FORMAT.parseLocalTime(data.getString(3)), isToday),
                         Duration.standardMinutes(getPause()),
                         isToday));
             }
-<span class="nc" id="L466">            data.moveToNext();</span>
-<span class="nc" id="L467">        }</span>
-<span class="nc" id="L468">        return we;</span>
+<span class="nc" id="L464">            data.moveToNext();</span>
+<span class="nc" id="L465">        }</span>
+<span class="nc" id="L466">        return we;</span>
     }
 
     private boolean getRealWorkedTime() {
-<span class="nc" id="L472">        return getSharedPreferences().getBoolean(&quot;real_worked_time&quot;, false);</span>
+<span class="nc" id="L470">        return getSharedPreferences().getBoolean(&quot;real_worked_time&quot;, false);</span>
     }
 
     /**
@@ -478,7 +476,7 @@ import static net.suteren.worksaldo.android.ui.MainActivity.*;
      * @return duration of mandatory work pause in minutes.
      */
     public int getPause() {
-<span class="nc" id="L481">        return Integer.parseInt(getSharedPreferences().getString(&quot;pause&quot;, &quot;30&quot;));</span>
+<span class="nc" id="L479">        return Integer.parseInt(getSharedPreferences().getString(&quot;pause&quot;, &quot;30&quot;));</span>
     }
 
     /**
@@ -487,24 +485,24 @@ import static net.suteren.worksaldo.android.ui.MainActivity.*;
      * @return demanded worked hours per period.
      */
     public int getTotalHours() {
-<span class="nc" id="L490">        return Integer.parseInt(getSharedPreferences().getString(&quot;total_hours&quot;, &quot;40&quot;));</span>
+<span class="nc" id="L488">        return Integer.parseInt(getSharedPreferences().getString(&quot;total_hours&quot;, &quot;40&quot;));</span>
     }
 
-<span class="nc" id="L493">    private abstract class AbstractDaysLoader implements LoaderManager.LoaderCallbacks&lt;Cursor&gt; {</span>
+<span class="nc" id="L491">    private abstract class AbstractDaysLoader implements LoaderManager.LoaderCallbacks&lt;Cursor&gt; {</span>
 
         protected ISharedPreferencesProviderWithContext ctx;
 
-<span class="nc" id="L497">        public AbstractDaysLoader(ISharedPreferencesProviderWithContext ctx) {</span>
-<span class="nc" id="L498">            this.ctx = ctx;</span>
-<span class="nc" id="L499">        }</span>
+<span class="nc" id="L495">        public AbstractDaysLoader(ISharedPreferencesProviderWithContext ctx) {</span>
+<span class="nc" id="L496">            this.ctx = ctx;</span>
+<span class="nc" id="L497">        }</span>
 
         @Override
         public Loader&lt;Cursor&gt; onCreateLoader(int id, Bundle args) {
-<span class="nc" id="L503">            LocalDate d = LocalDate.now();</span>
-<span class="nc" id="L504">            String start = DATE_FORMAT.print(getPeriod().from(d));</span>
-<span class="nc" id="L505">            String stop = DATE_FORMAT.print(getPeriod().to(d));</span>
-<span class="nc" id="L506">            Log.d(&quot;DashboardFragment&quot;, String.format(&quot;start: %s, stop: %s&quot;, start, stop));</span>
-<span class="nc" id="L507">            return new CursorLoader(ctx.getContext(), TIMEENTRIES_URI,</span>
+<span class="nc" id="L501">            LocalDate d = LocalDate.now();</span>
+<span class="nc" id="L502">            String start = DATE_FORMAT.print(getPeriod().from(d));</span>
+<span class="nc" id="L503">            String stop = DATE_FORMAT.print(getPeriod().to(d));</span>
+<span class="nc" id="L504">            Log.d(&quot;DashboardFragment&quot;, String.format(&quot;start: %s, stop: %s&quot;, start, stop));</span>
+<span class="nc" id="L505">            return new CursorLoader(ctx.getContext(), TIMEENTRIES_URI,</span>
                     new String[]{DATE_COMPOSITE, DAY_START_COMPOSITE, DAY_END_COMPOSITE, DAY_TOTAL_COMPOSITE,
                             DAY_SALDO_COMPOSITE},
                     SELECT_WHERE,
