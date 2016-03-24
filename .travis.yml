@@ -64,15 +64,16 @@ after_success:
   - >
     [ -n "$TRAVIS_TAG" ] &&
     ./gradlew --daemon generateChangelog &&
-    eval ` gawk '/^\s*([^#].*)$/{print "export " $1}' version.properties` &&
+    ( cp android/CHANGELOG.md android/src/main/play/cs-CZ/whatsnew; cp android/CHANGELOG.md android/src/main/play/en-US/whatsnew; true ) &&
     ./gradlew --daemon -p android publishRelease &&
     git remote set-url origin "https://$GITHUB_TOKEN@github.com/konikvranik/worksaldo.git" &&
     git fetch origin master:master &&
     git symbolic-ref HEAD refs/heads/master &&
     git reset HEAD &&
-    ( cp android/CHANGELOG.md android/src/main/play/cs-CZ/whatsnew; cp android/CHANGELOG.md android/src/main/play/en-US/whatsnew; true ) &&
     ( git add version.properties || true ) &&
     ( git add android/CHANGELOG.* || true ) &&
+    ( git add android/src/main/play/*/whatsnew || true ) &&
+    eval ` gawk '/^\s*([^#].*)$/{print "export " $1}' version.properties` &&
     git commit -m "Buildversion increase: $VERSION_MAJOR.$VERSION_MINOR.$VERSION_PATCH (Google Play: $VERSION_NUMBER, build: $VERSION_BUILD, tag: $TRAVIS_TAG) [skip ci]" &&
     git push --set-upstream origin master
 
