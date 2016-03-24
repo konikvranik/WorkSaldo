@@ -409,7 +409,6 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
             mainCounter.setText(PERIOD_FORMATTER.print(currentSaldo.toPeriod()));
 
             // upper counter
-            resetColor(lowerCounter);
             upperCounter.setText(PERIOD_FORMATTER.print(we.getWorkedHours().toPeriod()));
 
             // lower counter
