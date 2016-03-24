@@ -77,7 +77,7 @@
             android:orientation="vertical">
 
             <net.suteren.worksaldo.android.ui.OutlinedTextView
-                android:id="@+id/dailyAverage"
+                android:id="@+id/upperCounter"
                 android:layout_width="match_parent"
                 android:layout_weight="1"
                 android:gravity="end"
@@ -90,7 +90,7 @@
                 android:text="-8,8"/>
 
             <net.suteren.worksaldo.android.ui.OutlinedTextView
-                android:id="@+id/dailyTotal"
+                android:id="@+id/lowerCounter"
                 android:layout_width="match_parent"
                 android:layout_weight="1"
                 android:gravity="end"

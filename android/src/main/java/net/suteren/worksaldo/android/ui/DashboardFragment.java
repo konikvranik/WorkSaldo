@@ -15,7 +15,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
-import android.widget.*;
+import android.widget.AnalogClock;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.SimpleCursorAdapter;
+import android.widget.TextView;
 import com.caverock.androidsvg.SVGImageView;
 import net.suteren.worksaldo.IWorkEstimator;
 import net.suteren.worksaldo.Period;
@@ -23,8 +27,21 @@ import net.suteren.worksaldo.StandardWorkEstimator;
 import net.suteren.worksaldo.android.IRefreshable;
 import net.suteren.worksaldo.android.IReloadable;
 import net.suteren.worksaldo.android.R;
-import org.joda.time.*;
-import org.joda.time.format.*;
+import org.joda.time.DateTime;
+import org.joda.time.Days;
+import org.joda.time.Duration;
+import org.joda.time.DurationFieldType;
+import org.joda.time.LocalDate;
+import org.joda.time.LocalDateTime;
+import org.joda.time.LocalTime;
+import org.joda.time.ReadWritablePeriod;
+import org.joda.time.ReadablePeriod;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.PeriodFormatter;
+import org.joda.time.format.PeriodFormatterBuilder;
+import org.joda.time.format.PeriodParser;
+import org.joda.time.format.PeriodPrinter;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -237,7 +254,8 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
     }
 
     private void closeDay() {
-        getSharedPreferences().edit().putLong(DAY_CLOSED_TIMESTAMP, DateTime.now().withTimeAtStartOfDay().plus(Days.days(1)).getMillis()).apply();
+        getSharedPreferences().edit().putLong(DAY_CLOSED_TIMESTAMP, DateTime.now().withTimeAtStartOfDay().plus(Days
+                .days(1)).getMillis()).apply();
     }
 
     private void openDay() {
@@ -322,7 +340,8 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
             }
 
             // prepare work estimator for both remaining columns: worked and bilance.
-            IWorkEstimator we = new StandardWorkEstimator(getPeriod(), day.toLocalDateTime(to), Duration.standardHours(getTotalHours()));
+            IWorkEstimator we = new StandardWorkEstimator(getPeriod(), day.toLocalDateTime(to), Duration
+                    .standardHours(getTotalHours()));
             if (realHours) {
                 long duration = cursor.getLong(4);
                 if (duration > 0) {
@@ -371,46 +390,55 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
 
         StandardWorkEstimator we = getSaldoWorkEstimator(data);
 
-        Duration currentSaldo = we.getSaldo();
-        if (isDayClosed()) {
-            currentSaldo = currentSaldo.plus(we.getSaldoToday());
-        }
-        final Duration saldoToday = we.getSaldoToday();
-        final Duration remainingToday = we.getRemainingToday();
-        if (isDayClosed()) {
-            currentSaldo.plus(we.getSaldoToday());
-        }
-
-        TextView saldo = (TextView) rootView.findViewById(R.id.saldo);
-        saldo.setText(PERIOD_FORMATTER.print(currentSaldo.toPeriod()));
-        saldo.setTextColor(getNumberColor(currentSaldo.getStandardSeconds()));
-
-        TextView dailyAverage = (TextView) rootView.findViewById(R.id.dailyAverage);
-        dailyAverage.setText(PERIOD_FORMATTER.print(saldoToday.toPeriod()));
-        dailyAverage.setTextColor(getNumberColor(saldoToday.getStandardSeconds()));
-
-        TextView dailyTotal = (TextView) rootView.findViewById(R.id.dailyTotal);
-        dailyTotal.setText(PERIOD_FORMATTER.print(remainingToday.toPeriod()));
-        dailyTotal.setTextColor(getNumberColor(remainingToday.getStandardSeconds()));
-
+        TextView mainCounter = (TextView) rootView.findViewById(R.id.saldo);
+        TextView upperCounter = (TextView) rootView.findViewById(R.id.upperCounter);
+        TextView lowerCounter = (TextView) rootView.findViewById(R.id.lowerCounter);
         @SuppressWarnings("deprecation")
         AnalogClock clock = (AnalogClock) rootView.findViewById(R.id.clock);
-
         ImageView gears = (SVGImageView) rootView.findViewById(R.id.gears);
 
         if (isDayClosed()) {
+            mainCounter.setVisibility(View.VISIBLE);
             clock.setVisibility(View.GONE);
-            saldo.setVisibility(View.VISIBLE);
             gears.setVisibility(View.GONE);
             gears.clearAnimation();
+
+            // main counter
+            Duration currentSaldo = we.getSaldo().plus(we.getSaldoToday());
+            mainCounter.setTextColor(getNumberColor(currentSaldo.getStandardSeconds()));
+            mainCounter.setText(PERIOD_FORMATTER.print(currentSaldo.toPeriod()));
+
+            // upper counter
+            resetColor(lowerCounter);
+            upperCounter.setText(PERIOD_FORMATTER.print(we.getWorkedHours().toPeriod()));
+
+            // lower counter
+            lowerCounter.setText(PERIOD_FORMATTER.print(we.getRemainingTotal().toPeriod()));
         } else {
+            mainCounter.setVisibility(View.GONE);
             clock.setVisibility(View.VISIBLE);
-            saldo.setVisibility(View.GONE);
             gears.setVisibility(View.VISIBLE);
             gears.startAnimation(AnimationUtils.loadAnimation(getActivity(), R.anim.rotate_gear));
+
+            // upper counter
+            upperCounter.setTextColor(getNumberColor(we.getSaldoToday().getStandardSeconds()));
+            upperCounter.setText(PERIOD_FORMATTER.print(we.getSaldoToday().toPeriod()));
+
+            // lower counter
+            Duration lowerCounterValue = we.getSaldo().plus(we.getSaldoToday());
+            upperCounter.setTextColor(getNumberColor(lowerCounterValue.getStandardSeconds()));
+            lowerCounter.setText(PERIOD_FORMATTER.print(lowerCounterValue.toPeriod()));
         }
 
         Log.d("DashboardFragment", "Saldo reloaded");
+    }
+
+    private void resetColor(TextView lowerCounter) {
+        if (Build.VERSION.SDK_INT < 23) {
+            lowerCounter.setTextColor(getResources().getColor(android.R.color.primary_text_dark));
+        } else {
+            lowerCounter.setTextColor(getCtx().getColor(android.R.color.primary_text_dark));
+        }
     }
 
     private StandardWorkEstimator getSaldoWorkEstimator(Cursor data) {
