@@ -478,12 +478,12 @@ import static net.suteren.worksaldo.android.ui.MainActivity.*;
 <span class="nc" id="L478">            gears.startAnimation(AnimationUtils.loadAnimation(getActivity(), R.anim.rotate_gear));</span>
 
             // upper counter
-<span class="nc" id="L481">            upperCounter.setText(TIME_FORMAT.print(LocalTime.now().plus(we.getSaldoToday()</span>
+<span class="nc" id="L481">            upperCounter.setText(TIME_FORMAT.print(LocalTime.now().minus(we.getSaldoToday()</span>
                     .toPeriodFrom(DateTime.now()))));
 
             // lower counter
 <span class="nc" id="L485">            lowerCounter.setText(</span>
-                    TIME_FORMAT.print(LocalTime.now().plus(we.getSaldo().plus(we.getSaldoToday())
+                    TIME_FORMAT.print(LocalTime.now().minus(we.getSaldo().plus(we.getSaldoToday())
                             .toPeriodFrom(DateTime.now()))));
         }
 
