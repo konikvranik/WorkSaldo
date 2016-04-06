@@ -45,6 +45,7 @@ import org.joda.time.format.PeriodPrinter;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.text.DecimalFormat;
 import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -64,8 +65,65 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
      * formatting duration of work in H:mm format with possible sign before hours.
      */
     public static final PeriodFormatter PERIOD_FORMATTER = new PeriodFormatterBuilder()
+            .append(new PeriodPrinter() {
+                @Override
+                public int calculatePrintedLength(ReadablePeriod period, Locale locale) {
+                    return period.toPeriod().getMillis() < 0 ? 1 : 0;
+                }
+
+                @Override
+                public int countFieldsToPrint(ReadablePeriod period, int stopAt, Locale locale) {
+                    return 0;
+                }
+
+                @Override
+                public void printTo(StringBuffer buf, ReadablePeriod period, Locale locale) {
+                    if (period.toPeriod().getMillis() < 0) {
+                        buf.append("-");
+                    }
+                }
+
+                @Override
+                public void printTo(Writer out, ReadablePeriod period, Locale locale) throws IOException {
+                    StringBuffer sb = new StringBuffer();
+                    printTo(sb, period, locale);
+                    out.write(sb.toString());
+                }
+            }, new PeriodParser() {
+                @Override
+                public int parseInto(ReadWritablePeriod period, String periodStr, int position, Locale locale) {
+                    throw new UnsupportedOperationException();
+                }
+            })
             .printZeroIfSupported()
-            .appendHours()
+            .append(new PeriodPrinter() {
+                @Override
+                public int calculatePrintedLength(ReadablePeriod period, Locale locale) {
+                    return DecimalFormat.getIntegerInstance().format(period.get(DurationFieldType.hours())).length();
+                }
+
+                @Override
+                public int countFieldsToPrint(ReadablePeriod period, int stopAt, Locale locale) {
+                    return 1;
+                }
+
+                @Override
+                public void printTo(StringBuffer buf, ReadablePeriod period, Locale locale) {
+                    buf.append(String.format("%02d", Math.abs(period.get(DurationFieldType.hours()))));
+                }
+
+                @Override
+                public void printTo(Writer out, ReadablePeriod period, Locale locale) throws IOException {
+                    StringBuffer sb = new StringBuffer();
+                    printTo(sb, period, locale);
+                    out.write(sb.toString());
+                }
+            }, new PeriodParser() {
+                @Override
+                public int parseInto(ReadWritablePeriod period, String periodStr, int position, Locale locale) {
+                    throw new UnsupportedOperationException();
+                }
+            })
             .appendSeparator(":")
             .minimumPrintedDigits(2)
             .append(new PeriodPrinter() {
@@ -420,11 +478,13 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
             gears.startAnimation(AnimationUtils.loadAnimation(getActivity(), R.anim.rotate_gear));
 
             // upper counter
-            upperCounter.setText(TIME_FORMAT.print(LocalTime.now().plus(we.getSaldoToday().toPeriod())));
+            upperCounter.setText(TIME_FORMAT.print(LocalTime.now().plus(we.getSaldoToday()
+                    .toPeriodFrom(DateTime.now()))));
 
             // lower counter
             lowerCounter.setText(
-                    TIME_FORMAT.print(LocalTime.now().plus(we.getSaldo().plus(we.getSaldoToday()).toPeriod())));
+                    TIME_FORMAT.print(LocalTime.now().plus(we.getSaldo().plus(we.getSaldoToday())
+                            .toPeriodFrom(DateTime.now()))));
         }
 
         Log.d("DashboardFragment", "Saldo reloaded");
