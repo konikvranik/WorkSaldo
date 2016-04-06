@@ -478,12 +478,12 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
             gears.startAnimation(AnimationUtils.loadAnimation(getActivity(), R.anim.rotate_gear));
 
             // upper counter
-            upperCounter.setText(TIME_FORMAT.print(LocalTime.now().plus(we.getSaldoToday()
+            upperCounter.setText(TIME_FORMAT.print(LocalTime.now().minus(we.getSaldoToday()
                     .toPeriodFrom(DateTime.now()))));
 
             // lower counter
             lowerCounter.setText(
-                    TIME_FORMAT.print(LocalTime.now().plus(we.getSaldo().plus(we.getSaldoToday())
+                    TIME_FORMAT.print(LocalTime.now().minus(we.getSaldo().plus(we.getSaldoToday())
                             .toPeriodFrom(DateTime.now()))));
         }
 
