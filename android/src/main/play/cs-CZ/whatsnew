@@ -1,6 +1,12 @@
 android - Changelog
 ===================
 
+v00016 (2016-04-06 09:38:16 +0200)
+----------------------------------
+* time formatting (Petr Vranik)
+* Buildversion increase: 1.0.11 (Google Play: 15, build: 414, tag: v00015) [skip ci] (Travis CI)
+* no need to reset color (Petr Vranik)
+
 v00015 (2016-03-24 11:46:19 +0100)
 ----------------------------------
 * display time of finish instead of number of hours. (Petr Vranik)
@@ -83,9 +89,3 @@ v00004 (2016-03-22 08:38:36 +0100)
 ----------------------------------
 * autocoommit version info (Petr Vranik)
 * Buildversion increase [skip ci] (Trsvis CI)
-
-v00003 (2016-03-22 00:02:22 +0100)
-----------------------------------
-* travis build number (Petr Vranik)
-* publish on tags (Petr Vranik)
-* git stash (Petr Vranik)
