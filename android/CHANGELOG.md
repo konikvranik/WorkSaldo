@@ -1,6 +1,11 @@
 android - Changelog
 ===================
 
+v00017 (2016-04-06 11:09:48 +0200)
+----------------------------------
+* subtracting saldo instead of appending (Petr Vranik)
+* Buildversion increase: 1.0.12 (Google Play: 16, build: 417, tag: v00016) [skip ci] (Travis CI)
+
 v00016 (2016-04-06 09:38:16 +0200)
 ----------------------------------
 * time formatting (Petr Vranik)
@@ -84,8 +89,3 @@ v00005 (2016-03-22 12:06:50 +0100)
 * bintray deploy by gradle (Petr Vranik)
 * Buildversion increase: 1.0.1 (Google Play: 3, build: 356, tag: v00005) [skip ci] (Trsvis CI)
 * version suffix (Petr Vranik)
-
-v00004 (2016-03-22 08:38:36 +0100)
-----------------------------------
-* autocoommit version info (Petr Vranik)
-* Buildversion increase [skip ci] (Trsvis CI)
