@@ -18,13 +18,13 @@ document.getElementById(id+'Link').style.display = 'none';
 <body>
 <h1>Lint Report</h1>
 <div class="titleSeparator"></div>
-Check performed at Thu Mar 24 12:53:37 UTC 2016.<br/>
-0 errors and 26 warnings found:<br/><br/>
+Check performed at Wed Apr 06 07:43:01 UTC 2016.<br/>
+0 errors and 27 warnings found:<br/><br/>
 <table class="overview">
 <tr><td></td><td class="categoryColumn"><a href="#Correctness">Correctness</a>
 </td></tr>
 <tr>
-<td class="countColumn">1</td><td class="issueColumn"><img border="0" align="top" src="lint-results-debug_files/lint-warning.png" alt="Warning" />
+<td class="countColumn">2</td><td class="issueColumn"><img border="0" align="top" src="lint-results-debug_files/lint-warning.png" alt="Warning" />
 <a href="#DefaultLocale">DefaultLocale: Implied default locale in case conversion</a>
 </td></tr>
 <tr>
@@ -92,13 +92,21 @@ Check performed at Thu Mar 24 12:53:37 UTC 2016.<br/>
 <div class="id"><a href="#" title="Return to top">DefaultLocale: Implied default locale in case conversion</a><div class="issueSeparator"></div>
 </div>
 <div class="warningslist">
-<span class="location"><a href="../../src/main/java/net/suteren/worksaldo/android/ui/DashboardFragment.java">../../src/main/java/net/suteren/worksaldo/android/ui/DashboardFragment.java</a>:84</span>: <span class="message">Implicitly using the default locale is a common source of bugs: Use <code>String.format(Locale, ...)</code> instead</span><br /><pre class="errorlines">
-<span class="lineno">  81</span> 
-<span class="lineno">  82</span>                 @Override
-<span class="lineno">  83</span>                 public void printTo(StringBuffer buf, ReadablePeriod period, Locale locale) {
-<span class="lineno">  84</span>                     buf.append(<span class="errorspan">String.format("%02d", Math.abs(period.get(DurationFieldType.minutes()))));</span>
-<span class="lineno">  85</span>                 }
-<span class="lineno">  86</span> 
+<span class="location"><a href="../../src/main/java/net/suteren/worksaldo/android/ui/DashboardFragment.java">../../src/main/java/net/suteren/worksaldo/android/ui/DashboardFragment.java</a>:112</span>: <span class="message">Implicitly using the default locale is a common source of bugs: Use <code>String.format(Locale, ...)</code> instead</span><br /><pre class="errorlines">
+<span class="lineno"> 109</span> 
+<span class="lineno"> 110</span>                 @Override
+<span class="lineno"> 111</span>                 public void printTo(StringBuffer buf, ReadablePeriod period, Locale locale) {
+<span class="lineno"> 112</span>                     buf.append(<span class="errorspan">String.format("%02d", Math.abs(period.get(DurationFieldType.hours()))));</span>
+<span class="lineno"> 113</span>                 }
+<span class="lineno"> 114</span> 
+</pre>
+<span class="location"><a href="../../src/main/java/net/suteren/worksaldo/android/ui/DashboardFragment.java">../../src/main/java/net/suteren/worksaldo/android/ui/DashboardFragment.java</a>:142</span>: <span class="message">Implicitly using the default locale is a common source of bugs: Use <code>String.format(Locale, ...)</code> instead</span><br /><pre class="errorlines">
+<span class="lineno"> 139</span> 
+<span class="lineno"> 140</span>                 @Override
+<span class="lineno"> 141</span>                 public void printTo(StringBuffer buf, ReadablePeriod period, Locale locale) {
+<span class="lineno"> 142</span>                     buf.append(<span class="errorspan">String.format("%02d", Math.abs(period.get(DurationFieldType.minutes()))));</span>
+<span class="lineno"> 143</span>                 }
+<span class="lineno"> 144</span> 
 </pre>
 </div>
 <div class="metadata">Priority: 6 / 10<br/>
