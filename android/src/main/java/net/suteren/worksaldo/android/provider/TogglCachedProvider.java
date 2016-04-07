@@ -198,8 +198,11 @@ public class TogglCachedProvider extends ContentProvider implements ISharedPrefe
 
     private Cursor reloadTimeentiresFromDb(String[] projection, String selection, String[] selectionArgs,
                                            String sortOrder) {
+        if (projection == null) {
+            return null;
+        }
         // Check if there is required field "_id". If not, add it to projection.
-        List<String> proj = (projection == null) ? new ArrayList<String>() : Arrays.asList(projection);
+        List<String> proj = Arrays.asList(projection);
         if (!proj.contains(ID_COLUMN_NAME)) {
             proj = new ArrayList<>(Arrays.asList(projection));
             proj.add(0, ID_COLUMN_NAME);
