@@ -149,7 +149,8 @@ public class TogglCachedProvider extends ContentProvider implements ISharedPrefe
     /**
      * Database datetime format for date with time.
      */
-    public static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSS").withZoneUTC();
+    public static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSS")
+            .withZoneUTC();
 
     public static final int UNAUTHORIZED = 401;
     public static final String RESULT_CODE = "resultCode";
@@ -195,9 +196,10 @@ public class TogglCachedProvider extends ContentProvider implements ISharedPrefe
 
     }
 
-    private Cursor reloadTimeentiresFromDb(String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+    private Cursor reloadTimeentiresFromDb(String[] projection, String selection, String[] selectionArgs,
+                                           String sortOrder) {
         // Check if there is required field "_id". If not, add it to projection.
-        List<String> proj = Arrays.asList(projection);
+        List<String> proj = (projection == null) ? new ArrayList<String>() : Arrays.asList(projection);
         if (!proj.contains(ID_COLUMN_NAME)) {
             proj = new ArrayList<>(Arrays.asList(projection));
             proj.add(0, ID_COLUMN_NAME);
@@ -223,7 +225,8 @@ public class TogglCachedProvider extends ContentProvider implements ISharedPrefe
             };
 
             Log.d("TogglCachedProvider", String.format("Get TEs from %s to %s", selectionArgs[0], selectionArgs[1]));
-            List<TimeEntry> te = jt.getTimeEntries(ISODateTimeFormat.date().parseLocalDate(selectionArgs[0]), ISODateTimeFormat.date().parseLocalDate(selectionArgs[1]));
+            List<TimeEntry> te = jt.getTimeEntries(ISODateTimeFormat.date().parseLocalDate(selectionArgs[0]),
+                    ISODateTimeFormat.date().parseLocalDate(selectionArgs[1]));
 
             Log.d("TogglCachedProvider", "Loaded from toggl: " + te.size());
             SQLiteDatabase db = getDbHelper(getContext()).getWritableDatabase();
