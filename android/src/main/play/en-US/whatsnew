@@ -1,6 +1,13 @@
 android - Changelog
 ===================
 
+v00018 (2016-04-08 16:26:01 +0200)
+----------------------------------
+* leave time colors (Petr Vranik)
+* NPE fix (Petr Vranik)
+* NPE fix (Petr Vranik)
+* Buildversion increase: 1.0.13 (Google Play: 17, build: 419, tag: v00017) [skip ci] (Travis CI)
+
 v00017 (2016-04-06 11:09:48 +0200)
 ----------------------------------
 * subtracting saldo instead of appending (Petr Vranik)
@@ -82,10 +89,3 @@ v00006 (2016-03-22 12:33:29 +0100)
 * optimized travis buildscript (Petr Vranik)
 * optimized travis buildscript (Petr Vranik)
 * Buildversion increase: 1.0.0 (Google Play: 4, build: 360, tag: v00005) [skip ci] (Trsvis CI)
-
-v00005 (2016-03-22 12:06:50 +0100)
-----------------------------------
-* removed bintray from parent project (Petr Vranik)
-* bintray deploy by gradle (Petr Vranik)
-* Buildversion increase: 1.0.1 (Google Play: 3, build: 356, tag: v00005) [skip ci] (Trsvis CI)
-* version suffix (Petr Vranik)
