@@ -480,19 +480,29 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
             // upper counter
             upperCounter.setText(TIME_FORMAT.print(LocalTime.now().minus(we.getSaldoToday()
                     .toPeriodFrom(DateTime.now()))));
+            upperCounter.setTextColor(getColorCompat(R.color.zero));
 
             // lower counter
             lowerCounter.setText(
                     TIME_FORMAT.print(LocalTime.now().minus(we.getSaldo().plus(we.getSaldoToday())
                             .toPeriodFrom(DateTime.now()))));
+            upperCounter.setTextColor(getColorCompat(R.color.positive));
         }
 
         Log.d("DashboardFragment", "Saldo reloaded");
     }
 
+    private int getColorCompat(int color) {
+        if (Build.VERSION.SDK_INT < 23) {
+            return getResources().getColor(color);
+        } else {
+            return getCtx().getColor(color);
+        }
+    }
+
     private void resetColor(TextView lowerCounter) {
         if (Build.VERSION.SDK_INT < 23) {
-            lowerCounter.setTextColor(getResources().getColor(android.R.color.primary_text_dark));
+            lowerCounter.setTextColor(getColorCompat(android.R.color.primary_text_dark));
         } else {
             lowerCounter.setTextColor(getCtx().getColor(android.R.color.primary_text_dark));
         }
