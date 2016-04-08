@@ -180,17 +180,18 @@ import static net.suteren.worksaldo.android.ui.MainActivity.MAIN;
 <span class="nc" id="L180">                } catch (Exception e) {</span>
 <span class="nc" id="L181">                    Log.e(&quot;TogglCachedProvider&quot;, &quot;unable to get time entries&quot;, e);</span>
                 }
+<span class="nc" id="L183">                return null;</span>
 
                 // If the incoming URI was for time sheet entries
             case MATCHED_TIMEENTRY:
-<span class="nc" id="L186">                Log.d(&quot;TogglCachedProvider&quot;, &quot;Querying DB&quot;);</span>
-<span class="nc" id="L187">                final Cursor cursor = reloadTimeentiresFromDb(projection, selection, selectionArgs, sortOrder);</span>
-<span class="nc" id="L188">                cursor.setNotificationUri(getContext().getContentResolver(), TIMEENTRIES_URI);</span>
-<span class="nc" id="L189">                return cursor;</span>
+<span class="nc" id="L187">                Log.d(&quot;TogglCachedProvider&quot;, &quot;Querying DB&quot;);</span>
+<span class="nc" id="L188">                final Cursor cursor = reloadTimeentiresFromDb(projection, selection, selectionArgs, sortOrder);</span>
+<span class="nc" id="L189">                cursor.setNotificationUri(getContext().getContentResolver(), TIMEENTRIES_URI);</span>
+<span class="nc" id="L190">                return cursor;</span>
 
             default:
                 // If the URI is not recognized.
-<span class="nc" id="L193">                return null;</span>
+<span class="nc" id="L194">                return null;</span>
 
         }
 
@@ -198,105 +199,105 @@ import static net.suteren.worksaldo.android.ui.MainActivity.MAIN;
 
     private Cursor reloadTimeentiresFromDb(String[] projection, String selection, String[] selectionArgs,
                                            String sortOrder) {
-<span class="nc bnc" id="L201" title="All 2 branches missed.">        if (projection == null) {</span>
-<span class="nc" id="L202">            return null;</span>
+<span class="nc bnc" id="L202" title="All 2 branches missed.">        if (projection == null) {</span>
+<span class="nc" id="L203">            return null;</span>
         }
         // Check if there is required field &quot;_id&quot;. If not, add it to projection.
-<span class="nc" id="L205">        List&lt;String&gt; proj = Arrays.asList(projection);</span>
-<span class="nc bnc" id="L206" title="All 2 branches missed.">        if (!proj.contains(ID_COLUMN_NAME)) {</span>
-<span class="nc" id="L207">            proj = new ArrayList&lt;&gt;(Arrays.asList(projection));</span>
-<span class="nc" id="L208">            proj.add(0, ID_COLUMN_NAME);</span>
-<span class="nc" id="L209">            projection = proj.toArray(new String[proj.size()]);</span>
+<span class="nc" id="L206">        List&lt;String&gt; proj = Arrays.asList(projection);</span>
+<span class="nc bnc" id="L207" title="All 2 branches missed.">        if (!proj.contains(ID_COLUMN_NAME)) {</span>
+<span class="nc" id="L208">            proj = new ArrayList&lt;&gt;(Arrays.asList(projection));</span>
+<span class="nc" id="L209">            proj.add(0, ID_COLUMN_NAME);</span>
+<span class="nc" id="L210">            projection = proj.toArray(new String[proj.size()]);</span>
         }
-<span class="nc" id="L211">        SQLiteDatabase readableDatabase = getDbHelper(getContext()).getReadableDatabase();</span>
-<span class="nc" id="L212">        return readableDatabase.query(TIME_ENTRY, projection, selection, selectionArgs, GROUP_BY, null, sortOrder);</span>
+<span class="nc" id="L212">        SQLiteDatabase readableDatabase = getDbHelper(getContext()).getReadableDatabase();</span>
+<span class="nc" id="L213">        return readableDatabase.query(TIME_ENTRY, projection, selection, selectionArgs, GROUP_BY, null, sortOrder);</span>
     }
 
     private void reloadTimeentriesFromToggl(String[] selectionArgs) {
 
         Bundle report;
-<span class="nc" id="L218">        String key = getContext().getSharedPreferences(MAIN, MODE_PRIVATE).getString(API_KEY, null);</span>
-<span class="nc bnc" id="L219" title="All 4 branches missed.">        if (key == null || &quot;&quot;.equals(key.trim())) {</span>
-<span class="nc" id="L220">            report = new Bundle();</span>
-<span class="nc" id="L221">            report.putInt(RESULT_CODE, UNAUTHORIZED);</span>
+<span class="nc" id="L219">        String key = getContext().getSharedPreferences(MAIN, MODE_PRIVATE).getString(API_KEY, null);</span>
+<span class="nc bnc" id="L220" title="All 4 branches missed.">        if (key == null || &quot;&quot;.equals(key.trim())) {</span>
+<span class="nc" id="L221">            report = new Bundle();</span>
+<span class="nc" id="L222">            report.putInt(RESULT_CODE, UNAUTHORIZED);</span>
         } else {
-<span class="nc" id="L223">            JToggl jt = new JToggl(key, API_KEY) {</span>
+<span class="nc" id="L224">            JToggl jt = new JToggl(key, API_KEY) {</span>
                 @Override
                 protected Client prepareApiClient() {
-<span class="nc" id="L226">                    return super.prepareApiClient().register(AndroidFriendlyFeature.class);</span>
+<span class="nc" id="L227">                    return super.prepareApiClient().register(AndroidFriendlyFeature.class);</span>
                 }
             };
 
-<span class="nc" id="L230">            Log.d(&quot;TogglCachedProvider&quot;, String.format(&quot;Get TEs from %s to %s&quot;, selectionArgs[0], selectionArgs[1]));</span>
-<span class="nc" id="L231">            List&lt;TimeEntry&gt; te = jt.getTimeEntries(ISODateTimeFormat.date().parseLocalDate(selectionArgs[0]),</span>
+<span class="nc" id="L231">            Log.d(&quot;TogglCachedProvider&quot;, String.format(&quot;Get TEs from %s to %s&quot;, selectionArgs[0], selectionArgs[1]));</span>
+<span class="nc" id="L232">            List&lt;TimeEntry&gt; te = jt.getTimeEntries(ISODateTimeFormat.date().parseLocalDate(selectionArgs[0]),</span>
                     ISODateTimeFormat.date().parseLocalDate(selectionArgs[1]));
 
-<span class="nc" id="L234">            Log.d(&quot;TogglCachedProvider&quot;, &quot;Loaded from toggl: &quot; + te.size());</span>
-<span class="nc" id="L235">            SQLiteDatabase db = getDbHelper(getContext()).getWritableDatabase();</span>
+<span class="nc" id="L235">            Log.d(&quot;TogglCachedProvider&quot;, &quot;Loaded from toggl: &quot; + te.size());</span>
+<span class="nc" id="L236">            SQLiteDatabase db = getDbHelper(getContext()).getWritableDatabase();</span>
             try {
 
-<span class="nc" id="L238">                db.beginTransaction();</span>
-<span class="nc" id="L239">                db.delete(TIME_ENTRY, DELETE_WHERE, selectionArgs);</span>
+<span class="nc" id="L239">                db.beginTransaction();</span>
+<span class="nc" id="L240">                db.delete(TIME_ENTRY, DELETE_WHERE, selectionArgs);</span>
 
-<span class="nc bnc" id="L241" title="All 2 branches missed.">                for (TimeEntry e : te) {</span>
-<span class="nc" id="L242">                    Log.d(&quot;TogglCachedProvider&quot;, String.format(&quot;Persisting: %s&quot;, te));</span>
-<span class="nc" id="L243">                    ContentValues values = new ContentValues(12);</span>
-<span class="nc bnc" id="L244" title="All 2 branches missed.">                    values.put(DbHelper.DESCRIPTION_COL, e.getDescription() == null ? &quot;&quot; : e.getDescription());</span>
-<span class="nc" id="L245">                    values.put(DbHelper.WID_COL, e.getWorkspaceId());</span>
-<span class="nc" id="L246">                    values.put(DbHelper.PID_COL, e.getProjectId());</span>
-<span class="nc" id="L247">                    values.put(DbHelper.TID_COL, e.getTaskId());</span>
+<span class="nc bnc" id="L242" title="All 2 branches missed.">                for (TimeEntry e : te) {</span>
+<span class="nc" id="L243">                    Log.d(&quot;TogglCachedProvider&quot;, String.format(&quot;Persisting: %s&quot;, te));</span>
+<span class="nc" id="L244">                    ContentValues values = new ContentValues(12);</span>
+<span class="nc bnc" id="L245" title="All 2 branches missed.">                    values.put(DbHelper.DESCRIPTION_COL, e.getDescription() == null ? &quot;&quot; : e.getDescription());</span>
+<span class="nc" id="L246">                    values.put(DbHelper.WID_COL, e.getWorkspaceId());</span>
+<span class="nc" id="L247">                    values.put(DbHelper.PID_COL, e.getProjectId());</span>
+<span class="nc" id="L248">                    values.put(DbHelper.TID_COL, e.getTaskId());</span>
 
-<span class="nc" id="L249">                    final DateTimeFormatter dateTimeFormat = DATE_TIME_FORMAT;</span>
+<span class="nc" id="L250">                    final DateTimeFormatter dateTimeFormat = DATE_TIME_FORMAT;</span>
 
-<span class="nc" id="L251">                    values.put(DbHelper.START_COL, dateTimeFormat.print(e.getStart()));</span>
+<span class="nc" id="L252">                    values.put(DbHelper.START_COL, dateTimeFormat.print(e.getStart()));</span>
 
-<span class="nc" id="L253">                    DateTime teStop = e.getStop();</span>
-<span class="nc" id="L254">                    values.put(DbHelper.STOP_COL, dateTimeFormat.print(teStop));</span>
+<span class="nc" id="L254">                    DateTime teStop = e.getStop();</span>
+<span class="nc" id="L255">                    values.put(DbHelper.STOP_COL, dateTimeFormat.print(teStop));</span>
 
-<span class="nc" id="L256">                    values.put(DbHelper.DURATION_COL, e.getDuration());</span>
+<span class="nc" id="L257">                    values.put(DbHelper.DURATION_COL, e.getDuration());</span>
                     //values.put(DbHelper.BILLABLE_COL, null);
-<span class="nc" id="L258">                    values.put(DbHelper.CREATED_WITH_COL, e.getCreatedWith());</span>
-<span class="nc bnc" id="L259" title="All 2 branches missed.">                    if (e.getTags() != null)</span>
-<span class="nc" id="L260">                        values.put(DbHelper.TAGS_COL, TextUtils.join(&quot;;&quot;, e.getTags()));</span>
-<span class="nc" id="L261">                    values.put(DbHelper.DURONLY_COL, e.getDurationOnly());</span>
-<span class="nc" id="L262">                    long id = db.insertWithOnConflict(TIME_ENTRY, null, values, SQLiteDatabase.CONFLICT_IGNORE);</span>
-<span class="nc" id="L263">                    Log.d(&quot;TogglCachedProvider&quot;, String.format(&quot;Inserted timeentry with id: %d&quot;, id));</span>
-<span class="nc" id="L264">                }</span>
-<span class="nc" id="L265">                db.setTransactionSuccessful();</span>
-<span class="nc" id="L266">            } catch (Throwable t) {</span>
-<span class="nc" id="L267">                Log.e(&quot;TogglCachedProvider&quot;, &quot;Failed to load data from toggl.&quot;, t);</span>
+<span class="nc" id="L259">                    values.put(DbHelper.CREATED_WITH_COL, e.getCreatedWith());</span>
+<span class="nc bnc" id="L260" title="All 2 branches missed.">                    if (e.getTags() != null)</span>
+<span class="nc" id="L261">                        values.put(DbHelper.TAGS_COL, TextUtils.join(&quot;;&quot;, e.getTags()));</span>
+<span class="nc" id="L262">                    values.put(DbHelper.DURONLY_COL, e.getDurationOnly());</span>
+<span class="nc" id="L263">                    long id = db.insertWithOnConflict(TIME_ENTRY, null, values, SQLiteDatabase.CONFLICT_IGNORE);</span>
+<span class="nc" id="L264">                    Log.d(&quot;TogglCachedProvider&quot;, String.format(&quot;Inserted timeentry with id: %d&quot;, id));</span>
+<span class="nc" id="L265">                }</span>
+<span class="nc" id="L266">                db.setTransactionSuccessful();</span>
+<span class="nc" id="L267">            } catch (Throwable t) {</span>
+<span class="nc" id="L268">                Log.e(&quot;TogglCachedProvider&quot;, &quot;Failed to load data from toggl.&quot;, t);</span>
             } finally {
-<span class="nc" id="L269">                db.endTransaction();</span>
-<span class="nc" id="L270">                db.close();</span>
-<span class="nc" id="L271">            }</span>
+<span class="nc" id="L270">                db.endTransaction();</span>
+<span class="nc" id="L271">                db.close();</span>
+<span class="nc" id="L272">            }</span>
         }
 
-<span class="nc" id="L274">    }</span>
+<span class="nc" id="L275">    }</span>
 
     @Override
     public String getType(Uri uri) {
-<span class="nc" id="L278">        return null;</span>
+<span class="nc" id="L279">        return null;</span>
     }
 
     @Override
     public Uri insert(Uri uri, ContentValues values) {
-<span class="nc" id="L283">        return null;</span>
+<span class="nc" id="L284">        return null;</span>
     }
 
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
-<span class="nc" id="L288">        return 0;</span>
+<span class="nc" id="L289">        return 0;</span>
     }
 
     @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-<span class="nc" id="L293">        return 0;</span>
+<span class="nc" id="L294">        return 0;</span>
     }
 
 
     @Override
     public SharedPreferences getSharedPreferences() {
-<span class="nc" id="L299">        return getContext().getSharedPreferences(MAIN, MODE_PRIVATE);</span>
+<span class="nc" id="L300">        return getContext().getSharedPreferences(MAIN, MODE_PRIVATE);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.4.201502262128</span></div></body></html>
