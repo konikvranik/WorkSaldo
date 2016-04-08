@@ -180,6 +180,7 @@ public class TogglCachedProvider extends ContentProvider implements ISharedPrefe
                 } catch (Exception e) {
                     Log.e("TogglCachedProvider", "unable to get time entries", e);
                 }
+                return null;
 
                 // If the incoming URI was for time sheet entries
             case MATCHED_TIMEENTRY:
