@@ -486,7 +486,7 @@ import static net.suteren.worksaldo.android.ui.MainActivity.*;
 <span class="nc" id="L486">            lowerCounter.setText(</span>
                     TIME_FORMAT.print(LocalTime.now().minus(we.getSaldo().plus(we.getSaldoToday())
                             .toPeriodFrom(DateTime.now()))));
-<span class="nc" id="L489">            upperCounter.setTextColor(getColorCompat(R.color.positive));</span>
+<span class="nc" id="L489">            lowerCounter.setTextColor(getColorCompat(R.color.positive));</span>
         }
 
 <span class="nc" id="L492">        Log.d(&quot;DashboardFragment&quot;, &quot;Saldo reloaded&quot;);</span>
