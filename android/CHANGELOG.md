@@ -1,6 +1,12 @@
 android - Changelog
 ===================
 
+v00019 (2016-04-10 18:29:14 +0200)
+----------------------------------
+* fixed coloring (hPa)
+* added missing break (Petr Vranik)
+* Buildversion increase: 1.0.14 (Google Play: 18, build: 423, tag: v00018) [skip ci] (Travis CI)
+
 v00018 (2016-04-08 16:26:01 +0200)
 ----------------------------------
 * leave time colors (Petr Vranik)
@@ -86,6 +92,3 @@ v00007 (2016-03-22 15:45:47 +0100)
 v00006 (2016-03-22 12:33:29 +0100)
 ----------------------------------
 * optimized travis buildscript (Petr Vranik)
-* optimized travis buildscript (Petr Vranik)
-* optimized travis buildscript (Petr Vranik)
-* Buildversion increase: 1.0.0 (Google Play: 4, build: 360, tag: v00005) [skip ci] (Trsvis CI)
