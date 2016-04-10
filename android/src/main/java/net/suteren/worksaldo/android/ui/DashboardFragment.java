@@ -486,7 +486,7 @@ public class DashboardFragment extends Fragment implements ISharedPreferencesPro
             lowerCounter.setText(
                     TIME_FORMAT.print(LocalTime.now().minus(we.getSaldo().plus(we.getSaldoToday())
                             .toPeriodFrom(DateTime.now()))));
-            upperCounter.setTextColor(getColorCompat(R.color.positive));
+            lowerCounter.setTextColor(getColorCompat(R.color.positive));
         }
 
         Log.d("DashboardFragment", "Saldo reloaded");
